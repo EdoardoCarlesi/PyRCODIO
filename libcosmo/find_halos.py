@@ -1,0 +1,198 @@
+from halo import Halo
+from utils import *
+from find_halos import *
+import numpy as np 
+
+
+# Returns an array of all the haloes whose com is located within a given radius from a given halo
+def find_halos(halo_c, halo_all, radius):
+
+	n_halos = len(halo_all)
+	halo_s = []
+	x_c = halo_c.x
+
+	for h in range(0, n_halos):
+		halo_0 = halo_all[h]
+		d_c = halo_0.distance(x_c)	
+
+		if d_c < radius:
+			halo_s.append(halo_0)
+
+	return halo_s
+
+def find_halos_point(x_c, halo_all, radius):
+
+	n_halos = len(halo_all)
+	halo_s = []
+
+	for h in range(0, n_halos):
+		halo_0 = halo_all[h]
+		d_c = halo_0.distance(x_c)	
+	
+		if d_c < radius:
+			halo_s.append(halo_0)
+
+	return halo_s
+
+# Identify a suitable halo pair from a given halo list, a search center, a search radius and a minimum mass/separation for the LG candidates
+def find_lg(halos, center, radius, iso_radius, m_min, r_min, r_max):
+
+	# Center is a three-d variable
+	# These are initialized empty
+	halos_lg = []
+	halos_center = []	# List of haloes with the right mass range and distance from centrum
+
+	n_halos = len(halos)
+
+		# First identify a set of candidates within the radius and mass range
+	for h in range(0, n_halos):
+		halo_this = halos[h]
+
+		# print halo_this.distance(center)
+		if halo_this.m > m_min and halo_this.distance(center) < radius+r_max :
+			halos_center.append(halo_this)
+			
+	n_candidates = len(halos_center)
+	
+	# Total number of LG-halos
+	n_all_lgs = 0
+
+	# Now loop on halo center candidates
+	for h in range(0, n_candidates):
+		halo_lg0 = halos_center[h]
+		count_lg = 0
+		count_wrong = 0
+
+		# We need to run the loop on ALL halos, in case there is a third halo lying close
+		for i in range(h+1, n_candidates):
+			halo_lg1 = halos_center[i]
+			dis_this = halo_lg1.distance(halo_lg0.x)
+
+			# There is a halo too close nearby				
+			if dis_this > halo_lg0.r and dis_this < r_min:
+				#print ' This halo is too close by'
+				count_wrong += 1
+			elif dis_this > r_min and dis_this < r_max:
+				#print h, i, dis_this, halo_lg1.m, halo_lg1.x, halo_lg0.m, halo_lg0.x
+				halo_lg2 = halo_lg1	# This is a possible candidate
+				count_lg += 1
+				
+				# There are too many close-by haloes
+				if count_lg > 1:
+					count_wrong += 1
+	
+		
+		# A new first & second LG halos have been found:
+		if count_wrong == 0 and count_lg == 1:
+			already_there = 0
+
+			for j in range(0, n_all_lgs):
+				lg1 = halos_lg[2 * j]
+				lg2 = halos_lg[2 * j + 1]
+			
+				if halo_lg0.ID == lg1.ID or halo_lg0.ID == lg2.ID:
+					already_there += 1
+
+			# We have a candidate! 
+			if already_there == 0:
+				n_iso_radius = 0
+				#print halo_lg0.info()
+				# Check also for third haloes within the isolation radius before adding the pair
+				com = center_of_mass([halo_lg0.m, halo_lg2.m], [halo_lg0.x, halo_lg2.x])		
+				halos_iso = find_halos_point(com, halos, iso_radius)
+				nh_iso = len(halos_iso)
+				#print com
+				#print iso_radius
+
+				#print 'NH iso: %d' % nh_iso
+				#print halos[0].info()
+				#print halos_iso[0].info()
+
+				for k in range(0, nh_iso):
+					#print halos_iso[k].info()
+					if halos_iso[k].m > m_min:
+							#print halos_iso[k].distance(com), halos_iso[k].m
+						n_iso_radius += 1
+	
+				if n_iso_radius == 2: 
+					# A new first & second LG halos have been found:
+					halos_lg.append(halo_lg0)
+					halos_lg.append(halo_lg2)
+					n_all_lgs += 1
+
+	return halos_lg
+
+
+def rate_lg_pair(lg1, lg2, box_center):
+	# Benchmark (obs.) quantities
+	dcbox0 = 5000.	# kpc/h
+	rhalo0 = 500.	# kpc/h
+	vrad0 = -100.
+	mass0 = 3.0e+12
+	ratio0 = 1.3
+	hubble0 = 67.0
+
+	com = center_of_mass([lg1.m, lg2.m], [lg1.x, lg2.x])
+	c12 = vec_subt(box_center, com)
+	m12 = lg1.m + lg2.m
+
+	if lg1.m > lg2.m:
+		rm12 = lg1.m / lg2.m
+	else:
+		rm12 = lg2.m / lg1.m
+
+	dcenter = vec_module(c12)
+	rhalos = lg1.distance(lg2.x)
+	vrad = vel_radial(lg1.x, lg2.x, lg1.v, lg2.v)
+	print 'Vrad   : %f ' % vrad
+
+	vrad += hubble0 * rhalos/1000.
+	print 'Vrad+H0: %f ' % vrad		
+
+	# Relative weights to estimate the relevance of each property relative to the "real" LG 
+	fac_rh = 1.5
+	fac_c = 0.25
+	fac_v = 0.25
+	fac_m = 1.5
+	fac_ra = 1.00
+
+	# How to compute the LG-likeliness factors
+	diff_c = abs(dcenter) / dcbox0
+	diff_rh = abs(rhalos - rhalo0) / rhalo0
+	diff_m = np.log10(m12 / mass0)
+	diff_v = abs(vrad0 - vrad) / abs(vrad0)
+	diff_ra = abs(rm12 - ratio0) / abs(ratio0)
+
+	print "LG1: %s" % lg1.info()
+	print "LG2: %s" % lg2.info()
+
+	lg_rate = diff_rh * fac_rh + fac_c * diff_c + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
+
+	print 'Values.   RH: %f, C:%f, M:%e, V:%f, RA:%f' % (rhalos, dcenter, m12, vrad, rm12)
+	print 'Diff: %f, rh: %f, c:%f, m:%f, v:%f, ra:%f' % (lg_rate, diff_rh, diff_c, diff_m, diff_v, diff_ra)
+
+	return lg_rate
+
+
+def locate_virgo(ahf_all):
+	virgo_x = [47000.0, 61000.0, 49500.0]
+	virgo_r = 5000.
+	virgo_m_min = 5.e+13
+	virgos = find_halos_point(virgo_x, ahf_all, virgo_r)
+
+	mtotVirgo = 0.0
+	m0 = virgo_m_min
+	x0 = virgo_x
+
+	for iv in range(0, len(virgos)):
+		mtotVirgo += virgos[iv].m
+		if virgos[iv].m > m0:
+			m0 = virgos[iv].m
+			x0 = virgos[iv].x
+
+	print 'At position %.3f, %.3f, %.3f found Virgo of mass %.3e. Total mass in a sphere of %.3f kpc/h around it = %.3e ' % \
+		(x0[0], x0[1], x0[2], m0, virgo_r, mtotVirgo)
+
+	return (x0, m0, mtotVirgo)
+
+
