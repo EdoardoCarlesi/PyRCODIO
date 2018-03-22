@@ -343,10 +343,11 @@ def bin_lg_sub(lgs):
 	bin_n = np.zeros((2, 3))
 	
 	for ilg in range(0, n_tot):
-		m_lgs[0][ilg] = lgs[ilg].m1
-		m_lgs[1][ilg] = lgs[ilg].m2
-		n_sub[0][ilg] = lgs[ilg].nsub1
-		n_sub[1][ilg] = lgs[ilg].nsub2
+		print lgs[ilg].info()
+		m_lgs[0][ilg] = lgs[ilg].LG1.m
+		m_lgs[1][ilg] = lgs[ilg].LG2.m		
+		n_sub[0][ilg] = lgs[ilg].LG1.nsub
+		n_sub[1][ilg] = lgs[ilg].LG2.nsub
 
 	for ilg in range(0, 2):
 		bin_m[ilg][0] = np.amin(m_lgs[ilg][:])

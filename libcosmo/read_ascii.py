@@ -47,8 +47,10 @@ def read_lgs(file_name):
 	
 	lgs = []
 
+	com = [0.0] * 3
 	pos = [0.0] * 3
 	vel = [0.0] * 3
+
 
 	while line:
     		line = file_txt.readline()
@@ -57,6 +59,9 @@ def read_lgs(file_name):
 		n_col = len(column)
 		
 		if n_col > 1:
+			lg1 = Halo()
+			lg2 = Halo()
+
 			# Read halo properties
 			id0 = long(column[0])
 			id1 = long(column[1])
@@ -67,15 +72,23 @@ def read_lgs(file_name):
 			nsub0 = int(column[6])
 			nsub1 = int(column[7])
 			code = column[8]
+			com[0] = float(column[9]) * 1000.
+			com[1] = float(column[10]) * 1000.
+			com[2] = float(column[11]) * 1000.
 
-			lg = LocalGroup(id0, id1, code)
+			# Most of this is initialized to dummy variables
+			lg1.initialize(id0, m0, pos, vel, 0.0, nsub0, 0)
+			lg2.initialize(id1, m1, pos, vel, 0.0, nsub1, 0)
+
+			lg = LocalGroup(code)
+			lg.init_halos(lg1, lg2)
 			lg.vrad = vrad
 			lg.r = dist
-			lg.m1 = m0
-			lg.m2 = m1
-			lg.nsub1 = nsub0
-			lg.nsub2 = nsub1
+			lg.com = com
 
 			lgs.append(lg)
+
+			del lg1
+			del lg2
 
 	return lgs

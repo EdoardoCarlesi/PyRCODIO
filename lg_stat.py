@@ -5,7 +5,6 @@ import os
 
 from libcosmo.utils import *
 from libcosmo.halo import *
-from libcosmo.read_ahf import *
 from libcosmo.read_ascii import *
 from libcosmo.find_halos import *
 from libcosmo.std_lg_plot import *
@@ -68,6 +67,8 @@ for i_i in range(i_init, i_end):
 				lgs = read_lgs(this_file_txt)
 				(this_m_bin, this_n_bin) = bin_lg_sub(lgs)
 				
+				print this_m_bin
+	
 				m_bins.append(this_m_bin)
 				n_bins.append(this_n_bin)
 
@@ -76,8 +77,6 @@ for i_i in range(i_init, i_end):
 			else:
 				print 'TXT LG file not found: ', this_file_txt
 			
-print m_bins
-print n_bins
 plot_lg_bins(m_bins, n_bins, this_file_png)
 
 

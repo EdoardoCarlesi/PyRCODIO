@@ -12,7 +12,13 @@ class Halo:
 	npart = 0
 
 	def __init__(self):
-		self.void = []
+		self.ID = 1234567890123456789
+		self.m  = 0.0
+		self.x  = [0.0, 0.0, 0.0]
+		self.v  = [0.0, 0.0, 0.0]
+		self.r = 0.0
+		self.nsub = 0
+		self.npart = 0
 
 	def initialize(self, ind, mass, pos, vel, rad, n_sub, n_part):
 		self.ID = ind
@@ -61,8 +67,9 @@ class LocalGroupModel:
 				(self.d_max, self.d_iso, self.r_max, self.r_min, self.m_min)
 
 
-class SubHalos(object):
+class SubHalos():
 	host = Halo()
+	header = ''
 	host_name = 'LG'
 	hubble = 1.0
 	sub = []
@@ -152,9 +159,6 @@ class SubHalos(object):
 				else:
 					subs_x.resize((ih+1, 3))
 					subs_x[ih] = this_x
-			#print 'SubsX: '
-			#print subs_x
-			#print '------'
 			self.host_coords = subs_x
 
 			# Automatically compute all types of tensors
@@ -187,6 +191,10 @@ class SubHalos(object):
 					new_coords[i_s][i_x] = prod 
 		return new_coords
 
+	def header(self):
+		self.header = '# ID_sub(1)    M_sub(2)[Msun]  R_sub(3)[Mpc]   Host(4)         SimuCode(5)\n'
+		return self.header
+
 	def all_info(self, type_cut, value_cut): 
 		file_sub_line = ''
 		print_lines = True
@@ -203,7 +211,7 @@ class SubHalos(object):
 		if print_lines == True:
 			n_print = len(these_subs)
 			
-			for il in range(0, n_print):
+			for il in range(1, n_print):
 				this_r = self.host.distance(these_subs[il].x)
 
 				line = '%ld    %.2e    %7.2f   %s      %s\n' % \
@@ -228,9 +236,12 @@ class LocalGroup:
 	LG1 = Halo()
 	LG2 = Halo()
 
-	def __init__(self, code, hubble):
+	def __new__(cls, *args, **kwargs):
+		instance = super(LocalGroup, cls).__new__(cls, *args, **kwargs)
+		return instance
+
+	def __init__(self, code):
 		self.code = code
-		self.hubble = hubble
 
 	def init_halos(self, lg1, lg2):
 
@@ -241,9 +252,10 @@ class LocalGroup:
 			self.LG1 = lg2
 			self.LG2 = lg1
 
-		self.r = self.r_halos()
-		self.vrad = self.v_radial()
-		self.com = self.com()
+		if lg1.x[0] != 0 and lg2.x != 0:
+			self.r = self.r_halos()
+			self.vrad = self.v_radial()
+			self.com = self.com()
 
 	def rating(self):
 		self.rating = rate_lg_pair(self.LG1, self.LG2, self.c_box)
@@ -273,8 +285,7 @@ class LocalGroup:
 		else:
 			return (self.LG1.m / self.LG2.m)
 	def header(self):
-		header = '# ID_M31(1) ID_MW(2) M_M31(3)[Msun] M_MW(4)[Msun] R_MwM31(5)[Mpc] Vrad_M31(6)[phys, km/s] \
-			Nsub_M31(7) Nsub_MW(8) SimuCode(9) Xcom(10) Ycom(11) Zcom(12)\n'
+		header = '# ID_M31(1) ID_MW(2) M_M31(3)[Msun] M_MW(4)[Msun] R_MwM31(5)[Mpc] Vrad_M31(6)[phys, km/s] Nsub_M31(7) Nsub_MW(8) SimuCode(9) Xcom(10) Ycom(11) Zcom(12)\n'
 		return header
 
 	def info(self):
