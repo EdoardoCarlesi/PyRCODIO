@@ -25,6 +25,9 @@ def center_of_mass(m,x):
 
 	return com
 
+def abs_val(x):
+	return math.sqrt(x * x)
+
 def vec_subt(x1, x2):
 	vs = [x1[0] - x2[0], x1[1] - x2[1], x1[2] - x2[2]]
 	return vs
@@ -63,10 +66,44 @@ def vel_radial(x1, x2, v1, v2):
 	nr12 = r12 / n12
 	return nr12
 
-def moment_inertia(coord, masses):
+def moment_inertia_reduced(coord, masses):
 	n_parts = len(masses)
-	m_in = [[0 for ix in range(0, 3)] for iy in range(0, 3)]
-	
+	m_in = np.zeros((3,3))
+	center = [0.0] * 3		
+
+
+	for ip in range(0, n_parts):
+		# Diagonal elements
+		R = distance(coord[ip], center)
+		
+		if R != 0.0:
+			m_in[0][0] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][2], 2)) / R
+			m_in[1][1] += masses[ip] * (pow(coord[ip][0], 2) + pow(coord[ip][2], 2)) / R
+			m_in[2][2] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][0], 2)) / R
+
+			# Off-diagonal
+			m_in[1][0] += -masses[ip] * (coord[ip][1] * coord[ip][0]) / R
+			m_in[1][2] += -masses[ip] * (coord[ip][1] * coord[ip][2]) / R
+			m_in[0][2] += -masses[ip] * (coord[ip][0] * coord[ip][2]) / R
+
+	for ix in range(0, 3):
+		for iy in range(0, 3):
+			m_in[ix][iy] /= n_parts
+
+	m_in[0][1] = m_in[1][0]
+	m_in[2][1] = m_in[1][2]
+	m_in[2][0] = m_in[0][2]
+
+	(e_val, e_vec) = la.eig(m_in)
+	e_max = np.amax(e_val)
+	print e_val/e_max
+
+	return (e_val, e_vec)
+
+def moment_inertia(coord, masses):
+	n_parts = masses.size
+	m_in = np.zeros((3,3))
+
 	for ip in range(0, n_parts):
 		# Diagonal elements
 		m_in[0][0] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][2], 2))
@@ -74,22 +111,24 @@ def moment_inertia(coord, masses):
 		m_in[2][2] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][0], 2))
 
 		# Off-diagonal
-		#m_in[1][0] += -masses[ip] * (coord[ip][1] * coord[ip][0])
-		#m_in[1][2] += -masses[ip] * (coord[ip][1] * coord[ip][2])
-		#m_in[0][2] += -masses[ip] * (coord[ip][0] * coord[ip][2])
+		m_in[1][0] += -masses[ip] * (coord[ip][1] * coord[ip][0])
+		m_in[1][2] += -masses[ip] * (coord[ip][1] * coord[ip][2])
+		m_in[0][2] += -masses[ip] * (coord[ip][0] * coord[ip][2])
+
+	for ix in range(0, 3):
+		for iy in range(0, 3):
+			m_in[ix][iy] /= n_parts
 
 	m_in[0][1] = m_in[1][0]
 	m_in[2][1] = m_in[1][2]
 	m_in[2][0] = m_in[0][2]
 
-	#print m_in[0][0]	
-	#print m_in[1][1]	
-	#print m_in[2][2]	
-
 	(e_val, e_vec) = la.eig(m_in)
 	e_max = np.amax(e_val)
 	print e_val/e_max
 	#print e_vec
+
+	return (e_val, e_vec)
 
 
 

@@ -1,12 +1,11 @@
-from halo import Halo
+from halo import *
 from utils import *
 from find_halos import *
+from particles import *
 import numpy as np 
-
 
 # Returns an array of all the haloes whose com is located within a given radius from a given halo
 def find_halos(halo_c, halo_all, radius):
-
 	n_halos = len(halo_all)
 	halo_s = []
 	x_c = halo_c.x
@@ -20,8 +19,9 @@ def find_halos(halo_c, halo_all, radius):
 
 	return halo_s
 
-def find_halos_point(x_c, halo_all, radius):
 
+# Returns an array of all the haloes whose com is located within a given radius from a given point in space
+def find_halos_point(x_c, halo_all, radius):
 	n_halos = len(halo_all)
 	halo_s = []
 
@@ -34,8 +34,17 @@ def find_halos_point(x_c, halo_all, radius):
 
 	return halo_s
 
+
 # Identify a suitable halo pair from a given halo list, a search center, a search radius and a minimum mass/separation for the LG candidates
-def find_lg(halos, center, radius, iso_radius, m_min, r_min, r_max):
+def find_lg(halos, lgmod):
+	center = lgmod.center
+	radius = lgmod.d_max
+	iso_radius = lgmod.d_iso
+	m_min = lgmod.m_min
+	r_min = lgmod.r_min
+	r_max = lgmod.r_max
+	
+	print lgmod.info()
 
 	# Center is a three-d variable
 	# These are initialized empty
@@ -44,7 +53,7 @@ def find_lg(halos, center, radius, iso_radius, m_min, r_min, r_max):
 
 	n_halos = len(halos)
 
-		# First identify a set of candidates within the radius and mass range
+	# First identify a set of candidates within the radius and mass range
 	for h in range(0, n_halos):
 		halo_this = halos[h]
 
@@ -70,10 +79,8 @@ def find_lg(halos, center, radius, iso_radius, m_min, r_min, r_max):
 
 			# There is a halo too close nearby				
 			if dis_this > halo_lg0.r and dis_this < r_min:
-				#print ' This halo is too close by'
 				count_wrong += 1
 			elif dis_this > r_min and dis_this < r_max:
-				#print h, i, dis_this, halo_lg1.m, halo_lg1.x, halo_lg0.m, halo_lg0.x
 				halo_lg2 = halo_lg1	# This is a possible candidate
 				count_lg += 1
 				
@@ -129,8 +136,11 @@ def rate_lg_pair(lg1, lg2, box_center):
 	rhalo0 = 500.	# kpc/h
 	vrad0 = -100.
 	mass0 = 3.0e+12
-	ratio0 = 1.3
+	ratio0 = 1.1
 	hubble0 = 67.0
+
+	box = 100.0
+	npart = 512
 
 	com = center_of_mass([lg1.m, lg2.m], [lg1.x, lg2.x])
 	c12 = vec_subt(box_center, com)
@@ -144,17 +154,14 @@ def rate_lg_pair(lg1, lg2, box_center):
 	dcenter = vec_module(c12)
 	rhalos = lg1.distance(lg2.x)
 	vrad = vel_radial(lg1.x, lg2.x, lg1.v, lg2.v)
-	print 'Vrad   : %f ' % vrad
-
 	vrad += hubble0 * rhalos/1000.
-	print 'Vrad+H0: %f ' % vrad		
 
 	# Relative weights to estimate the relevance of each property relative to the "real" LG 
-	fac_rh = 1.5
+	fac_rh = 1.0
 	fac_c = 0.25
 	fac_v = 0.25
 	fac_m = 1.5
-	fac_ra = 1.00
+	fac_ra = 1.5
 
 	# How to compute the LG-likeliness factors
 	diff_c = abs(dcenter) / dcbox0
@@ -163,22 +170,40 @@ def rate_lg_pair(lg1, lg2, box_center):
 	diff_v = abs(vrad0 - vrad) / abs(vrad0)
 	diff_ra = abs(rm12 - ratio0) / abs(ratio0)
 
-	print "LG1: %s" % lg1.info()
-	print "LG2: %s" % lg2.info()
+#	print "LG1: %s" % lg1.info()
+#	print "LG2: %s" % lg2.info()
 
 	lg_rate = diff_rh * fac_rh + fac_c * diff_c + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
+	
+	# Get a penalty for positive vrad
+	if vrad > 0.0:
+		lg_rate += 10.
 
-	print 'Values.   RH: %f, C:%f, M:%e, V:%f, RA:%f' % (rhalos, dcenter, m12, vrad, rm12)
-	print 'Diff: %f, rh: %f, c:%f, m:%f, v:%f, ra:%f' % (lg_rate, diff_rh, diff_c, diff_m, diff_v, diff_ra)
+	contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
+	
+	print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
+#	print 'Values.   RH: %f, C:%f, M:%e, V:%f, RA:%f' % (rhalos, dcenter, m12, vrad, rm12)
+#	print 'Diff: %f, rh: %f, c:%f, m:%f, v:%f, ra:%f' % (lg_rate, diff_rh, diff_c, diff_m, diff_v, diff_ra)
 
 	return lg_rate
 
 
 def locate_virgo(ahf_all):
-	virgo_x = [47000.0, 61000.0, 49500.0]
+	
+	n_ahf = len(ahf_all)
+	coord_unit = ahf_all[n_ahf - 1].x[0] + ahf_all[n_ahf - 1].x[1] + ahf_all[n_ahf - 1].x[2] 
+
+	if coord_unit > 10000.:
+		virgo_x = [47000.0, 61000.0, 49500.0]
+	else:
+		virgo_x = [47.0, 61.0, 49.5]
+
 	virgo_r = 5000.
 	virgo_m_min = 5.e+13
 	virgos = find_halos_point(virgo_x, ahf_all, virgo_r)
+
+#	print virgos[0].x
+#	print virgos[0].m
 
 	mtotVirgo = 0.0
 	m0 = virgo_m_min
@@ -194,5 +219,43 @@ def locate_virgo(ahf_all):
 		(x0[0], x0[1], x0[2], m0, virgo_r, mtotVirgo)
 
 	return (x0, m0, mtotVirgo)
+
+
+
+def find_halo_id(idnum, ahf_halos):
+	n_halos = len(ahf_halos)
+	i_halos = 0
+	h_found = False	
+
+	while (i_halos < n_halos) and (h_found == False):
+		if (ahf[i_halo].ID == idnum):
+			h_found = True	
+		else:
+			i_halos += 1
+
+	if h_found == True:
+		return i_halos
+	else:
+		print 'Halo ID: %ld not found.' % idnum
+		return -1
+
+
+# Find the best match for each halo, ahf_now contains all the haloes we want to trace at z and ahf_back all the possible candidates at z+1
+def match_progenitors(ahf_now, ahf_back):
+	n_now = len(ahf_now)
+	n_back = len(ahf_back)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
