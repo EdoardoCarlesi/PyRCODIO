@@ -435,7 +435,7 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 
 
-def plot_lg_massfunction():
+def plot_massfunction(x_m, y_n):
 	size_x = 40
 	size_y = 20
 

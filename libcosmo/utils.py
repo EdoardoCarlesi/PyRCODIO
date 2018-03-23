@@ -1,3 +1,4 @@
+import random
 import math
 import numpy as np
 from numpy import linalg as la
@@ -130,5 +131,50 @@ def moment_inertia(coord, masses):
 
 	return (e_val, e_vec)
 
+def mass_function(masses):
+	n_m = len(masses)
+	y_n = [0 for im in range(0, n_m)]
+	x_m = sorted(masses)
 
+	for im in range(0, n_m):
+		y_n[im] = n_m - im
+
+	return (x_m, y_n)
+
+def rand_points_sphere(n_pts, center, radius):
+	xyz_pts = np.zeros((n_pts, 3))
+	x_rand = [0.0] * 3	
+	x_min = [0.0] * 3	
+	x_max = [0.0] * 3	
+	i_pts = 0
+	i_rej = 0
+	i_tot = 0
+
+#	for ix in range(0, 3):
+#		x_min[ix] = center[ix] - radius
+#		x_max[ix] = center[ix] + radius
+
+	while (i_pts < n_pts):
+		i_tot += 1
+		nx = random.uniform(0.0, 1.0)
+		ny = random.uniform(0.0, 1.0)
+		nz = random.uniform(0.0, 1.0)
+		#print nx, ny, nz
+		dx = radius * (2 * nx - 1.0)
+		dy = radius * (2 * ny - 1.0)
+		dz = radius * (2 * nz - 1.0)
+		#print dx, dy, dz
+
+		x_rand = [dx, dy, dz]
+		d_xyz = distance(x_rand, center)	
+
+		if d_xyz < radius:
+			xyz_pts[i_pts][:] = x_rand
+			#print x_rand
+			i_pts += 1
+		else:
+			i_rej +=1
+
+	#print 'Rejected:%d, Accepted:%d, Total:%d ' % (i_rej, i_pts, i_tot)
+	return xyz_pts
 

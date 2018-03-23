@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
 from libcosmo.utils import *
-from libcosmo.halo import Halo
-from libcosmo.read_ahf import read_ahf
+from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
 from libcosmo.std_lg_plot import *
@@ -21,9 +20,11 @@ base_path = '/home/eduardo/CLUES/DATA/'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = base_path + '/512/17_01/snapshot_054.0000.z0.000.AHF_halos'
 #snap_file = base_path + '/512/17_01/snapshot_054'
+#snap_file = base_path + '512/00_06_LV/snapshot_019'
+#ahf_file = base_path + '512/00_06_LV/snapshot_019.0000.z0.000.AHF_halos'
 ahf_file = base_path + '/2048/00_06/01/snapshot_054.0000.z0.000.AHF_halos'
 snap_file = base_path + '/2048/00_06/01/snapshot_054'
-ascii_file = '/home/eduardo/CLUES/DATA/output/lg_candidates_2048_00_06.txt'
+#ascii_file = '/home/eduardo/CLUES/DATA/output/lg_candidates_2048_00_06.txt'
 #ahf_file = base_path + '/512/17_01/snapshot_054.AHF_halos'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
@@ -31,23 +32,60 @@ ascii_file = '/home/eduardo/CLUES/DATA/output/lg_candidates_2048_00_06.txt'
 ahf = read_ahf(ahf_file)
 
 center = [50000., 50000., 50000.]
-radius = 5000.
+d_max = 7000.
 r_iso = 2000.
-r_max = 1300.
+r_max = 1500.
 r_min = 250.
-m_min = 5.e+11
-facMpc = 1000.
-shellSize = 2000.	# plus or minus
+ratio_max = 2.5
+vrad_max = 0.0
+m_min = 3.e+11
+m_max = 5.e+12
 
 reduce_fac = 8
+lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
 #hs = []
 #hs.append(ahf[0])
 #hs.append(ahf[2])
 
 #hs = find_halos_point(center, ahf, radius)
-hs = find_lg(ahf, center, radius, r_iso, m_min, r_min, r_max)
+hs = find_lg(ahf, lg_model)
+subs = find_halos(hs[0], ahf, radius)
 
+
+
+'''
+(x0, m0, mt) = locate_virgo(ahf)
+
+print x0, m0, mt
+
+for ih in range(0, len(hs)):
+	print hs[ih].info()
+
+plot_lglv(snap_file, ahf, 'output_00_06_LV.png', hs[2], hs[3], x0, 8, 1)
+
+center = [50000.0] * 3
+rads = 7000.
+
+halos = find_halos_point(center, ahf, rads)
+
+nh = len(halos)
+
+for ih in range(0, nh):
+	if halos[ih].m > 4.e+11 :
+		print halos[ih].info()
+
+n_pts = 10
+
+points = rand_points_sphere(n_pts, [0.0, 0.0, 0.0], 5.0)
+masses = np.zeros((n_pts))
+
+for im in range(0, n_pts):
+	masses[im] = 1.0
+
+(evals, evecs) = moment_inertia(points, masses)
+
+print evals
 nh = len(hs)
 
 nlg = nh / 2
@@ -100,7 +138,6 @@ print bin_n
 #dmPart1 = readsnap(snap_file, 'pos', 1)
 #dmPart2 = readsnap(snap_file, 'pos', 2)
 
-'''
 array = np.zeros((3, 100), dtype='float')
 
 rType1 = 5000.

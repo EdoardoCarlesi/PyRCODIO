@@ -114,6 +114,15 @@ class SubHalos():
 
 		return subs_min
 
+	def plot_massfunction(self):
+		masses = []
+
+		for im in range(0, self.n_sub):
+			masses.append(self.sub[im].m)
+
+		(x_m, y_n) = mass_function(masses)
+
+
 	def sub_over_n(self, n_min):
 		n_sub_min = 0
 		subs_min = []

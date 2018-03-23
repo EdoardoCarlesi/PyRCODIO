@@ -60,7 +60,6 @@ def lg_models():
 	all_lg_models.append(lg_model)
 	del lg_model
 
-
 	return all_lg_models
 
 
@@ -185,6 +184,8 @@ for run_j in range(run_init, run_end):
 				file_sub_line += subs2.all_info("part", 2 * np_sub_min)
 				file_sub_line += '\n ------------------------ \n'
 				file_sub_txt.write(file_sub_line)
+
+				subs1.plot_massfunction()
 
 			# Do some plots at the end
 			if do_plots == "true":
