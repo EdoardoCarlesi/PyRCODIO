@@ -11,6 +11,19 @@ def module(vec):
 	mod = math.sqrt(pow(vec[0], 2) + pow(vec[1], 2) + pow(vec[2], 2))
 	return mod
 
+def max_list(vec):
+	n_y = len(vec)
+	v0 = vec[0][0]
+
+	for iy in range(0, n_y):
+		n_x = len(vec[iy])
+		for ix in range(0, n_x):
+			if vec[iy][ix] > v0:
+				v0 = vec[iy][ix]
+
+	return v0
+
+
 def center_of_mass(m,x):
 	n = len(m)
 	com = [0.0] * 3 

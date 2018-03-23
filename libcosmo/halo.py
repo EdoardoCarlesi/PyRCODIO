@@ -91,6 +91,7 @@ class SubHalos():
 		return instance
 
 	def __init__(self, host, subs, code, host_name):
+		self.sub = []
 		self.host = host
 		self.code = code
 		self.host_name = host_name
@@ -114,14 +115,14 @@ class SubHalos():
 
 		return subs_min
 
-	def plot_massfunction(self):
+	def mass_function(self):
 		masses = []
 
 		for im in range(0, self.n_sub):
 			masses.append(self.sub[im].m)
 
 		(x_m, y_n) = mass_function(masses)
-
+		return (x_m, y_n)
 
 	def sub_over_n(self, n_min):
 		n_sub_min = 0

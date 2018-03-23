@@ -66,7 +66,7 @@ def lg_models():
 resolution='2048'
 #resolution='2048b'
 #resolution='1024'
-run_init = 6
+run_init = 0
 run_end = 7
 
 subrun_init = 0
@@ -121,6 +121,12 @@ for run_j in range(run_init, run_end):
 	file_lg_txt.write(file_lg_header)
 	file_sub_txt = open(base_path + file_sub_name, 'wb')
 	file_sub_txt.write(file_sub_header)
+	# Subhalo mass function variables
+	file_png_mfs1 = outp_path + 'mf_01_' + resolution+'_' + base_run + '.png'
+	file_png_mfs2 = outp_path + 'mf_02_' + resolution+'_' + base_run + '.png'
+	x_mf1 = []; 	y_mf1 = []
+	x_mf2 = []; 	y_mf2 = []
+	n_mf = 0
 
 	for subrun_i in range(subrun_init, subrun_end):
 		run_num = '%02d' % subrun_i
@@ -185,9 +191,24 @@ for run_j in range(run_init, run_end):
 				file_sub_line += '\n ------------------------ \n'
 				file_sub_txt.write(file_sub_line)
 
-				subs1.plot_massfunction()
+				(x_m, y_n) = subs1.mass_function()
+				x_mf1.append(x_m); 	y_mf1.append(y_n)
+				#subs1.all_info("part", np_sub_min)			
 
+				(x_m, y_n) = subs2.mass_function()
+				print len(x_m)
+				x_mf2.append(x_m); 	y_mf2.append(y_n)
+				n_mf += 1
+			
 			# Do some plots at the end
 			if do_plots == "true":
 				plot_lg(this_file_gad, file_png_name, best_lg.LG1, best_lg.LG2, reduce_fac, 1, plot_pos)
+	
+			if (subrun_i == subrun_end-1):
+				plot_massfunctions(x_mf1, y_mf1, n_mf, file_png_mfs1)
+				plot_massfunctions(x_mf2, y_mf2, n_mf, file_png_mfs2)
+				del x_m	;	del y_n
+				del x_mf1; 	del x_mf2
+				del y_mf1; 	del y_mf2
+				n_mf = 0
 

@@ -41,6 +41,8 @@ vrad_max = 0.0
 m_min = 3.e+11
 m_max = 5.e+12
 
+
+'''
 reduce_fac = 8
 lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
@@ -53,8 +55,6 @@ hs = find_lg(ahf, lg_model)
 subs = find_halos(hs[0], ahf, radius)
 
 
-
-'''
 (x0, m0, mt) = locate_virgo(ahf)
 
 print x0, m0, mt

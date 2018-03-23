@@ -435,10 +435,27 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 
 
-def plot_massfunction(x_m, y_n):
+def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	size_x = 40
 	size_y = 20
+	lnw = 1.0
+	col = 'b'
+	
+	x_min = 1.e+8; 	x_max = 1.e+12
+	y_min = 1; 	y_max = max_list(y_n)
 
+	print 'Plotting massfunctions to file: ', f_out, y_max
+
+	plt.xscale('log')
+	plt.yscale('log')
+	plt.axis([x_min, x_max, y_min, y_max])
+	
+	if n_mf > 1:
+		for im in range(0, n_mf):
+			plt.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+
+	plt.savefig(f_out)
+	plt.clf()
 
 
 
