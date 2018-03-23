@@ -4,7 +4,8 @@ gatto@nanowar.it
 
 Tools to analyze AREPO - GADGET simulations of the Local Group and the local environment
 
-DEVELOPEMENT:
 
-Mass function functionalities added
+23.03 Mass function functionalities added, plots and stuff
+
+
 
