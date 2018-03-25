@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
+from libcosmo.evolution import *
 from libcosmo.utils import *
+from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
@@ -29,6 +31,16 @@ snap_file = base_path + '/2048/00_06/01/snapshot_054'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
 
+x = [50., 50., 50.]
+v = [-400., -200., 100]
+
+d_z = 1.0
+
+x = new_x(x, v, d_z)
+
+print(x)
+
+'''
 ahf = read_ahf(ahf_file)
 
 center = [50000., 50000., 50000.]
@@ -42,7 +54,6 @@ m_min = 3.e+11
 m_max = 5.e+12
 
 
-'''
 reduce_fac = 8
 lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
