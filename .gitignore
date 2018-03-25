@@ -1,4 +1,6 @@
 *.pyc
 *.swp
 *.tgz
-output/
+*.tmp
+*.dat
+*.txt

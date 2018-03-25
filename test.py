@@ -1,23 +1,31 @@
 #!/usr/bin/python
 
-from libcosmo.evolution import *
+from libcosmo.track_halos import *
 from libcosmo.utils import *
 from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
 from libcosmo.std_lg_plot import *
-from libcosmo.read_ascii import *
+from libio.read_ascii import *
+from libio.find_files import *
 from pygadgetreader import *
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 
 #base_path = '/home/eduardo/CLUES/DATA/1024/00_06/LV/'
 #snap_file = base_path + 'snapshot_020'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos.pttype1'
 
-base_path = '/home/eduardo/CLUES/DATA/'
+base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
+
+zs = ahf_redshifts(base_path)
+ss = ahf_snapshots(base_path)
+
+print ss
+
+#base_path = '/home/eduardo/CLUES/DATA/'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = base_path + '/512/17_01/snapshot_054.0000.z0.000.AHF_halos'
@@ -31,14 +39,16 @@ snap_file = base_path + '/2048/00_06/01/snapshot_054'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
 
-x = [50., 50., 50.]
-v = [-400., -200., 100]
+x = [50000., 50000., 50000.]
+v = [400., -200., 100]
 
-d_z = 1.0
+dMyrs = 1000.0
 
-x = new_x(x, v, d_z)
+nx = new_x(x, v, dMyrs)
+d = distance(nx, x)
 
-print(x)
+print(nx)
+print(d)
 
 '''
 ahf = read_ahf(ahf_file)
