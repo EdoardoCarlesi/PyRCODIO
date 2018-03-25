@@ -56,6 +56,7 @@ for i_snap in range(ini_snap, end_snap):
 	else:
 		print i_snap, expe_x
 		print 'D_true: %.3f, D_expe: %.3f' % (distance(old_halo.x, this_halos[0].x), distance(expe_x, this_halos[0].x))
+		print angle(old_halo.v, this_halos[0].v)
 		print i_snap, 'Old: ', old_halo.info()
 		print i_snap, 'New: ', this_halos[0].info()
 		print vec_subt(expe_x, old_halo.x)

@@ -23,6 +23,18 @@ def max_list(vec):
 
 	return v0
 
+def angle(v1, v2):
+	mv1 = [0.0] * 3	
+	mv2 = [0.0] * 3
+	mod1 = module(v1)
+	mod2 = module(v2)
+
+	for i in range(0, 3):
+		mv1[i] = v1[i] / mod1
+		mv2[i] = v2[i] / mod2
+
+	v12 = dot_prod(mv1, mv2)
+	return v12
 
 def center_of_mass(m,x):
 	n = len(m)
