@@ -23,8 +23,6 @@ base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
 zs = ahf_redshifts(base_path)
 ss = ahf_snapshots(base_path)
 
-print ss
-
 #base_path = '/home/eduardo/CLUES/DATA/'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
@@ -33,12 +31,42 @@ print ss
 #snap_file = base_path + '512/00_06_LV/snapshot_019'
 #ahf_file = base_path + '512/00_06_LV/snapshot_019.0000.z0.000.AHF_halos'
 ahf_file = base_path + '/2048/00_06/01/snapshot_054.0000.z0.000.AHF_halos'
+root_file = 'snapshot_'
+suff_file = '.AHF_halos'
 snap_file = base_path + '/2048/00_06/01/snapshot_054'
 #ascii_file = '/home/eduardo/CLUES/DATA/output/lg_candidates_2048_00_06.txt'
 #ahf_file = base_path + '/512/17_01/snapshot_054.AHF_halos'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
 
+ini_snap = 40
+end_snap = 54
+counter = 0
+halo_z = HaloThroughZ()
+
+for i_snap in range(ini_snap, end_snap):
+	this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
+	this_halos = read_ahf(this_file)
+	expe_x = backward_x(this_halos[0].x, this_halos[0].v, 250.0)
+	
+	#new_halo = find_
+
+	if counter == 0:
+		old_halo = this_halos[0]
+	else:
+		print i_snap, expe_x
+		print 'D_true: %.3f, D_expe: %.3f' % (distance(old_halo.x, this_halos[0].x), distance(expe_x, this_halos[0].x))
+		print i_snap, 'Old: ', old_halo.info()
+		print i_snap, 'New: ', this_halos[0].info()
+		print vec_subt(expe_x, old_halo.x)
+		old_halo = this_halos[0]
+	
+	counter += 1
+	
+
+
+
+'''
 x = [50000., 50000., 50000.]
 v = [400., -200., 100]
 
@@ -50,7 +78,6 @@ d = distance(nx, x)
 print(nx)
 print(d)
 
-'''
 ahf = read_ahf(ahf_file)
 
 center = [50000., 50000., 50000.]

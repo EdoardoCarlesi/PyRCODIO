@@ -3,8 +3,8 @@ import os
 import subprocess
 import numpy as np
 
+# Read and identify available snapshot numbers
 def ahf_snapshots(base_path):
-	# Identify available snapshot numbers
 	find_s_sh='scripts/find_s.sh'
 	exec_s=find_s_sh+' '+base_path
 	proc = subprocess.Popen(exec_s, stdout=subprocess.PIPE, shell=True)
@@ -21,8 +21,8 @@ def ahf_snapshots(base_path):
 	return ss
 
 
+# Read and identify redshifts
 def ahf_redshifts(base_path):
-	# Identify redshifts
 	find_z_sh='scripts/find_z.sh'
 	exec_z=find_z_sh+' '+base_path
 	proc = subprocess.Popen(exec_z, stdout=subprocess.PIPE, shell=True)
@@ -39,6 +39,6 @@ def ahf_redshifts(base_path):
 
         for iz in range(0, nz):
                 this_line = line_z[iz].rstrip()
-		zs.append(float(this_line))
+		zs.append(this_line)
 	return zs
 
