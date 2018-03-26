@@ -18,7 +18,9 @@ import time
 #snap_file = base_path + 'snapshot_020'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos.pttype1'
 
-base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
+#base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
+base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
+
 
 zs = ahf_redshifts(base_path)
 ss = ahf_snapshots(base_path)
@@ -30,44 +32,62 @@ ss = ahf_snapshots(base_path)
 #snap_file = base_path + '/512/17_01/snapshot_054'
 #snap_file = base_path + '512/00_06_LV/snapshot_019'
 #ahf_file = base_path + '512/00_06_LV/snapshot_019.0000.z0.000.AHF_halos'
-ahf_file = base_path + '/2048/00_06/01/snapshot_054.0000.z0.000.AHF_halos'
+#ahf_file = base_path + '/2048/00_06/0/snapshot_054.0000.z0.000.AHF_halos'
+#snap_file = base_path + '/2048/00_06/01/snapshot_054'
 root_file = 'snapshot_'
 suff_file = '.AHF_halos'
-snap_file = base_path + '/2048/00_06/01/snapshot_054'
 #ascii_file = '/home/eduardo/CLUES/DATA/output/lg_candidates_2048_00_06.txt'
 #ahf_file = base_path + '/512/17_01/snapshot_054.AHF_halos'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
 
-ini_snap = 40
+ini_snap = 10
 end_snap = 54
 counter = 0
-halo_z = HaloThroughZ()
+timeStep = 250.
 
-for i_snap in range(ini_snap, end_snap):
+halo_z = HaloThroughZ(end_snap - ini_snap)
+#halo_z.
+
+for i_snap in range(end_snap, ini_snap, -1):
 	this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
 	this_halos = read_ahf(this_file)
-	expe_x = backward_x(this_halos[0].x, this_halos[0].v, 250.0)
+	redshift = float(zs[i_snap])
+	time = z2Myr(redshift)
 	
-	#new_halo = find_
+	if i_snap == end_snap:
+		old_halo = this_halos[1]
+		old_time = time
+		halo_z.add_step(old_halo, time, redshift)
+	else:	
+		timeStep = abs_val(time - old_time)
+		this_halo = find_progenitor(old_halo, this_halos, timeStep)
+		old_halo = this_halo
+		halo_z.add_step(old_halo, time, redshift)
+#		print i_snap, old_halo.info()
+#		expe_x = backward_x(this_halo, this_halo, 250.0)
+#		print halo_z.x_t()
 
+#print 'FT: ', halo_z.formation_time() / 1000.
+#print 'MT: ', halo_z.last_major_merger() / 1000.
+
+
+'''
 	if counter == 0:
 		old_halo = this_halos[0]
 	else:
 		print i_snap, expe_x
-		print 'D_true: %.3f, D_expe: %.3f' % (distance(old_halo.x, this_halos[0].x), distance(expe_x, this_halos[0].x))
-		print angle(old_halo.v, this_halos[0].v)
+		#print 'D_true: %.3f, D_expe: %.3f' % (distance(old_halo.x, this_halos[0].x), distance(expe_x, this_halos[0].x))
+		#print angle(old_halo.v, this_halos[0].v)
 		print i_snap, 'Old: ', old_halo.info()
 		print i_snap, 'New: ', this_halos[0].info()
 		print vec_subt(expe_x, old_halo.x)
 		old_halo = this_halos[0]
 	
 	counter += 1
-	
 
 
 
-'''
 x = [50000., 50000., 50000.]
 v = [400., -200., 100]
 

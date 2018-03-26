@@ -1,6 +1,9 @@
 import math 
+import pickle
+from scipy import interpolate
 from find_halos import *
 from utils import *
+from units import *
 
 class Halo:
 	ID = 1234567890123456789
@@ -40,51 +43,105 @@ class Halo:
 
 
 class HaloThroughZ:
-	n_steps = 0		# Number of steps available for this halo
+	halo = []		# List storing a Halo structure per each timestep
 	t_step = []		# Time Step in Myrs
 	z_step = []		# Time steps in redshift
-	n_mergers = []		# Number of mergers happening at that timestep
-	halo = []		# List storing a Halo structure per each timestep
 	subhalos = []		# List storing a Halo structure per each timestep
-	last_major_merger = 0.0
-	formation_time = 0.0
+	n_mergers = []		# Number of mergers happening at that timestep
+
+	n_steps = 0		# Number of steps available for this halo
 	is_smooth = False
+	formation_time = 0.0
+	last_major_merger = 0.0
 
-	def __init__(self):
-		z = []
+	def __init__(self, n_steps):
+		self.n_steps = n_steps
+		halo = []
+		t_step = []		
+		z_step = []		
+		subhalos = []		
 		n_mergers = []	
-		halo_z = []
-		LastMajorMerger = 0.0
+		formation_time = 0.0
+		last_major_merger = 0.0
 
-	def v_t(self):
-		vel_t = np.zeros((3, self.n_steps))
+	def m_t(self):
+		mass_t = np.zeros((self.n_steps3))
 
 		for ixy in range(0, self.n_steps):
-			vel_t[:][ixy] = self.halo[ixy].v[:]
+			mass_t[ixy] = self.halo[ixy].m
+
+		return mass_t
+
+
+	def v_t(self):
+		vel_t = np.zeros((self.n_steps, 3))
+
+		for ixy in range(0, self.n_steps):
+			for iv in range(0, 3):
+				vel_t[ixy][iv] = self.halo[ixy].v[iv]
 
 		return vel_t
 
-
 	def x_t(self):
-		pos_t = np.zeros((3, self.n_steps))
+		pos_t = np.zeros((self.n_steps, 3))
 
 		for ixy in range(0, self.n_steps):
-			pos_t[:][ixy] = self.halo[ixy].x[:]
+			for ip in range(0, 3):
+				pos_t[ixy][ip] = self.halo[ixy].x[ip]
 
 		return pos_t
 
-	def add_halo(self, halo):
+	def add_step(self, halo, t, z):
 		self.halo.append(halo)
+		self.t_step.append(t)
+		self.z_step.append(z)
 
 	def add_subhalos(self, subhalos):
 		self.subhalos.append(subhalos)
 
 	# TODO do all mmt computation
 	def last_major_merger(self):
+		m_merg = 0.1 
+
+		#for im in range(self.n_steps+1, 0, -1):
+		for jm in range(0, self.n_steps-1):
+			im = self.n_steps -jm -1
+
+			m0 = self.halo[im].m
+			m1 = self.halo[im-1].m
+			z0 = self.z_step[im]
+			z1 = self.z_step[im-1]
+			
+			dM = abs(m0 - m1) / m0
+			dZ = 0.5 * (z0 + z1)
+			#print im, im-1, z0, z1, m0, m1, dM
+			
+			if dM > m_merg:
+				lmmz = dZ 
+				itime = im
+
+		self.last_major_merger = z2Myr(lmmz)
+
+		#print im, lmmz, self.last_major_merger
 		return self.last_major_merger
 	
-	# TODO compute halo formation time
+	# Use Z in computations - will be helpful if will be needed to use mass(z) interpolation functions
 	def formation_time(self):
+		m_half = 0.5 * self.halo[0].m
+		im = 0
+		m0 = 1.e+16
+
+		while m0 > m_half:
+			m0 = self.halo[im].m
+			z0 = self.z_step[im]
+			# Only add a step if the object is above the threshold
+			if m0 > m_half:
+				im += 1
+
+		form_z = 0.5 * (self.z_step[im] + self.z_step[im-1])
+		self.formation_time = z2Myr(form_z)
+
+		#print m0, z0, self.formation_time
 		return self.formation_time
 
 	# TODO Get rid of flybys and spurious events polluting the halo merger history

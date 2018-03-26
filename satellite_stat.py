@@ -63,7 +63,6 @@ def lg_models():
 
 	return all_lg_models
 
-
 resolution='2048'
 #resolution='2048b'
 #resolution='1024'
@@ -76,8 +75,8 @@ subrun_end = 10
 base_path = '/home/eduardo/CLUES/DATA/'
 outp_path = 'output/'
 
-ahf_snap = 'snapshot_054.0000.z0.000.AHF_halos'
 #ahf_snap = 'snapshot_t1_054.0000.z0.000.AHF_halos'
+ahf_snap = 'snapshot_054.0000.z0.000.AHF_halos'
 snapshot = 'snapshot_054'
 
 #do_plots = "true"
@@ -122,6 +121,7 @@ for run_j in range(run_init, run_end):
 	file_lg_txt.write(file_lg_header)
 	file_sub_txt = open(base_path + file_sub_name, 'wb')
 	file_sub_txt.write(file_sub_header)
+
 	# Subhalo mass function variables
 	file_png_mfs1 = outp_path + 'mf_01_' + resolution+'_' + base_run + '.png'
 	file_png_mfs2 = outp_path + 'mf_02_' + resolution+'_' + base_run + '.png'
@@ -174,7 +174,6 @@ for run_j in range(run_init, run_end):
 				file_lg_txt.write(file_lg_line)
 
 			# Now take care of the substructure
-			if good_lgs > 0:
 				these_sub1 = find_halos(best_lg.LG1, ahf_all, fac_r * best_lg.LG1.r)
 				subs1 = SubHalos(best_lg.LG1, these_sub1, print_run, 'M31')
 				subs1.anisotropy("part", np_sub_min)
@@ -194,10 +193,8 @@ for run_j in range(run_init, run_end):
 
 				(x_m, y_n) = subs1.mass_function()
 				x_mf1.append(x_m); 	y_mf1.append(y_n)
-				#subs1.all_info("part", np_sub_min)			
 
 				(x_m, y_n) = subs2.mass_function()
-				print len(x_m)
 				x_mf2.append(x_m); 	y_mf2.append(y_n)
 				n_mf += 1
 			
@@ -205,11 +202,15 @@ for run_j in range(run_init, run_end):
 			if do_plots == "true":
 				plot_lg(this_file_gad, file_png_name, best_lg.LG1, best_lg.LG2, reduce_fac, 1, plot_pos)
 	
-			if (subrun_i == subrun_end-1):
-				plot_massfunctions(x_mf1, y_mf1, n_mf, file_png_mfs1)
-				plot_massfunctions(x_mf2, y_mf2, n_mf, file_png_mfs2)
-				del x_m	;	del y_n
-				del x_mf1; 	del x_mf2
-				del y_mf1; 	del y_mf2
-				n_mf = 0
+				if (subrun_i == subrun_end-1):
+					plot_massfunctions(x_mf1, y_mf1, n_mf, file_png_mfs1)
+					plot_massfunctions(x_mf2, y_mf2, n_mf, file_png_mfs2)
+					del x_m	;	del y_n
+					del x_mf1; 	del x_mf2
+					del y_mf1; 	del y_mf2
+					n_mf = 0
+
+			# Compute halo evolution
+
+			
 

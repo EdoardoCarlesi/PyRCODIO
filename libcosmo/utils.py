@@ -8,8 +8,13 @@ def distance(vec1, vec2):
 	return dist
 
 def module(vec):
-	mod = math.sqrt(pow(vec[0], 2) + pow(vec[1], 2) + pow(vec[2], 2))
-	return mod
+	n_v = len(vec)	
+	elem = 0.0
+
+	for i in range(0, n_v):
+		elem += pow(vec[i], 2)
+
+	return math.sqrt(elem)
 
 def max_list(vec):
 	n_y = len(vec)
@@ -52,7 +57,8 @@ def center_of_mass(m,x):
 	return com
 
 def abs_val(x):
-	return math.sqrt(x * x)
+	absval = math.sqrt(x * x)
+	return absval
 
 def vec_subt(x1, x2):
 	vs = [x1[0] - x2[0], x1[1] - x2[1], x1[2] - x2[2]]
