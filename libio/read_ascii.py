@@ -1,4 +1,6 @@
-from halo import *
+import sys
+sys.path.append('../libcosmo/')
+from libcosmo.halo import *
 import os
 import numpy
 

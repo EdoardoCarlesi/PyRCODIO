@@ -31,25 +31,12 @@ def find_lare(lg_com, lare_r, file_ics, file_z0, n_ics, n_z0, file_out, lare_fin
 	n_chars = 27
 
 	lare_properties = out[n_lines-n_chars:n_lines-1]
-	#print 'LaRe properties: '
-	#print lare_properties
 
-	#print "\n-----------------------------------\n"
-	#print "program output:", lare_properties
-	#print '\nLagrangian region found.\n'
-	
 	# We might not need to convert this into floats - a string works fine for the gen_mask script
 	all_lare_x = np.fromstring(lare_properties, dtype=float, sep=' ')
-	#print 'All LaRe X: '
-	#print all_lare_x
 	
 	n_lare_x = len(all_lare_x)
-	#print 'N lare %d and lare[2] = %d \n' % (n_lare_x, all_lare_x[2])
-		
-	#lare_x = str(all_lare_x[n_lare_x-4]) + ' ' + str(all_lare_x[n_lare_x-3]) + ' ' + str(all_lare_x[n_lare_x-2]) + ' ' + str(all_lare_x[n_lare_x-1]) 
-	#lare_x = lare_properties
 
-	#return lare_x
 	return all_lare_x
 
 def gen_mask(this_run, lare_x, lare_gen_sh, dir_sh):

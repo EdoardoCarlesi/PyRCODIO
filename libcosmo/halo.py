@@ -39,6 +39,62 @@ class Halo:
 
 
 
+class HaloThroughZ:
+	n_steps = 0		# Number of steps available for this halo
+	t_step = []		# Time Step in Myrs
+	z_step = []		# Time steps in redshift
+	n_mergers = []		# Number of mergers happening at that timestep
+	halo = []		# List storing a Halo structure per each timestep
+	subhalos = []		# List storing a Halo structure per each timestep
+	last_major_merger = 0.0
+	formation_time = 0.0
+	is_smooth = False
+
+	def __init__(self):
+		z = []
+		n_mergers = []	
+		halo_z = []
+		LastMajorMerger = 0.0
+
+	def v_t(self):
+		vel_t = np.zeros((3, self.n_steps))
+
+		for ixy in range(0, self.n_steps):
+			vel_t[:][ixy] = self.halo[ixy].v[:]
+
+		return vel_t
+
+
+	def x_t(self):
+		pos_t = np.zeros((3, self.n_steps))
+
+		for ixy in range(0, self.n_steps):
+			pos_t[:][ixy] = self.halo[ixy].x[:]
+
+		return pos_t
+
+	def add_halo(self, halo):
+		self.halo.append(halo)
+
+	def add_subhalos(self, subhalos):
+		self.subhalos.append(subhalos)
+
+	# TODO do all mmt computation
+	def last_major_merger(self):
+		return self.last_major_merger
+	
+	# TODO compute halo formation time
+	def formation_time(self):
+		return self.formation_time
+
+	# TODO Get rid of flybys and spurious events polluting the halo merger history
+	def smooth_history(self):
+		self.is_smooth = True
+		# TODO do the actual smoothing
+		# TODO add a library with Gravity & Hubble expansion etc. to find out grav potentials and bound objects
+
+
+
 class LocalGroupModel:
 	d_max = 5000. # Box center distance
 	d_iso = 2000.
@@ -229,6 +285,8 @@ class SubHalos():
 				file_sub_line += line
 
 		return file_sub_line
+
+
 
 class LocalGroup:
 	code = '00_00_00'
