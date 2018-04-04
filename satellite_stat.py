@@ -16,6 +16,7 @@ def simu_runs():
 	all_runs.append('00_06')	
 	all_runs.append('01_12') 	
 	all_runs.append('17_10') 
+	all_runs.append('17_13')
 	all_runs.append('34_13')
 	all_runs.append('45_17')
 	all_runs.append('55_02') 
@@ -36,12 +37,17 @@ def lg_models():
 	all_lg_models.append(lg_model)
 	del lg_model
 
-	d_max = 8000.; r_iso = 1900.; r_max = 1700.; r_min = 200.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = -1.0	# 17_10
+	d_max = 8000.; r_iso = 1500.; r_max = 1700.; r_min = 100.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = -1.0	# 17_10
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
 	del lg_model
 
-	d_max = 7000.; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 34_13
+	d_max = 8000.; r_iso = 1400.; r_max = 1000.; r_min = 100.; m_min = 9.0e+11; m_max = 8.e+12; ratio_max = 4.5; vrad_max = 80.0	# 17_13
+	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+	all_lg_models.append(lg_model)
+	del lg_model
+
+	d_max = 7000.; r_iso = 1900.; r_max = 1800.; r_min = 200.; m_min = 7.0e+11; m_max = 8.5e+12; ratio_max = 4.5; vrad_max = -1.0	# 34_13
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
 	del lg_model
@@ -66,8 +72,8 @@ def lg_models():
 resolution='2048'
 #resolution='2048b'
 #resolution='1024'
-run_init = 0
-run_end = 7
+run_init = 3
+run_end = 4
 
 subrun_init = 0
 subrun_end = 10
