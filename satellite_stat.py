@@ -3,65 +3,12 @@
 import numpy as np
 import os
 
+from config import *
 from libio.read_ascii import *
-
 from libcosmo.utils import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.std_lg_plot import *
-
-def simu_runs():
-	all_runs = [] 
-
-	all_runs.append('00_06')	
-	all_runs.append('01_12') 	
-	all_runs.append('17_10') 
-	all_runs.append('34_13')
-	all_runs.append('45_17')
-	all_runs.append('55_02') 
-	all_runs.append('64_14')
-
-	return all_runs
-
-def lg_models():
-	all_lg_models = []
-
-	d_max = 5000.; r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 00_06 
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	d_max = 8000.; r_iso = 1550.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 8.5e+12; ratio_max = 3.5; vrad_max = -1.0	# 01_12
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	d_max = 8000.; r_iso = 1900.; r_max = 1700.; r_min = 200.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = -1.0	# 17_10
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	d_max = 7000.; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 34_13
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	d_max = 5000.; r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 45_17
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	d_max = 7000.; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 55_02
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	d_max = 7000.; r_iso = 1800.; r_max = 1400.; r_min = 200.; m_min = 8.0e+11; m_max = 4.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 64_14
-	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-	all_lg_models.append(lg_model)
-	del lg_model
-
-	return all_lg_models
 
 resolution='2048'
 #resolution='2048b'
@@ -75,7 +22,6 @@ subrun_end = 10
 base_path = '/home/eduardo/CLUES/DATA/'
 outp_path = 'output/'
 
-#ahf_snap = 'snapshot_t1_054.0000.z0.000.AHF_halos'
 ahf_snap = 'snapshot_054.0000.z0.000.AHF_halos'
 snapshot = 'snapshot_054'
 
