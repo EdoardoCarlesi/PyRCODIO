@@ -6,7 +6,7 @@ from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
-from libcosmo.std_lg_plot import *
+from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
 from pygadgetreader import *

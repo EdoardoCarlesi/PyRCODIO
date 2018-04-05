@@ -8,7 +8,7 @@ from libio.read_ascii import *
 from libcosmo.utils import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
-from libcosmo.std_lg_plot import *
+from libcosmo.lg_plot import *
 
 resolution='2048'
 #resolution='2048b'

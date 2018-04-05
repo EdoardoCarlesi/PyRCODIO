@@ -291,8 +291,6 @@ def locate_clusters(ahf_all, box_center):
 			for ix in range(0, 3):
 				cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
 
-		#	print cluster_name[ic], cluster_pos[ic]
-
 	cluster_r = 12000.0
 	cluster_m = 0.7e+13
 	
@@ -311,28 +309,12 @@ def locate_clusters(ahf_all, box_center):
 				m0 = clusters[iv].m
 				x0 = clusters[iv].x
 				
-		print cluster_name[ic], x0, m0/hubble
+		#print cluster_name[ic], x0, m0
 
 		ahf_m.append(m0)
 		ahf_x.append(x0)
 
-
 	return (ahf_x, ahf_m, cluster_name)
-'''
-	mtotVirgo = 0.0
-	m0 = virgo_m_min
-	x0 = virgo_x
-
-	for iv in range(0, len(virgos)):
-		mtotVirgo += virgos[iv].m
-		if virgos[iv].m > m0:
-			m0 = virgos[iv].m
-			x0 = virgos[iv].x
-
-	print 'At position %.3f, %.3f, %.3f found Virgo of mass %.3e. Total mass in a sphere of %.3f kpc/h around it = %.3e ' % \
-		(x0[0], x0[1], x0[2], m0, virgo_r, mtotVirgo)
-'''
-
 
 
 

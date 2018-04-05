@@ -7,7 +7,7 @@ from libio.read_ascii import *
 from libcosmo.halo import Halo
 from libcosmo.find_halos import *
 from libcosmo.utils import *
-#from libcosmo.std_lg_plot import *
+#from libcosmo.lg_plot import *
 from libio.lare import *
 from config import *
 
