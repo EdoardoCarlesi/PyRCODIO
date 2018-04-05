@@ -203,9 +203,6 @@ def locate_virgo(ahf_all):
 	virgo_m_min = 5.e+13
 	virgos = find_halos_point(virgo_x, ahf_all, virgo_r)
 
-#	print virgos[0].x
-#	print virgos[0].m
-
 	mtotVirgo = 0.0
 	m0 = virgo_m_min
 	x0 = virgo_x
@@ -222,8 +219,125 @@ def locate_virgo(ahf_all):
 	return (x0, m0, mtotVirgo)
 
 
+def locate_clusters(ahf_all, box_center):
+	
+	n_ahf = len(ahf_all)
+	coord_unit = box_center[0] + box_center[1] + box_center[2]
+
+	hubble = 0.677
+	facMpc = 1000.
+
+	cluster_name = []
+	cluster_pos = []
+
+	cluster_name.append('Virgo')
+	cluster_pos.append([-4.67, 16.83, -0.87])
+
+	cluster_name.append('Coma (a)')
+	cluster_pos.append([0.47, 72.55, 10.38])
+
+	cluster_name.append('Coma (b)')
+	cluster_pos.append([-2.43, 68.58, -12.71])
+
+	cluster_name.append('Coma (c)')
+	cluster_pos.append([-4.27, 74.18, -7.67])
+
+	cluster_name.append('Leo (a)')
+	cluster_pos.append([-2.41, 71.25, -10.75])
+
+	cluster_name.append('Hercules (a)')
+	cluster_pos.append([19.28, 57.68, 71.93])
+
+	cluster_name.append('Hercules (b)')
+	cluster_pos.append([17.49, 63.64, -59.70])
+
+	cluster_name.append('Hercules (c)')
+	cluster_pos.append([15.49, 60.94, 74.25])
+
+	cluster_name.append('Perseus-Pisces (a)')
+	cluster_pos.append([50.05, -10.89, -12.82])
+
+	cluster_name.append('Perseus-Pisces (b)')
+	cluster_pos.append([90.05, -18.39, -15.37])
+
+	cluster_name.append('Perseus-Pisces (c)')
+	cluster_pos.append([88.74, -19.15, -19.68])
+
+	cluster_name.append('Perseus-Pisces (d)')
+	cluster_pos.append([53.39, -16.06, -5.15])
+
+	cluster_name.append('Centaurus (a)')
+	cluster_pos.append([-34.69, 15.27, -7.77])
+
+	cluster_name.append('Centaurus (b)')
+	cluster_pos.append([-42.34, 25.11, 2.59])
+
+	cluster_name.append('Hydra')
+	cluster_pos.append([-24.67, 21.12, -25.01])
+
+	cluster_name.append('Pavo-Indus')
+	cluster_pos.append([-22.18, -77.19, 55.09])
+
+	cluster_name.append('Shapley (a)')
+	cluster_pos.append([-39.98, 19.87, 3.63])
+
+	cluster_name.append('Shapley (b)')
+	cluster_pos.append([-91.88, 34.42, -17.64])
+
+	if coord_unit > 10000.:
+		n_cl = len(cluster_name)
+
+		for ic in range(0, n_cl):
+			for ix in range(0, 3):
+				cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
+
+		#	print cluster_name[ic], cluster_pos[ic]
+
+	cluster_r = 12000.0
+	cluster_m = 0.7e+13
+	
+	ahf_x = []
+	ahf_m = []
+
+	for ic in range(0, n_cl):
+		m0 = cluster_m
+		x0 = [-1.0, -1.0, -1.0]
+		this_x = cluster_pos[ic]
+		clusters = find_halos_point(this_x, ahf_all, cluster_r)
+
+		for iv in range(0, len(clusters)):
+
+			if clusters[iv].m > m0:
+				m0 = clusters[iv].m
+				x0 = clusters[iv].x
+				
+		print cluster_name[ic], x0, m0/hubble
+
+		ahf_m.append(m0)
+		ahf_x.append(x0)
+
+
+	return (ahf_x, ahf_m, cluster_name)
+'''
+	mtotVirgo = 0.0
+	m0 = virgo_m_min
+	x0 = virgo_x
+
+	for iv in range(0, len(virgos)):
+		mtotVirgo += virgos[iv].m
+		if virgos[iv].m > m0:
+			m0 = virgos[iv].m
+			x0 = virgos[iv].x
+
+	print 'At position %.3f, %.3f, %.3f found Virgo of mass %.3e. Total mass in a sphere of %.3f kpc/h around it = %.3e ' % \
+		(x0[0], x0[1], x0[2], m0, virgo_r, mtotVirgo)
+'''
+
+
+
 
 def find_halo_id(idnum, ahf_halos):
+
 	n_halos = len(ahf_halos)
 	i_halos = 0
 	h_found = False	
@@ -245,13 +359,4 @@ def find_halo_id(idnum, ahf_halos):
 def match_progenitors(ahf_now, ahf_back):
 	n_now = len(ahf_now)
 	n_back = len(ahf_back)
-
-
-
-
-
-
-
-
-
 

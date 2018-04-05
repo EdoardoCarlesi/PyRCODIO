@@ -19,12 +19,24 @@ import time
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos.pttype1'
 
 #base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
-base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
+#base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
 
+ahf_snap='/home/eduardo/CLUES/DATA/QL/1024/00_00/snapshot_054.AHF_halos'
+center = [250000.0, 250000.0, 250000.0]
+#center = [250.0, 250.0, 250.0]
 
-zs = ahf_redshifts(base_path)
-ss = ahf_snapshots(base_path)
+this_halos = read_ahf(ahf_snap)
 
+(pos, mass, names) = locate_clusters(this_halos, center)
+
+#print pos
+#print mass
+#print names
+
+#zs = ahf_redshifts(base_path)
+#ss = ahf_snapshots(base_path)
+
+'''
 #base_path = '/home/eduardo/CLUES/DATA/'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
@@ -72,7 +84,6 @@ for i_snap in range(end_snap, ini_snap, -1):
 #print 'MT: ', halo_z.last_major_merger() / 1000.
 
 
-'''
 	if counter == 0:
 		old_halo = this_halos[0]
 	else:
