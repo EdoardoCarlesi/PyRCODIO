@@ -77,9 +77,10 @@ def find_lg(halos, lgmod):
 			halo_lg1 = halos_center[i]
 			dis_this = halo_lg1.distance(halo_lg0.x)
 
-			# There is a halo too close nearby				
-			if dis_this > halo_lg0.r and dis_this < r_min:
-				count_wrong += 1
+			# This is a subhalo! Keep it				
+			if dis_this < halo_lg0.r or dis_this < r_min:
+				count_wrong += 0
+				#count_wrong += 1
 			elif dis_this > r_min and dis_this < r_max:
 				halo_lg2 = halo_lg1	# This is a possible candidate
 				count_lg += 1
