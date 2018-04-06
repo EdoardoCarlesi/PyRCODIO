@@ -58,39 +58,44 @@ sub_z = SubHaloThroughZ(end_snap - ini_snap)
 for i_snap in range(end_snap, ini_snap, -1):
 	this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
 	this_halos = read_ahf(this_file)
-	redshift = float(zs[i_snap])
-	time = z2Myr(redshift)
-	a_fac = 1.0 / (1.0 + redshift)
+	this_z = float(zs[i_snap])
+	this_t = z2Myr(this_z)
+	this_a = 1.0 / (1.0 + this_z)
 	
 	if i_snap == end_snap:
-		old_halo = this_halos[0]
-		old_time = time
-		rsub = old_halo.r * 1.2
-		old_halo.sub_halos(this_halos, rsub)
-		subs = old_halo.sort_sub_mass()
-		old_sub = subs[2]
+		this_halo = this_halos[0]
+		rsub = this_halo.r * 1.2
+		this_halo.sub_halos(this_halos, rsub)
+		subs = this_halo.sort_sub_mass()
+		this_sub = subs[1]
 
-		print   'Dist: ', old_halo.distance(old_sub.x)
-		print   'R   : ', old_halo.r
-		print	'Main: ', old_halo.info()
-		print	'Sub : ', old_sub.info()
+	#	print   'Dist: ', old_halo.distance(old_sub.x)
+	#	print   'R   : ', old_halo.r
+	#	print	'Main: ', old_halo.info()
+	#	print	'Sub : ', old_sub.info()
 
-		halo_z.add_step(old_halo, time, redshift)
-		sub_z.host = old_halo
-		sub_z.add_step(old_sub, time, redshift)
+		old_t = this_t
+		old_halo = this_halo
+		old_sub = this_sub
+		halo_z.add_step(this_halo, this_t, this_z)
+		sub_z.host = this_halo
+		sub_z.add_step(this_sub, this_t, this_z)
 	else:	
-		timeStep = abs_val(time - old_time)
-		this_halo = find_progenitor(old_halo, this_halos, a_fac, timeStep)
-		print   ' DHal: ', old_halo.distance(this_halo.x)
-		print   'cDHal: ', old_halo.distance(this_halo.x) * a_fac
+		timeStep = abs_val(this_t - old_t)
+
+		this_halo = find_progenitor(old_halo, this_halos, this_a, timeStep)
+		print   ' DHal: ', this_halo.distance(old_halo.x)
+		print   'cDHal: ', this_halo.distance(old_halo.x) * this_a
 		old_halo = this_halo
 
-		this_sub = find_progenitor(old_sub, this_halos, a_fac, timeStep)
-		print   ' DSub: ', old_sub.distance(this_sub.x)
-		print   'cDSub: ', old_sub.distance(this_sub.x) * a_fac
+		this_sub = find_progenitor(old_sub, this_halos, this_a, timeStep)
+		print   ' DSub: ', this_sub.distance(old_sub.x)
+		print   'cDSub: ', this_sub.distance(old_sub.x) * this_a
 		old_sub = this_sub
-		halo_z.add_step(old_halo, time, redshift)
-		sub_z.add_step(old_sub, time, redshift)
+
+		halo_z.add_step(this_halo, this_t, this_z)
+		sub_z.add_step(this_sub, this_t, this_z)
+
 		print   '\nDist: ', old_halo.distance(old_sub.x)
 		print   'R   : ', old_halo.r
 		print	'Main: ', old_halo.info()

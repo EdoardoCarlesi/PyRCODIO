@@ -100,8 +100,17 @@ def vec_distance(x, y):
 	return vdis
 
 def vec_norm(x):
-	n = x[0]*x[0] + x[1]*x[1] + x[2]*x[2]
-	vn = [x[0]/n, x[1]/n, x[2]/n]
+	n = len(x)
+	norm = 0.0
+	vn = []
+
+	for ix in range(0, n):
+		norm += x[ix] * x[ix]
+	norm = sqrt(norm)	
+
+	for ix in range(0, n):
+		vn.append(x[ix] / norm)
+
 	return vn
 
 def vel_radial(x1, x2, v1, v2):
