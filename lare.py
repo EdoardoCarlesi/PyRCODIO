@@ -16,9 +16,9 @@ home_dir = '/z/carlesi/CLUES/'
 ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
 
-snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
+#snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
 #snapshot = 'snapshot_054.AHF_halos'
-#snapshot = 'merged_054.AHF_halos'
+snapshot = 'merged_054.AHF_halos'
 #snapshot = 'snapshot_054.z0.000.AHF_halos'
 
 #home_dir = '/home/eduardo/'
@@ -31,8 +31,8 @@ generate_lare='false'
 do_plots='false'
 #do_plots='true'
 
-env_type="std"
-#env_type="512box100"
+#env_type="std"
+env_type="512box100"
 #env_type="HESTIA"
 
 resolution='512'
@@ -64,10 +64,10 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
-ice_init = 62
-ice_end = 63
-gin_init = 14
-gin_end = 15
+ice_init = 8
+ice_end = 12
+gin_init = 8
+gin_end = 20
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
@@ -93,8 +93,9 @@ extra_r = 500.0	# in kpc/h units - this is the size of the additional shell to b
 lg_dummy = LocalGroup('00')
 
 file_lg_header = lg_dummy.header()
-	
+
 if find_virgo == "true":
+	file_lg_header.rstrip()	
 	file_lg_header += 'R_Virgo(11)[Mpc] M_Virgo(12) M_Virgo(<5Mpc)(13)'
 
 file_lg_header += '\n'
@@ -191,7 +192,9 @@ for irun in range(lss_init, lss_end):
 					lg.init_halos(m31, mw)				
 					file_lg_line = lg.info()
 
+
 					if find_virgo == "true":
+						file_lg_line.rstrip()
 						dVirgo = vec_distance(lg.com, x0) / h0
 						file_lg_line += "  %5.2f  %5.2e  %5.2e" % (dVirgo/facMpc, m0/h0, mtotVirgo/h0)
 						
@@ -207,9 +210,10 @@ for irun in range(lss_init, lss_end):
 					# Do an additional check on the LG candidates before appending it to the global list of LG candidates
 					#if vel_r < vrad_max and m12 < m_max and m_ratio < ratio_max and virgo_condition:
 					file_lgall_txt.write(file_lg_line)
-		
+					lg.rating()
+
 					# Now check for the likeliest LG-like candidate
-					if lg.rating() < rating and (lg.LG1.npart > part_min) and (lg.LG2.npart > part_min):
+					if lg.rating < rating and (lg.LG1.npart > part_min) and (lg.LG2.npart > part_min):
 						print 'Old rating: %f new rating %f this index %d' % (rating, lg.rating, ilg)
 						rating = lg.rating
 						best_lg_line = file_lg_line
