@@ -1,7 +1,10 @@
 import math 
 import pickle
+import numpy as np
+#from find_halos import *
+import find_halos as fh
 from scipy import interpolate
-from find_halos import *
+from operator import *
 from utils import *
 from units import *
 
@@ -10,8 +13,11 @@ class Halo:
 	m  = 0.0
 	x  = [0.0, 0.0, 0.0]
 	v  = [0.0, 0.0, 0.0]
+	l  = [0.0, 0.0, 0.0]
 	r = 0.0
 	nsub = 0
+	rsub = 0.0	# This is supposed to be Rvir but it can be slightly larger, to look for nearby bound halos
+	subhalos = [] 	# This one only contains all sub-halo IDs
 	npart = 0
 
 	def __init__(self):
@@ -23,18 +29,47 @@ class Halo:
 		self.nsub = 0
 		self.npart = 0
 
+	def __getitem__(self, key):
+		if key == 0:
+			return self.ID
+		elif key == 1:
+			return self.m
+		elif key == 2:
+			return self.r
+		else:
+			return self.nsub
+
 	def initialize(self, ind, mass, pos, vel, rad, n_sub, n_part):
 		self.ID = ind
 		self.m  = mass 
 		self.x  = pos 
 		self.v  = vel
 		self.r  = rad 
-		self.nsub = n_sub
 		self.npart = n_part
 
 	def distance(self, rad):
 		dist = math.sqrt( pow((self.x[0] - rad[0]), 2) + pow((self.x[1] - rad[1]), 2) + pow((self.x[2] - rad[2]), 2) )
 		return dist
+
+	def sub_halos(self, all_halos, rsub):
+		self.rsub = rsub
+		subs = fh.find_halos_point(self.x, all_halos, self.rsub)
+		self.nsub = len(subs) - 1
+
+		# WARNING TODO this assumes that the first halo is the HOST halo
+		for isub in range(1, self.nsub+1):
+			self.subhalos.append(subs[isub])
+
+	def sort_sub_mass(self):
+		sort_mass = sorted(self.subhalos, key=itemgetter(1), reverse=True)
+
+		#for isub in range(0, self.nsub):
+		#	print isub, sort_mass[isub].m, sort_mass[isub].x
+
+		return sort_mass
+
+#	def sort_sub_dist(self):
+
 
 	def info(self):
 		return "ID: %ld, M: %.3e, X: (%7.3f, %7.3f, %7.3f), Vel: (%7.3f, %7.3f, %7.3f)" % \
@@ -56,13 +91,13 @@ class HaloThroughZ:
 
 	def __init__(self, n_steps):
 		self.n_steps = n_steps
-		halo = []
-		t_step = []		
-		z_step = []		
-		subhalos = []		
-		n_mergers = []	
-		formation_time = 0.0
-		last_major_merger = 0.0
+		self.halo = []
+		self.t_step = []		
+		self.z_step = []		
+		self.subhalos = []		
+		self.n_mergers = []	
+		self.formation_time = 0.0
+		self.last_major_merger = 0.0
 
 	def m_t(self):
 		mass_t = np.zeros((self.n_steps3))
@@ -74,20 +109,20 @@ class HaloThroughZ:
 
 
 	def v_t(self):
-		vel_t = np.zeros((self.n_steps, 3))
+		vel_t = np.zeros((3, self.n_steps))
 
 		for ixy in range(0, self.n_steps):
 			for iv in range(0, 3):
-				vel_t[ixy][iv] = self.halo[ixy].v[iv]
+				vel_t[iv][ixy] = self.halo[ixy].v[iv]
 
 		return vel_t
 
 	def x_t(self):
-		pos_t = np.zeros((self.n_steps, 3))
+		pos_t = np.zeros((3, self.n_steps))
 
 		for ixy in range(0, self.n_steps):
 			for ip in range(0, 3):
-				pos_t[ixy][ip] = self.halo[ixy].x[ip]
+				pos_t[ip][ixy] = self.halo[ixy].x[ip]
 
 		return pos_t
 
@@ -151,6 +186,40 @@ class HaloThroughZ:
 		# TODO add a library with Gravity & Hubble expansion etc. to find out grav potentials and bound objects
 
 
+class SubHaloThroughZ(HaloThroughZ):
+	
+	host = HaloThroughZ(0)
+
+	# In principle we allow for an halo to cross the viral radius several times - there might be more accretion times/steps
+	accretion_time = []
+	accretion_step = []
+
+	def __init__(self, n_steps):
+		self.n_steps = n_steps
+
+	def accretion_time(self):
+		d_old = 0.0
+		r_old = 0.0
+		n_passage = 1
+
+		for iat in range(0, n_steps):
+			d_host = self.halo[iat].distance(self.host[iat].x) 
+			r_host = self.host[iat].r 
+			
+			if iat == 0:
+				d_old = d_host		
+				r_old = self.host[iat].r
+			else:
+				if (d_host < r_host and d_old > r_old) or (d_host > r_host and d_old < r_old):
+					self.accretion_step.append(iat)
+					accr_z = 0.5 * (self.z_step[iat] + self.z_step[iat-1])
+					self.accretion_time.append(z2Myr(accr_z))
+
+	# Mass at accretion time - n_time should be 0 but if the halo is accreted and ejected several times n_time could be larger
+	def max_mass(self, n_time):
+		return self.halo[accretion_step[n_time]].m
+
+
 
 class LocalGroupModel:
 	d_max = 5000. # Box center distance
@@ -179,7 +248,7 @@ class LocalGroupModel:
 		lg_mod_info = "D_max: %.3f, D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
 				(self.d_max, self.d_iso, self.r_max, self.r_min, self.m_min)
 
-
+# Class for bulk properties of sub halo groups of a given halo - mass functions, spatial distribution, etc.
 class SubHalos():
 	host = Halo()
 	header = ''

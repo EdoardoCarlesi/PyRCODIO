@@ -459,4 +459,36 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 
 
 
+def plot_trajectory(all_x, all_y, label_x, label_y, f_out):
+	size = 20
+	n_plots = len(all_x)
+
+	axis_margins = 1
+	axis_size = 50
+	axis_units = 'ckpc/h'
+	axis_label = []
+	axis_label.append(label_x)
+	axis_label.append(label_y)
+
+	plt.figure(figsize=(size,size))
+	plt.rc('xtick', labelsize=axis_size)    
+	plt.rc('ytick', labelsize=axis_size)    
+	plt.rc('axes',  labelsize=axis_size)    
+	plt.margins(axis_margins)		
+
+	x_min = min_list(all_x)
+	x_max = max_list(all_x)
+	y_min = min_list(all_y)
+	y_max = max_list(all_y)
+
+	plt.axis([x_min, x_max, y_min, y_max])
+	plt.xlabel(axis_label[0]+' '+axis_units)
+	plt.ylabel(axis_label[1]+' '+axis_units)
+
+	for iplot in range(0, n_plots):
+		#plt.lines.Line2D(all_x[iplot], all_y[iplot])
+		plt.plot(all_x[iplot], all_y[iplot])
+
+	plt.savefig(f_out)
+	plt.clf()
 

@@ -1,7 +1,7 @@
 from halo import *
 from utils import *
-from find_halos import *
 from particles import *
+
 import numpy as np 
 
 # Returns an array of all the haloes whose com is located within a given radius from a given halo

@@ -28,6 +28,19 @@ def max_list(vec):
 
 	return v0
 
+def min_list(vec):
+	n_y = len(vec)
+	v0 = vec[0][0]
+
+	for iy in range(0, n_y):
+		n_x = len(vec[iy])
+		for ix in range(0, n_x):
+			if vec[iy][ix] < v0:
+				v0 = vec[iy][ix]
+
+	return v0
+
+
 def angle(v1, v2):
 	mv1 = [0.0] * 3	
 	mv2 = [0.0] * 3

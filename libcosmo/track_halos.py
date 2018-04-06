@@ -7,21 +7,29 @@ import math
 #def halo_trajectory():
 
 # This assumes that halos_zp1 already contains all the closest halos to halo_z, the candidate for which we are looking for a progenitor
-def find_progenitor(halo_z, halos_all_zp1, timeStep):
-	guess_x = backward_x(halo_z.x, halo_z.v, timeStep)
+def find_progenitor(halo_z, halos_all_zp1, aFactor, timeStep):
+	r_prog = 0.0
+	guess_x = backward_x(halo_z.x, halo_z.v, aFactor, timeStep)
 	
-	r_prog =  halo_z.r + 2 * distance(halo_z.x, guess_x)
-	#print 'Looking for halos aroud a R=%.3f at %s ' % (r_prog, guess_x)
+	#r_prog =  1000. #halo_z.distance(guess_x)
+	#r_prog =  halo_z.distance(guess_x)
+
+	r_prog = module(halo_z.v) * timeStep * s2Myr() / aFactor / km2kpc()	# In comoving units
+	#print 'r_prog ', halo_z.r, distance(halo_z.x, guess_x), guess_x
+	print 'Looking for halos aroud a R=%.3f (Rphys=%.3f) at %s ' % (r_prog, r_prog * aFactor, guess_x)
 	halos_zp1 = find_halos_point(guess_x, halos_all_zp1, r_prog)
 	
 	n_zp1 = len(halos_zp1)
 
 	# The progenitor halo will be evaluated using these four quantities as proxy
-	fac_a = 1.5
-	fac_d = 0.01 
-	fac_m = 2.0
+	fac_a = 1.0
+	fac_d = 1.3 # Distance from the expected position (in v * dT units)
+	fac_r = 2.3 # Distance from the parent halo (in v * dT units)
+	fac_m = 1.0
 	fac_v = 1.0
-		
+	
+	max_eval = 3.5
+	
 	pos = halo_z.x
 	vel = halo_z.v
 	mass = halo_z.m
@@ -29,35 +37,54 @@ def find_progenitor(halo_z, halos_all_zp1, timeStep):
 
 	# No likely progenitors 
 	if n_zp1 == 0:
-		#TODO enable to return placeholder
-		return -1
+		place_halo = Halo()
+		place_halo.x = guess_x		
+		# This is VERY crude... just taking mass and velocity from previous halo...
+		place_halo.v = vel		
+		place_halo.m = mass
+
+		return place_halo
 	else:	
 		for izp1 in range(0, n_zp1):
-			this_x = halos_zp1[izp1].x
-			this_v = halos_zp1[izp1].v
-			this_m = halos_zp1[izp1].m
+			halo_x = halos_zp1[izp1].x
+			halo_v = halos_zp1[izp1].v
+			halo_m = halos_zp1[izp1].m
 
 			#print mass, vel, pos
 			#print halos_zp1[izp1].info()
 
-			this_a = 1.0 - abs_val(angle(this_v, vel))
-			this_d = abs_val(distance(guess_x, this_x) / distance(pos, this_x))
-			this_m = abs_val(np.log10(mass/this_m))
-			this_v = abs_val(distance(this_v, vel)/module(vel))
+			this_a = 1.0 - abs_val(angle(halo_v, vel))
+			this_d = distance(guess_x, halo_x) / r_prog #distance(pos, this_x))
+			this_r = distance(pos, halo_x) / r_prog #distance(pos, this_x))
+			this_m = abs_val(np.log10(mass/halo_m))
+			this_v = abs_val(distance(halo_v, vel)/module(vel))
 
-			eval_this = fac_a * this_a + fac_m * this_m + fac_d * this_d + fac_v * this_v
+			eval_this = fac_a * this_a + fac_m * this_m + fac_d * this_d + fac_v * this_v + fac_r * this_r
 
 			if eval_this < eval0:
-			#	print 'Eval:%.3f, Angle: %.3f Dist: %.3f Mass: %.3f, Vel: %.3f' % (eval_this, this_a, this_d, this_m, this_v)
+				print 'Eval:%.3f, Angle: %.3f D: %.3f, R: %.3f, Mass: %.3f, Vel: %.3f' % (eval_this, this_a, this_d, this_r, this_m, this_v)
+				print 'Mnew:%.3e, Mold: %.3e **** Vnew: %s, Vold: %s' % (halo_m, mass, halo_v, vel)
 			#	print 'NewEval', eval_this, eval0
 				eval0 = eval_this
 				best_id = izp1
+		
+		# If eval0 is too large then we better replace the halo with a placeholder and see what happens
+		if eval0 > max_eval:
+			print 'Returning halo placeholder...'
+			place_halo = Halo()
+			place_halo.x = guess_x		
+			print 'Pos: ', guess_x
+			# This is VERY crude... just taking mass and velocity from previous halo...
+			place_halo.v = vel		
+			place_halo.m = mass
 
-		return halos_zp1[best_id]
+			return place_halo
+		else:
+			return halos_zp1[best_id]
 
 
-# TODO add/subtract hubble expansion somehow!
-def backward_x(old_x, vel, dMyrs):
+# TODO add/subtract hubble expansion somehow!	- Old_a is the expansion factor at the time where the halo is in old_x position
+def backward_x(old_x, vel, oldA, dMyrs):
 	new_x = [0.0] * 3
 
 	if (old_x[0] > 500.):
@@ -65,26 +92,25 @@ def backward_x(old_x, vel, dMyrs):
 	else:
 		facMpc = 1000.0
 
+	newT = a2Myr(oldA) - dMyrs
+	newA = Myr2a(newT)
+	deltaA = abs_val(oldA - newA)
 	totT = dMyrs * s2Myr()
 
 	for ix in range(0, 3):	
-		new_x[ix] = old_x[ix] * facMpc - totT * vel[ix] / km2kpc()
+		#new_x[ix] = old_x[ix] * facMpc - totT * vel[ix] / km2kpc()
+		#new_x[ix] = old_x[ix] * facMpc - vel[ix] / km2kpc() * totT * oldA
+		new_x[ix] = old_x[ix] * facMpc - vel[ix] / km2kpc() * totT * (1 + deltaA)
+		# Correct for the Hubble expansion
+		#new_x[ix] += (old_x[ix] - new_x[ix]) * deltaA / newA
+		#new_x[ix] *= deltaA (old_x[ix] - new_x[ix]) * deltaA / newA
 
 	return new_x
 
-# TODO add/subtract hubble expansion somehow!
-def forward_x(old_x, vel, dMyrs):
-	new_x = [0.0] * 3
 
-	if (old_x[0] > 500.):
-		facMpc = 1.0
-	else:
-		facMpc = 1000.0
-
-	totT = dMyrs * s2Myr()
-
-	for ix in range(0, 3):	
-		new_x[ix] = old_x[ix] * facMpc + totT * vel[ix] / km2kpc()
+def forward_x(old_x, vel, oldA, dMyrs):
+	# Just changing the velocity sign
+	new_x = backward_x(old_x, -vel, oldA, dMyrs)
 
 	return new_x
 

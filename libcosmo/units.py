@@ -10,6 +10,12 @@ def s2Myr():
 	s2Myr = 3.154e+13
 	return s2Myr
 
+def Myr2a(time):
+	z_value = Myr2z(time)
+	a_value = 1.0 / (1.0 + z_value)
+
+	return a_value
+
 def Myr2z(time):
 	# Do some interpolation
 	a_fname = 'data/output_list_5Myr.txt' 
@@ -31,6 +37,12 @@ def Myr2z(time):
 	z_value = f_t(time)
 
 	return z_value
+
+def a2Myr(a_factor):
+	z_value = 1.0 / a_factor - 1.0
+	t_value = z2Myr(z_value)
+	
+	return t_value
 
 def z2Myr(redshift):
 	# Do some interpolation

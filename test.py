@@ -17,26 +17,20 @@ import time
 #base_path = '/home/eduardo/CLUES/DATA/1024/00_06/LV/'
 #snap_file = base_path + 'snapshot_020'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos.pttype1'
-
-#base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
-#base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
-
-ahf_snap='/home/eduardo/CLUES/DATA/QL/1024/00_00/snapshot_054.AHF_halos'
-center = [250000.0, 250000.0, 250000.0]
-#center = [250.0, 250.0, 250.0]
-
-this_halos = read_ahf(ahf_snap)
-
-(pos, mass, names) = locate_clusters(this_halos, center)
-
+#ahf_snap='/home/eduardo/CLUES/DATA/QL/1024/00_00/snapshot_054.AHF_halos'
+#center = [250000.0, 250000.0, 250000.0]
+#this_halos = read_ahf(ahf_snap)
+#(pos, mass, names) = locate_clusters(this_halos, center)
 #print pos
 #print mass
 #print names
 
-#zs = ahf_redshifts(base_path)
-#ss = ahf_snapshots(base_path)
+base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
+base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
 
-'''
+zs = ahf_redshifts(base_path)
+ss = ahf_snapshots(base_path)
+
 #base_path = '/home/eduardo/CLUES/DATA/'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
@@ -53,29 +47,72 @@ suff_file = '.AHF_halos'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
 
-ini_snap = 10
+ini_snap = 40
 end_snap = 54
 counter = 0
 timeStep = 250.
 
 halo_z = HaloThroughZ(end_snap - ini_snap)
-#halo_z.
+sub_z = SubHaloThroughZ(end_snap - ini_snap)
 
 for i_snap in range(end_snap, ini_snap, -1):
 	this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
 	this_halos = read_ahf(this_file)
 	redshift = float(zs[i_snap])
 	time = z2Myr(redshift)
+	a_fac = 1.0 / (1.0 + redshift)
 	
 	if i_snap == end_snap:
-		old_halo = this_halos[1]
+		old_halo = this_halos[0]
 		old_time = time
+		rsub = old_halo.r * 1.2
+		old_halo.sub_halos(this_halos, rsub)
+		subs = old_halo.sort_sub_mass()
+		old_sub = subs[2]
+
+		print   'Dist: ', old_halo.distance(old_sub.x)
+		print   'R   : ', old_halo.r
+		print	'Main: ', old_halo.info()
+		print	'Sub : ', old_sub.info()
+
 		halo_z.add_step(old_halo, time, redshift)
+		sub_z.host = old_halo
+		sub_z.add_step(old_sub, time, redshift)
 	else:	
 		timeStep = abs_val(time - old_time)
-		this_halo = find_progenitor(old_halo, this_halos, timeStep)
+		this_halo = find_progenitor(old_halo, this_halos, a_fac, timeStep)
+		print   ' DHal: ', old_halo.distance(this_halo.x)
+		print   'cDHal: ', old_halo.distance(this_halo.x) * a_fac
 		old_halo = this_halo
+
+		this_sub = find_progenitor(old_sub, this_halos, a_fac, timeStep)
+		print   ' DSub: ', old_sub.distance(this_sub.x)
+		print   'cDSub: ', old_sub.distance(this_sub.x) * a_fac
+		old_sub = this_sub
 		halo_z.add_step(old_halo, time, redshift)
+		sub_z.add_step(old_sub, time, redshift)
+		print   '\nDist: ', old_halo.distance(old_sub.x)
+		print   'R   : ', old_halo.r
+		print	'Main: ', old_halo.info()
+		print	'Sub : ', old_sub.info()
+		print	'\n'
+	
+all_x = []
+all_y = []
+
+halo_x = halo_z.x_t()
+sub_x = sub_z.x_t()
+
+all_x.append(halo_x[0][:])
+all_x.append(sub_x[0][:])
+all_y.append(halo_x[1][:])
+all_y.append(sub_x[1][:])
+
+#print all_x
+
+plot_trajectory(all_x, all_y, 'x', 'y', 'test.png')
+
+	
 #		print i_snap, old_halo.info()
 #		expe_x = backward_x(this_halo, this_halo, 250.0)
 #		print halo_z.x_t()
@@ -83,7 +120,7 @@ for i_snap in range(end_snap, ini_snap, -1):
 #print 'FT: ', halo_z.formation_time() / 1000.
 #print 'MT: ', halo_z.last_major_merger() / 1000.
 
-
+'''
 	if counter == 0:
 		old_halo = this_halos[0]
 	else:
