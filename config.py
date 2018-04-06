@@ -146,7 +146,7 @@ class Settings:
 			self.file_lg_name = self.base_path + self.outp_dir + 'lg_candidates_512box100.txt'
 			self.file_lare_name = self.base_path + self.outp_dir + 'lg_candidates_LaRe512box100.txt'
 			self.file_lgall_name = self.base_path + self.outp_dir + 'lg_candidates_LaRe512box100all.txt'
-			self.self.file_codes_name = self.base_path + self.outp_dir + 'lg_codes_512box100.txt'
+			self.file_codes_name = self.base_path + self.outp_dir + 'lg_codes_512box100.txt'
 		else:
 			self.file_lg_name = self.base_path + self.outp_dir + 'lg_candidates_LGF_'+self.resolution+'.txt'
 			self.file_lgall_name = self.base_path + self.outp_dir + 'lg_candidates_LGFall_'+self.resolution+'.txt'
@@ -169,7 +169,7 @@ class Settings:
 			self.n_ic = 2
 			self.n_z0 = 8
 			self.file_ahf_in = self.base_path + '/'+ self.sub_path + self.base_run + '/' + self.sub_path_ahf + self.snapshot
-			self.file_z0_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_snap + self.self.file_z0
+			self.file_z0_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_snap + self.file_z0
 			self.file_ic_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_ics + self.file_ic
 
 		elif self.env_type == "512box100" :
