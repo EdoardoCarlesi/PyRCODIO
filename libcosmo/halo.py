@@ -1,7 +1,6 @@
 import math 
 import pickle
 import numpy as np
-#from find_halos import *
 import find_halos as fh
 from scipy import interpolate
 from operator import *
@@ -72,8 +71,10 @@ class Halo:
 
 
 	def info(self):
-		return "ID: %ld, M: %.3e, X: (%7.3f, %7.3f, %7.3f), Vel: (%7.3f, %7.3f, %7.3f)" % \
-			(self.ID, self.m, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2])
+		#return "ID: %ld, M: %.3e, X: (%7.3f, %7.3f, %7.3f), Vel: (%7.3f, %7.3f, %7.3f)" % \
+		#	(self.ID, self.m, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2])
+		return "%ld %.3e %.3f %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f %d %d" % \
+			(self.ID, self.m, self.r, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2], self.nsub, self.npart)
 
 
 
@@ -179,6 +180,19 @@ class HaloThroughZ:
 		#print m0, z0, self.formation_time
 		return self.formation_time
 
+	def dump_history(self, f_name):
+		f_out = open(f_name, 'wb')
+		#header = "# z(0) M(1) r(2) x(3) y(4) z(5) vx(6) vy(7) vz(8) nSub(9) npart(10) ID(11)\n"
+		header = "# z(0) ID(1) M(2) r(3) x(4) y(5) z(6) vx(7) vy(8) vz(9) nsub(10) npart(11)\n"
+		#(self.ID, self.m, self.r, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2], self.nsub, self.npart)
+		f_out.write(header)
+
+		for ih in range(0, self.n_steps):
+			line_z = "# %.3f" % self.z_step[ih]
+			line = line_z + self.halo[ih].info() + "\n"
+			f_out.write(line)
+
+
 	# TODO Get rid of flybys and spurious events polluting the halo merger history
 	def smooth_history(self):
 		self.is_smooth = True
@@ -191,8 +205,8 @@ class SubHaloThroughZ(HaloThroughZ):
 	host = HaloThroughZ(0)
 
 	# In principle we allow for an halo to cross the viral radius several times - there might be more accretion times/steps
-	accretion_time = []
-	accretion_step = []
+	acc_time = []
+	acc_step = []
 
 	def __init__(self, n_steps):
 		self.n_steps = n_steps
@@ -202,22 +216,29 @@ class SubHaloThroughZ(HaloThroughZ):
 		r_old = 0.0
 		n_passage = 1
 
-		for iat in range(0, n_steps):
-			d_host = self.halo[iat].distance(self.host[iat].x) 
-			r_host = self.host[iat].r 
-			
+		for iat in range(0, self.n_steps):
+			d_host = self.halo[iat].distance(self.host.halo[iat].x) 
+			r_host = self.host.halo[iat].r 
+				
+			print iat, self.n_steps, d_host, r_host		
+
+			'''				
 			if iat == 0:
 				d_old = d_host		
-				r_old = self.host[iat].r
+				r_old = self.host.halo[iat].r
 			else:
 				if (d_host < r_host and d_old > r_old) or (d_host > r_host and d_old < r_old):
-					self.accretion_step.append(iat)
-					accr_z = 0.5 * (self.z_step[iat] + self.z_step[iat-1])
-					self.accretion_time.append(z2Myr(accr_z))
+					self.acc_step.append(iat)
+					acc_z = 0.5 * (self.z_step[iat] + self.z_step[iat-1])
+					self.acc_time.append(z2Myr(acc_z))
+				
+				return self.acc_time
+			'''
 
 	# Mass at accretion time - n_time should be 0 but if the halo is accreted and ejected several times n_time could be larger
 	def max_mass(self, n_time):
-		return self.halo[accretion_step[n_time]].m
+		self.accretion_time()
+		return self.halo[self.acc_step[n_time]].m
 
 
 

@@ -25,6 +25,10 @@ import time
 #print mass
 #print names
 
+#ahf_part = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_053.0000.z0.017.AHF_particles'
+
+#(ids, parts) = read_particles(ahf_part)
+
 base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
 base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
 
@@ -47,7 +51,7 @@ suff_file = '.AHF_halos'
 #ahf_file = base_path + '/512/17_00/snapshot_054.z0.000.AHF_halos'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos'
 
-ini_snap = 40
+ini_snap = 0
 end_snap = 54
 counter = 0
 timeStep = 250.
@@ -62,8 +66,10 @@ for i_snap in range(end_snap, ini_snap, -1):
 	this_t = z2Myr(this_z)
 	this_a = 1.0 / (1.0 + this_z)
 	
+	#print i_snap, this_t, this_z, this_a
+
 	if i_snap == end_snap:
-		this_halo = this_halos[0]
+		this_halo = this_halos[3]
 		rsub = this_halo.r * 1.2
 		this_halo.sub_halos(this_halos, rsub)
 		subs = this_halo.sort_sub_mass()
@@ -74,34 +80,40 @@ for i_snap in range(end_snap, ini_snap, -1):
 	#	print	'Main: ', old_halo.info()
 	#	print	'Sub : ', old_sub.info()
 
-		old_t = this_t
 		old_halo = this_halo
 		old_sub = this_sub
+
+		sub_z.host.add_step(this_halo, this_t, this_z)
 		halo_z.add_step(this_halo, this_t, this_z)
-		sub_z.host = this_halo
 		sub_z.add_step(this_sub, this_t, this_z)
 	else:	
-		timeStep = abs_val(this_t - old_t)
-
 		this_halo = find_progenitor(old_halo, this_halos, this_a, timeStep)
-		print   ' DHal: ', this_halo.distance(old_halo.x)
-		print   'cDHal: ', this_halo.distance(old_halo.x) * this_a
+#		print   ' DHal: ', this_halo.distance(old_halo.x)
+#		print   'cDHal: ', this_halo.distance(old_halo.x) * this_a
 		old_halo = this_halo
 
 		this_sub = find_progenitor(old_sub, this_halos, this_a, timeStep)
-		print   ' DSub: ', this_sub.distance(old_sub.x)
-		print   'cDSub: ', this_sub.distance(old_sub.x) * this_a
+#		print   ' DSub: ', this_sub.distance(old_sub.x)
+#		print   'cDSub: ', this_sub.distance(old_sub.x) * this_a
 		old_sub = this_sub
 
 		halo_z.add_step(this_halo, this_t, this_z)
 		sub_z.add_step(this_sub, this_t, this_z)
-
+		sub_z.host.add_step(this_halo, this_t, this_z)
+'''
 		print   '\nDist: ', old_halo.distance(old_sub.x)
 		print   'R   : ', old_halo.r
 		print	'Main: ', old_halo.info()
 		print	'Sub : ', old_sub.info()
 		print	'\n'
-	
+'''	
+
+print halo_z.v_t()
+halo_z.dump_history('test.txt')
+acc_time = sub_z.accretion_time()
+
+print acc_time
+
 all_x = []
 all_y = []
 
@@ -116,7 +128,8 @@ all_y.append(sub_x[1][:])
 #print all_x
 
 plot_trajectory(all_x, all_y, 'x', 'y', 'test.png')
-
+'''
+'''
 	
 #		print i_snap, old_halo.info()
 #		expe_x = backward_x(this_halo, this_halo, 250.0)

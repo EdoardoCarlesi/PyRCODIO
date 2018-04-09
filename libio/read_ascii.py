@@ -41,6 +41,59 @@ def read_ahf(file_name):
 
 	return halos_ahf
 
+# Reading AHF particle file
+def read_particles(file_name):
+	ids = []	# List containing all halo IDs & Particle number per halo ID - each list member is a 2 elements array
+	parts = []	# Each list member contains an array with all the particle ids
+	count_p = 0	# Total number of particles per halo
+	count_h = 0	# Total number of haloes in file
+	count_l = 0	# Simply count the lines
+
+	this_np = 0
+	tot_h = 0	# Double check that the total number of haloes is matched with the counter
+
+	file_part = open(file_name, 'r')
+
+	# First read the header, containing the total number of haloes
+	line = file_part.readline()
+	line = line.strip()
+	column = line.split()
+	tot_h = int(column[0])
+	
+	lines_command = 'wc -l ' + file_name
+	out_os = os.popen(lines_command).read()
+	(tot_l, fname) = out_os.split()
+	tot_l = long(tot_l)
+	print 'Reading %s with %ld lines and %d halos. ' % (file_name, tot_l, tot_h)
+
+	while line:
+		line = file_part.readline()
+		line = line.strip()
+		column = line.split()
+		
+		if count_l > 0 and count_p < this_np:
+			this_pid = long(column[0])	# Particle ID
+			this_parts.append(this_pid)
+			count_p += 1			
+			count_l += 1
+		else:	
+			if count_p == this_np and count_h > 0:
+				parts.append(this_parts)
+			
+			if count_l < tot_l-1:
+				this_parts = []
+	
+				this_hid = long(column[1])	# Halo ID
+				this_np = int(column[0])
+				#print 'Line %ld found halo %ld with %d particles' % (count_l, this_hid, this_np)	
+				ids.append([this_hid, this_np])
+				count_l += 1
+				count_h += 1
+				count_p = 0			# Reset the particle number
+		
+	return (ids, parts)
+
+
 # Read the LG asciis saved somewhere
 def read_lgs(file_name):
 	file_txt = open(file_name, 'r')

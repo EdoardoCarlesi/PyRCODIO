@@ -25,7 +25,7 @@ def find_progenitor(halo_z, halos_all_zp1, aFactor, timeStep):
 	fac_d = 1.0 # Distance from the expected position (in v * dT units)
 	fac_r = 1.0 # Distance from the parent halo (in v * dT units)
 	fac_m = 2.0
-	fac_v = 0.0
+	fac_v = 0.05
 	fac_x = 3.0 # Angle between the velocity of the halo and the displacement of the new candidate, to check that no "parallel" object has been 
 		    # incorrectly identified
 	
@@ -66,14 +66,14 @@ def find_progenitor(halo_z, halos_all_zp1, aFactor, timeStep):
 			eval_this = fac_a * this_a + fac_m * this_m + fac_d * this_d + fac_v * this_v + fac_r * this_r + this_x * fac_x
 
 			if eval_this < eval0:
+				eval0 = eval_this
+				best_id = izp1
 			#	print 'Eval:%.3f, Angle: %.3f D: %.3f, R: %.3f, Mass: %.3f, Vel: %.3f, Direction: %.3f' % \
 			#	(eval_this, this_a, this_d, this_r, this_m, this_v, this_x)
 			#	print 'Mnew:%.3e, Mold: %.3e **** Vnew: %s, Vold: %s' % (halo_m, mass, halo_v, vel)
 			#	print 'NewEval', eval_this, eval0
-				eval0 = eval_this
-				best_id = izp1
 		
-		# If eval0 is too large then we better replace the halo with a placeholder and see what happens
+		# If eval0 is too large then we better replace the halo with a placeholder and see what happens at the next step
 		if eval0 > max_eval:
 			print 'Returning halo placeholder...'
 			place_halo = Halo()
@@ -101,6 +101,8 @@ def backward_x(this_x, this_vel, this_a, d_myrs):
 	new_a = Myr2a(new_t)
 	tot_t = d_myrs * s2Myr()
 	delta_a = abs_val(this_a - new_a)
+
+	#print 'BackwardX: ', this_a, d_myrs, new_a, new_t, tot_t, delta_a, d_myrs
 
 	for ix in range(0, 3):	
 		new_x[ix] = this_x[ix] * facMpc - (this_vel[ix] * tot_t) / km2kpc() * 0.677
