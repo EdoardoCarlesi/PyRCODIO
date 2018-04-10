@@ -11,6 +11,8 @@
 
 Tools to analyze AREPO - GADGET simulations of the Local Group and the local environment Works with GADGET1, GADGET2 and HDF5 fortran using h5py and gadget py reader.
 
+    libSQL has to be written yet. Maybe it will not be necessary...
+
     libio contains some tools to identify the Lagrangian regions in the ICs and generate the mask for zoom-in initial conditions, as well as other functions to implement C and Bash functions into python
 
     libcosmo contains simple algorithms for the identification of clusters and LG-like objects in Constrained Simulations, as well as simple plotting routines.
@@ -25,10 +27,19 @@ Tools to analyze AREPO - GADGET simulations of the Local Group and the local env
 
     data/ contains tables of P(k) and z(t) to be used for interpolation
 
-TODO:
+TODO (ShortTerm):
+	Particle content comparison to be added to the merger tree routines (actually the progenitor finder is based on dynamical considerations only).
+	Maybe some kind of statistical comparison is enough? E.G. for large haloes ( > 10^5 particles) dynamical considerations and some random sampling
+	and comparison of the particle content might be enough
+
+
+TODO (LongTerm):
 
     Include the C libraries and bash scripts for grid generation & LagrangianRegion identification & the Fortran code for Mask generation inside a separate library within this code to make it self-consistent
 
     Add SQL functionalities - gather all the LG data within a database to be updated each time a new run or series of simulations runs have been finished, write some libs to access and edit it with python
+
+	Include mpi4py and parallelize some of the routines (especially the merger tree!)
+
 
 

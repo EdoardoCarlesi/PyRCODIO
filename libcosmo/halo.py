@@ -182,16 +182,38 @@ class HaloThroughZ:
 
 	def dump_history(self, f_name):
 		f_out = open(f_name, 'wb')
-		#header = "# z(0) M(1) r(2) x(3) y(4) z(5) vx(6) vy(7) vz(8) nSub(9) npart(10) ID(11)\n"
 		header = "# z(0) ID(1) M(2) r(3) x(4) y(5) z(6) vx(7) vy(8) vz(9) nsub(10) npart(11)\n"
-		#(self.ID, self.m, self.r, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2], self.nsub, self.npart)
 		f_out.write(header)
 
 		for ih in range(0, self.n_steps):
-			line_z = "# %.3f" % self.z_step[ih]
+			line_z = "%5.3f " % (self.z_step[ih])
+			#print ih, line_z, self.halo[ih].info(), "\n"
 			line = line_z + self.halo[ih].info() + "\n"
 			f_out.write(line)
 
+	def load_file(self, f_name):
+		f_in = open(f_name, 'r')
+		line = f_in.readline()
+
+		while line:
+			line = f_in.readline()
+			line = line.strip()
+			column = line.split()
+			halo = Halo()
+			n_col = len(column)
+			
+			if n_col > 0:
+				z_step = float(column[0])
+				hid = long(column[1])
+				t_step = z2Myr(z_step)
+				mass = float(column[2])
+				pos = [float(column[4]), float(column[5]), float(column[6])]
+				vel = [float(column[7]), float(column[8]), float(column[9])]
+				rvir = float(column[3])
+				nsub = int(column[10])
+				npart = int(column[11])
+				halo.initialize(hid, mass, pos, vel, rvir, nsub, npart)
+				self.add_step(halo, t_step, z_step)
 
 	# TODO Get rid of flybys and spurious events polluting the halo merger history
 	def smooth_history(self):
@@ -210,6 +232,23 @@ class SubHaloThroughZ(HaloThroughZ):
 
 	def __init__(self, n_steps):
 		self.n_steps = n_steps
+		self.halo = []
+		self.t_step = []		
+		self.z_step = []		
+		self.subhalos = []		
+		self.n_mergers = []	
+		self.formation_time = 0.0
+		self.last_major_merger = 0.0
+
+	def x_t_host_center(self):
+		pos_t = np.zeros((3, self.n_steps))
+
+		for ixy in range(0, self.n_steps):
+			for ip in range(0, 3):
+				pos_t[ip][ixy] = self.halo[ixy].x[ip] - self.host.halo[ixy].x[ip]
+
+		return pos_t
+
 
 	def accretion_time(self):
 		d_old = 0.0
@@ -217,23 +256,25 @@ class SubHaloThroughZ(HaloThroughZ):
 		n_passage = 1
 
 		for iat in range(0, self.n_steps):
-			d_host = self.halo[iat].distance(self.host.halo[iat].x) 
-			r_host = self.host.halo[iat].r 
+			try:	
+				d_host = self.halo[iat].distance(self.host.halo[iat].x) 
+				r_host = self.host.halo[iat].r 
+				m_sub = self.halo[iat].m 
 				
-			print iat, self.n_steps, d_host, r_host		
-
-			'''				
-			if iat == 0:
-				d_old = d_host		
-				r_old = self.host.halo[iat].r
-			else:
-				if (d_host < r_host and d_old > r_old) or (d_host > r_host and d_old < r_old):
-					self.acc_step.append(iat)
+				if iat > 0:
 					acc_z = 0.5 * (self.z_step[iat] + self.z_step[iat-1])
+
+				if iat > 0 and (d_host < r_host and d_old > r_old) or (d_host > r_host and d_old < r_old):
+					self.acc_step.append(iat)
 					self.acc_time.append(z2Myr(acc_z))
-				
-				return self.acc_time
-			'''
+
+				d_old = d_host		
+				r_old = r_host 
+
+			except:
+				print 'Error at step ', iat
+
+		return self.acc_time
 
 	# Mass at accretion time - n_time should be 0 but if the halo is accreted and ejected several times n_time could be larger
 	def max_mass(self, n_time):

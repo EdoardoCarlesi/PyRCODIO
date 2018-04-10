@@ -15,7 +15,7 @@ def find_progenitor(halo_z, halos_all_zp1, aFactor, timeStep):
 
 	r_prog = module(halo_z.v) * timeStep * s2Myr() / km2kpc() / aFactor	# In comoving units
 	#print 'r_prog ', halo_z.r, distance(halo_z.x, guess_x), guess_x
-	print 'Looking for halos aroud a R=%.3f (Rphys=%.3f) at %s ' % (r_prog, r_prog * aFactor, guess_x)
+	#print 'Looking for halos aroud a R=%.3f (Rphys=%.3f) at %s ' % (r_prog, r_prog * aFactor, guess_x)
 	halos_zp1 = find_halos_point(guess_x, halos_all_zp1, r_prog)
 	
 	n_zp1 = len(halos_zp1)
@@ -75,10 +75,10 @@ def find_progenitor(halo_z, halos_all_zp1, aFactor, timeStep):
 		
 		# If eval0 is too large then we better replace the halo with a placeholder and see what happens at the next step
 		if eval0 > max_eval:
-			print 'Returning halo placeholder...'
+			#print 'Returning halo placeholder...'
 			place_halo = Halo()
 			place_halo.x = guess_x		
-			print 'Pos: ', guess_x
+			#print 'Pos: ', guess_x
 			# This is VERY crude... just taking mass and velocity from previous halo...
 			place_halo.v = vel		
 			place_halo.m = mass

@@ -9,32 +9,126 @@ from libcosmo.particles import *
 from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
+from libio.merger_tree import *
 from pygadgetreader import *
-
-#import matplotlib.pyplot as plt
 import time
 
+'''
 #base_path = '/home/eduardo/CLUES/DATA/1024/00_06/LV/'
 #snap_file = base_path + 'snapshot_020'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos.pttype1'
-#ahf_snap='/home/eduardo/CLUES/DATA/QL/1024/00_00/snapshot_054.AHF_halos'
-#center = [250000.0, 250000.0, 250000.0]
-#this_halos = read_ahf(ahf_snap)
-#(pos, mass, names) = locate_clusters(this_halos, center)
+ahf_snap='/home/eduardo/CLUES/DATA/QL/1024/00_00/snapshot_054.AHF_halos'
+center = [250000.0, 250000.0, 250000.0]
+this_halos = read_ahf(ahf_snap)
+(pos, mass, names) = locate_clusters(this_halos, center)
 #print pos
 #print mass
 #print names
+
+n = len(pos)
+
+for i in range(0, n):
+	pos[i][0] -= 250000.
+	pos[i][1] -= 250000.
+	pos[i][2] -= 250000.
+
+	#pos[i][0] /= 0.677
+	#pos[i][1] /= 0.677
+	#pos[i][2] /= 0.677
+
+	mass[i] /= 0.677
+	print 'Name:%s,  Mass:%e, Pos: %s ' % (names[i], mass[i], pos[i])
+
 
 #ahf_part = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_053.0000.z0.017.AHF_particles'
 
 #(ids, parts) = read_particles(ahf_part)
 
+
+'''
+
+
+
+
+base_path = '/home/eduardo/CLUES/DATA/2048/00_06/00/'
+ahf_file = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+root_file = 'snapshot_'
+ahf_suff = '.AHF_halos'
+part_suff = '.AHF_particles'
+ini_snap = 0
+end_snap = 54
+
+#ahf = read_ahf(ahf_file)
+
+out_path='output/'
+num_run = '00_06_00'
+
+(n_host, n_subs) = n_mah_files(out_path, num_run)
+
+print n_host
+print n_subs
+
+all_halo = []
+all_sub = []
+all_sub_x = []
+all_sub_y = []
+
+for i in range(0, 1):
+	this_halo = HaloThroughZ(end_snap - ini_snap)
+	halo_name = mah_main_file_name(out_path, num_run, i)
+	this_halo.load_file(halo_name)
+	all_halo.append(this_halo)
+	tmp_subs = []
+
+	for s in range(0, 10):
+		this_sub = SubHaloThroughZ(end_snap - ini_snap)
+		sub_name = mah_sub_file_name(out_path, num_run, i, s)
+		this_sub.host = this_halo
+		this_sub.load_file(sub_name)
+		#print i, s, this_sub.accretion_time()
+		sub_x = this_sub.x_t_host_center()
+		all_sub_x.append(sub_x[0][:])
+		all_sub_y.append(sub_x[1][:])
+		tmp_subs.append(this_sub)
+
+	all_sub.append(tmp_subs)
+
+
+plot_trajectory(all_sub_x, all_sub_y, 'x', 'y', out_path + 'test.png')
+
+
+'''
+halo = []
+
+halo.append(ahf[0])
+halo.append(ahf[1])
+halo.append(ahf[2])
+halo.append(ahf[3])
+rsub = 1.33
+
+(all_halo, all_sub) = halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, ahf_suff, halo,  rsub)
+
+n_halo = len(all_halo)
+
+for ih in range(0, n_halo):
+	file_name = mah_main_file_name(out_path, num_run, ih)
+	
+	all_halo[ih].dump_history(file_name)
+
+	n_sub = len(all_sub[ih])
+
+	for isb in range(0, n_sub):
+		this_isb = '%02d' % isb
+		file_name = mah_sub_file_name(out_path, num_run, ih, isb)
+		all_sub[ih][isb].dump_history(file_name)
+'''
+
+
+'''
+#halo_z = HaloThroughZ(53)
+#halo_z.load_file('test.txt')
 base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/2048/00_06/00/'
 base_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
-
-zs = ahf_redshifts(base_path)
-ss = ahf_snapshots(base_path)
-
 #base_path = '/home/eduardo/CLUES/DATA/'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
 #ahf_file = '/home/eduardo/CLUES/DATA/1024/00_06/02/snapshot_054.0000.z0.000.AHF_halos'
@@ -56,57 +150,6 @@ end_snap = 54
 counter = 0
 timeStep = 250.
 
-halo_z = HaloThroughZ(end_snap - ini_snap)
-sub_z = SubHaloThroughZ(end_snap - ini_snap)
-
-for i_snap in range(end_snap, ini_snap, -1):
-	this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
-	this_halos = read_ahf(this_file)
-	this_z = float(zs[i_snap])
-	this_t = z2Myr(this_z)
-	this_a = 1.0 / (1.0 + this_z)
-	
-	#print i_snap, this_t, this_z, this_a
-
-	if i_snap == end_snap:
-		this_halo = this_halos[3]
-		rsub = this_halo.r * 1.2
-		this_halo.sub_halos(this_halos, rsub)
-		subs = this_halo.sort_sub_mass()
-		this_sub = subs[1]
-
-	#	print   'Dist: ', old_halo.distance(old_sub.x)
-	#	print   'R   : ', old_halo.r
-	#	print	'Main: ', old_halo.info()
-	#	print	'Sub : ', old_sub.info()
-
-		old_halo = this_halo
-		old_sub = this_sub
-
-		sub_z.host.add_step(this_halo, this_t, this_z)
-		halo_z.add_step(this_halo, this_t, this_z)
-		sub_z.add_step(this_sub, this_t, this_z)
-	else:	
-		this_halo = find_progenitor(old_halo, this_halos, this_a, timeStep)
-#		print   ' DHal: ', this_halo.distance(old_halo.x)
-#		print   'cDHal: ', this_halo.distance(old_halo.x) * this_a
-		old_halo = this_halo
-
-		this_sub = find_progenitor(old_sub, this_halos, this_a, timeStep)
-#		print   ' DSub: ', this_sub.distance(old_sub.x)
-#		print   'cDSub: ', this_sub.distance(old_sub.x) * this_a
-		old_sub = this_sub
-
-		halo_z.add_step(this_halo, this_t, this_z)
-		sub_z.add_step(this_sub, this_t, this_z)
-		sub_z.host.add_step(this_halo, this_t, this_z)
-'''
-		print   '\nDist: ', old_halo.distance(old_sub.x)
-		print   'R   : ', old_halo.r
-		print	'Main: ', old_halo.info()
-		print	'Sub : ', old_sub.info()
-		print	'\n'
-'''	
 
 print halo_z.v_t()
 halo_z.dump_history('test.txt')
@@ -128,9 +171,7 @@ all_y.append(sub_x[1][:])
 #print all_x
 
 plot_trajectory(all_x, all_y, 'x', 'y', 'test.png')
-'''
-'''
-	
+'''	
 #		print i_snap, old_halo.info()
 #		expe_x = backward_x(this_halo, this_halo, 250.0)
 #		print halo_z.x_t()

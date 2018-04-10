@@ -1,7 +1,14 @@
 from halo import *
 from utils import *
 from particles import *
+import track_halos as th
 
+import sys
+
+sys.path.append('../libio/')
+
+from libio.find_files import *
+from libio.read_ascii import *
 import numpy as np 
 
 # Returns an array of all the haloes whose com is located within a given radius from a given halo
@@ -254,6 +261,12 @@ def locate_clusters(ahf_all, box_center):
 	cluster_name.append('Hercules (c)')
 	cluster_pos.append([15.49, 60.94, 74.25])
 
+	cluster_name.append('Perseus (no h)')
+	cluster_pos.append([43.05, -16.89, -21.82])
+
+#	cluster_name.append('Perseus (over h)')
+#	cluster_pos.append([43.05 * 0.677, -16.89 * 0.677, -21.82 * 0.677])
+
 	cluster_name.append('Perseus-Pisces (a)')
 	cluster_pos.append([50.05, -10.89, -12.82])
 
@@ -315,6 +328,99 @@ def locate_clusters(ahf_all, box_center):
 		ahf_x.append(x0)
 
 	return (ahf_x, ahf_m, cluster_name)
+
+
+
+def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_file, halos, r_subs):
+	zs = ahf_redshifts(base_path)
+	ss = ahf_snapshots(base_path)
+
+	n_halos = len(halos)
+
+	all_halo_z = []
+	old_halo = []
+	all_sub_z = [] #* n_halos
+	old_sub = []
+
+#	print old_sub
+
+	for ihz in range(0, n_halos):
+		halo_z = HaloThroughZ(end_snap - ini_snap)
+		all_halo_z.append(halo_z)
+		dummy_list = []
+		all_sub_z.append(dummy_list)
+		old_sub.append(dummy_list)
+
+
+	for i_snap in range(end_snap, ini_snap, -1):
+		# TODO this assumes one MPI task only !!!!!
+		this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
+		this_halos = read_ahf(this_file)
+		this_z = float(zs[i_snap])
+
+		this_t = z2Myr(this_z)
+		this_a = 1.0 / (1.0 + this_z)
+
+		# This is the first step
+		if i_snap == end_snap:
+			# Loop on the main halos to track (usually the two LG main members)
+			for i_main in range(0, n_halos):
+				this_halo = halos[i_main]
+				all_halo_z[i_main].add_step(this_halo, this_t, this_z)
+				
+				# Trace all the halos a factor r_sub away from the main halo
+				rsub = this_halo.r * r_subs
+				this_halo.sub_halos(this_halos, rsub)
+				subs = this_halo.sort_sub_mass()
+				n_sub = len(subs)
+
+				# Save all the halos for the next step
+				old_halo.append(this_halo)
+				tmp_subs = []
+
+				# Now track all the subhalos
+				for i_sub in range(0, n_sub):
+					this_sub = subs[i_sub]
+					old_sub[i_main].append(this_sub)
+					tmp_sub = SubHaloThroughZ(end_snap - ini_snap)
+					tmp_sub.add_step(this_sub, this_t, this_z)
+					tmp_sub.host.add_step(this_halo, this_t, this_z)
+					tmp_subs.append(tmp_sub)
+
+				# Allocate subhalo list for the i_main-th halo
+				all_sub_z[i_main] = [SubHaloThroughZ(end_snap-ini_snap) for i in range(0, n_sub)]
+
+				for i_sub in range(0, n_sub):
+					all_sub_z[i_main][i_sub] = tmp_subs[i_sub]
+
+			old_t = this_t
+
+		# Normal steps after the first one
+		else:	
+			timeStep = abs(old_t - this_t)		
+			
+			for i_main in range(0, n_halos):
+				this_halo = th.find_progenitor(old_halo[i_main], this_halos, this_a, timeStep)
+				old_halo[i_main] = this_halo
+				all_halo_z[i_main].add_step(this_halo, this_t, this_z)
+				
+				for i_sub in range(0, n_sub):
+					try:
+						this_sub = th.find_progenitor(old_sub[i_main][i_sub], this_halos, this_a, timeStep)	
+						doSubs = True
+					except:
+			#			print 'Subhalo[%d][%d] at step z=%.3f has no likely progenitor.' % (i_main, i_sub, this_z)		
+						doSubs = False
+
+					if doSubs:
+						old_sub[i_main][i_sub] = this_sub
+						all_sub_z[i_main][i_sub].add_step(this_sub, this_t, this_z)
+						all_sub_z[i_main][i_sub].host.add_step(this_halo, this_t, this_z)
+
+			old_t = this_t
+
+	return (all_halo_z, all_sub_z)
+
 
 
 
