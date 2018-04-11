@@ -9,7 +9,7 @@ from libcosmo.particles import *
 from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
-from libio.merger_tree import *
+from libio.history_trees import *
 from pygadgetreader import *
 import time
 

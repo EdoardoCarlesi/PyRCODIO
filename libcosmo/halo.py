@@ -2,6 +2,10 @@ import math
 import pickle
 import numpy as np
 import find_halos as fh
+import sys
+sys.path.append('../libio/')
+
+from libio.mtree_mah import *
 from scipy import interpolate
 from operator import *
 from utils import *
@@ -67,12 +71,22 @@ class Halo:
 
 		return sort_mass
 
-#	def sort_sub_dist(self):
+	def header(self, n_start):
+		head = "ID(" + str(n_start) + ")" ; n_start += 1
+		head += " M(" + str(n_start) + ")" ; n_start += 1
+		head += " R(" + str(n_start) + ")" ; n_start += 1
+		head += " X(" + str(n_start) + ")" ; n_start += 1
+		head += " Y(" + str(n_start) + ")" ; n_start += 1
+		head += " Z(" + str(n_start) + ")" ; n_start += 1
+		head += " Vx(" + str(n_start) + ")" ; n_start += 1
+		head += " Vy(" + str(n_start) + ")" ; n_start += 1
+		head += " Vz(" + str(n_start) + ")" ; n_start += 1
+		head += " Nsub(" + str(n_start) + ")" ; n_start += 1
+		head += " Npart(" + str(n_start) + ")" ; n_start += 1
 
+		return head
 
 	def info(self):
-		#return "ID: %ld, M: %.3e, X: (%7.3f, %7.3f, %7.3f), Vel: (%7.3f, %7.3f, %7.3f)" % \
-		#	(self.ID, self.m, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2])
 		return "%ld %.3e %.3f %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f %d %d" % \
 			(self.ID, self.m, self.r, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2], self.nsub, self.npart)
 
@@ -181,15 +195,8 @@ class HaloThroughZ:
 		return self.formation_time
 
 	def dump_history(self, f_name):
-		f_out = open(f_name, 'wb')
-		header = "# z(0) ID(1) M(2) r(3) x(4) y(5) z(6) vx(7) vy(8) vz(9) nsub(10) npart(11)\n"
-		f_out.write(header)
+		dump_mah(self, f_name)
 
-		for ih in range(0, self.n_steps):
-			line_z = "%5.3f " % (self.z_step[ih])
-			#print ih, line_z, self.halo[ih].info(), "\n"
-			line = line_z + self.halo[ih].info() + "\n"
-			f_out.write(line)
 
 	def load_file(self, f_name):
 		f_in = open(f_name, 'r')
