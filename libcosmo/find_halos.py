@@ -1,7 +1,6 @@
 from halo import *
 from utils import *
 from particles import *
-import track_halos as th
 
 import sys
 
@@ -53,7 +52,7 @@ def find_lg(halos, lgmod):
 	
 	print lgmod.info()
 
-	# Center is a three-d variable
+	# Center is a three-D variable
 	# These are initialized empty
 	halos_lg = []
 	halos_center = []	# List of haloes with the right mass range and distance from centrum
@@ -95,7 +94,6 @@ def find_lg(halos, lgmod):
 				# There are too many close-by haloes
 				if count_lg > 1:
 					count_wrong += 1
-	
 		
 		# A new first & second LG halos have been found:
 		if count_wrong == 0 and count_lg == 1:
@@ -126,7 +124,7 @@ def find_lg(halos, lgmod):
 				for k in range(0, nh_iso):
 					#print halos_iso[k].info()
 					if halos_iso[k].m > m_min:
-							#print halos_iso[k].distance(com), halos_iso[k].m
+						#print halos_iso[k].distance(com), halos_iso[k].m
 						n_iso_radius += 1
 	
 				if n_iso_radius == 2: 
@@ -178,9 +176,6 @@ def rate_lg_pair(lg1, lg2, box_center):
 	diff_v = abs(vrad0 - vrad) / abs(vrad0)
 	diff_ra = abs(rm12 - ratio0) / abs(ratio0)
 
-#	print "LG1: %s" % lg1.info()
-#	print "LG2: %s" % lg2.info()
-
 	lg_rate = diff_rh * fac_rh + fac_c * diff_c + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
 	
 	# Get a penalty for positive vrad
@@ -188,10 +183,7 @@ def rate_lg_pair(lg1, lg2, box_center):
 		lg_rate += 10.
 
 	contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
-	
 	print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
-#	print 'Values.   RH: %f, C:%f, M:%e, V:%f, RA:%f' % (rhalos, dcenter, m12, vrad, rm12)
-#	print 'Diff: %f, rh: %f, c:%f, m:%f, v:%f, ra:%f' % (lg_rate, diff_rh, diff_c, diff_m, diff_v, diff_ra)
 
 	return lg_rate
 
@@ -264,9 +256,6 @@ def locate_clusters(ahf_all, box_center):
 	cluster_name.append('Perseus (no h)')
 	cluster_pos.append([43.05, -16.89, -21.82])
 
-#	cluster_name.append('Perseus (over h)')
-#	cluster_pos.append([43.05 * 0.677, -16.89 * 0.677, -21.82 * 0.677])
-
 	cluster_name.append('Perseus-Pisces (a)')
 	cluster_pos.append([50.05, -10.89, -12.82])
 
@@ -330,8 +319,14 @@ def locate_clusters(ahf_all, box_center):
 	return (ahf_x, ahf_m, cluster_name)
 
 
+# Find the best match for each halo, ahf_now contains all the haloes we want to trace at z and ahf_back all the possible candidates at z+1
+def match_progenitors(ahf_now, ahf_back):
+	n_now = len(ahf_now)
+	n_back = len(ahf_back)
 
-def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_file, halos, r_subs):
+# FIXME check this function maybe it is not needed to track all the subhalos... maybe it is... restructure this anyway FIXME
+'''
+def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_halo, suff_part, main_halos, main_parts, r_subs):
 	zs = ahf_redshifts(base_path)
 	ss = ahf_snapshots(base_path)
 
@@ -339,8 +334,10 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 
 	all_halo_z = []
 	old_halo = []
+	old_part = []
 	all_sub_z = [] #* n_halos
 	old_sub = []
+	old_sub_part = []
 
 #	print old_sub
 
@@ -354,8 +351,12 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 
 	for i_snap in range(end_snap, ini_snap, -1):
 		# TODO this assumes one MPI task only !!!!!
-		this_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_file
-		this_halos = read_ahf(this_file)
+		this_part = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_part
+		this_halo = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_halo
+
+		this_halos = read_ahf(this_halo)
+		this_parts = read_particles(this_part)
+
 		this_z = float(zs[i_snap])
 
 		this_t = z2Myr(this_z)
@@ -363,9 +364,11 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 
 		# This is the first step
 		if i_snap == end_snap:
+
 			# Loop on the main halos to track (usually the two LG main members)
 			for i_main in range(0, n_halos):
-				this_halo = halos[i_main]
+				this_halo = main_halos[i_main]
+				this_part = main_parts[i_main]
 				all_halo_z[i_main].add_step(this_halo, this_t, this_z)
 				
 				# Trace all the halos a factor r_sub away from the main halo
@@ -376,11 +379,14 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 
 				# Save all the halos for the next step
 				old_halo.append(this_halo)
+				old_part.append(this_part)
 				tmp_subs = []
+				tmp_part_subs = []
 
 				# Now track all the subhalos
 				for i_sub in range(0, n_sub):
 					this_sub = subs[i_sub]
+					this_sub_part = subs[i_sub]
 					old_sub[i_main].append(this_sub)
 					tmp_sub = SubHaloThroughZ(end_snap - ini_snap)
 					tmp_sub.add_step(this_sub, this_t, this_z)
@@ -397,11 +403,19 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 
 		# Normal steps after the first one
 		else:	
+
 			timeStep = abs(old_t - this_t)		
-			
+			this_part = []	# this_parts contains ALL the part files, this_part only those of the progenitors
+
+			# FIXME the find progenitor routine has changed now!!!!!
 			for i_main in range(0, n_halos):
-				this_halo = th.find_progenitor(old_halo[i_main], this_halos, this_a, timeStep)
-				old_halo[i_main] = this_halo
+				# This function returns more than one possible progenitor, sorted by merit
+				this_halo = th.find_progenitors(old_halo[i_main], old_part[i_main], this_halos, this_parts, min_common, this_a, timeStep)	
+				for i_halo in range(0, len(this_halos)):
+					this_id = find_id(this_halo[i_halo].ID, this_halos)
+					this_part.append(this_parts[this_id])
+					
+				old_halo[i_main] = this_halo[0]
 				all_halo_z[i_main].add_step(this_halo, this_t, this_z)
 				
 				for i_sub in range(0, n_sub):
@@ -409,7 +423,7 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 						this_sub = th.find_progenitor(old_sub[i_main][i_sub], this_halos, this_a, timeStep)	
 						doSubs = True
 					except:
-			#			print 'Subhalo[%d][%d] at step z=%.3f has no likely progenitor.' % (i_main, i_sub, this_z)		
+			# print 'Subhalo[%d][%d] at step z=%.3f has no likely progenitor.' % (i_main, i_sub, this_z)
 						doSubs = False
 
 					if doSubs:
@@ -420,31 +434,6 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 			old_t = this_t
 
 	return (all_halo_z, all_sub_z)
+'''
 
-
-
-
-def find_halo_id(idnum, ahf_halos):
-
-	n_halos = len(ahf_halos)
-	i_halos = 0
-	h_found = False	
-
-	while (i_halos < n_halos) and (h_found == False):
-		if (ahf[i_halo].ID == idnum):
-			h_found = True	
-		else:
-			i_halos += 1
-
-	if h_found == True:
-		return i_halos
-	else:
-		print 'Halo ID: %ld not found.' % idnum
-		return -1
-
-
-# Find the best match for each halo, ahf_now contains all the haloes we want to trace at z and ahf_back all the possible candidates at z+1
-def match_progenitors(ahf_now, ahf_back):
-	n_now = len(ahf_now)
-	n_back = len(ahf_back)
 

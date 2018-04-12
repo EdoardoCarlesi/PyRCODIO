@@ -4,6 +4,7 @@ from libcosmo.halo import *
 import os
 import numpy
 
+
 def read_ahf(file_name):
 	# Open file
 	file_ahf = open(file_name, 'r')
@@ -77,12 +78,14 @@ def read_particles(file_name):
 			count_p += 1			
 			count_l += 1
 		else:	
+			# All particles have been read in
 			if count_p == this_np and count_h > 0:
+				this_parts.sort()	# Automatically sort them by ascending order!
 				parts.append(this_parts)
 			
+			# Still reading particle files
 			if count_l < tot_l-1:
 				this_parts = []
-	
 				this_hid = long(column[1])	# Halo ID
 				this_np = int(column[0])
 				#print 'Line %ld found halo %ld with %d particles' % (count_l, this_hid, this_np)	

@@ -71,4 +71,27 @@ def a2Myr(a_factor):
 	return t_value
 
 
+class Cosmology:
+	'This class contains some basic properties of the cosmological model at hand. It could also be used as a class variable for Halo or other classes'
+	OmegaM = 0
+	OmegaL = 0
+	OmegaB = 0
+	Hubble = 0
+	BoxSize = 0
+	PkFile = ''
+
+	def __init__(self, oM, oB, oL, h, box):
+		self.OmegaM = oM
+		self.OmegaB = oB
+		self.OmegaL = oL
+
+	# TODO read some pre-computed table and interpolate
+	def Pk(self, k):
+		pk = 0
+		return pk
+
+
+
+
+
 

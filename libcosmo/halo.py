@@ -3,15 +3,13 @@ import pickle
 import numpy as np
 import find_halos as fh
 import sys
-sys.path.append('../libio/')
-
-from libio.mtree_mah import *
 from scipy import interpolate
 from operator import *
 from utils import *
 from units import *
 
 class Halo:
+	'Class containing a single DM halo'
 	ID = 1234567890123456789
 	m  = 0.0
 	x  = [0.0, 0.0, 0.0]
@@ -19,8 +17,9 @@ class Halo:
 	l  = [0.0, 0.0, 0.0]
 	r = 0.0
 	nsub = 0
-	rsub = 0.0	# This is supposed to be Rvir but it can be slightly larger, to look for nearby bound halos
-	subhalos = [] 	# This one only contains all sub-halo IDs
+	rsub = 0.0		# This is supposed to be Rvir but it can be slightly larger, to look for nearby bound halos
+	subhalos = [] 		# This one only contains all sub-halo IDs
+	progenitors = []	# Here we store the IDs (and maybe other properties, too) of the progenitors of the halo, based on particles and dynamics
 	npart = 0
 
 	def __init__(self):
@@ -31,6 +30,8 @@ class Halo:
 		self.r = 0.0
 		self.nsub = 0
 		self.npart = 0
+		self.subhalos = []
+		self.progenitors = []
 
 	def __getitem__(self, key):
 		if key == 0:
@@ -93,12 +94,15 @@ class Halo:
 
 
 class HaloThroughZ:
+	'This class is a wrapper for haloes at different redshifts, allowing to compute quickly major merging and formation times'
 	halo = []		# List storing a Halo structure per each timestep
 	t_step = []		# Time Step in Myrs
 	z_step = []		# Time steps in redshift
 	subhalos = []		# List storing a Halo structure per each timestep
 	n_mergers = []		# Number of mergers happening at that timestep
 
+	#min_common = 20		# CLASS VARIABLE - This is shared through ALL the instances of the HaloThroughZ class! Minimum number of shared 
+	#			# particles between progenitors, it is 20 by default (but can be changed)
 	n_steps = 0		# Number of steps available for this halo
 	is_smooth = False
 	formation_time = 0.0
@@ -141,10 +145,12 @@ class HaloThroughZ:
 
 		return pos_t
 
-	def add_step(self, halo, t, z):
+	def add_step(self, halo, z):
 		self.halo.append(halo)
-		self.t_step.append(t)
 		self.z_step.append(z)
+	
+		t = z2Myr(z)
+		self.t_step.append(t)
 
 	def add_subhalos(self, subhalos):
 		self.subhalos.append(subhalos)
@@ -191,12 +197,33 @@ class HaloThroughZ:
 		form_z = 0.5 * (self.z_step[im] + self.z_step[im-1])
 		self.formation_time = z2Myr(form_z)
 
-		#print m0, z0, self.formation_time
 		return self.formation_time
 
 	def dump_history(self, f_name):
-		dump_mah(self, f_name)
+       		f_out = open(f_name, 'wb')
+       		header = "# " 
+        	header += self.header()
+        	header += "\n"
 
+        	f_out.write(header)
+
+        	for ih in range(0, self.n_steps):
+        	        line_z = "%5.3f " % (self.z_step[ih])
+        	        line = line_z + self.self[ih].info() + "\n"
+        	        f_out.write(line)
+
+	def dump_tree(self, f_name):
+       		f_out = open(f_name, 'wb')
+
+        	for iz in range(0, self.n_steps):
+			n_progenitors = len(self.halo[iz].progenitors)
+			line = "# z = %5.3f" % (self.z_step[iz])
+        	        f_out.write(line)
+
+			for ip in range(0, n_progenitors):
+        		        line_z = "%ld    %ld    %ld\n" % (self.halo[ih].progenitors)
+        		        #line = line_z + self.self[ih].info() + "\n"
+        	        	f_out.write(line_z)
 
 	def load_file(self, f_name):
 		f_in = open(f_name, 'r')
@@ -230,7 +257,7 @@ class HaloThroughZ:
 
 
 class SubHaloThroughZ(HaloThroughZ):
-	
+	'This class is a wrapper for sub-haloes of a given host at different redshifts, allowing to compute quickly major merging and formation times'
 	host = HaloThroughZ(0)
 
 	# In principle we allow for an halo to cross the viral radius several times - there might be more accretion times/steps
@@ -343,6 +370,14 @@ class SubHalos():
 
 	def __init__(self, host, subs, code, host_name):
 		self.sub = []
+		self.select_subs = []
+		self.host_coords = []
+	
+		self.moi_evals = np.zeros((3))
+		self.moi_evecs = np.zeros((3, 3))
+		self.moi_red_evals = np.zeros((3))
+		self.moi_red_evecs = np.zeros((3, 3))
+
 		self.host = host
 		self.code = code
 		self.host_name = host_name
@@ -547,16 +582,30 @@ class LocalGroup:
 			return (self.LG1.m / self.LG2.m)
 		else:
 			return (self.LG1.m / self.LG2.m)
+
 	def header(self):
-		header = '# ID_M31(1) ID_MW(2) M_M31(3)[Msun] M_MW(4)[Msun] R_MwM31(5)[Mpc] Vrad_M31(6)[phys, km/s] Nsub_M31(7) Nsub_MW(8) SimuCode(9) Xcom(10) Ycom(11) Zcom(12)\n'
+		n_head = 0
+		header = '#' 
+		header += ' SimuCode('+ str(n_head) +')' ; n_head = +1
+		header += ' ID_M31('+ str(n_head) +')' ; n_head = +1
+		header += ' ID_MW('+ str(n_head) +')' ; n_head = +1
+		header += ' R_MWM31('+ str(n_head) +')' ; n_head = +1
+		header += ' Vrad('+ str(n_head) +')' ; n_head = +1
+		header += ' Nsub_M31('+ str(n_head) +')' ; n_head = +1
+		header += ' Nsub_MW('+ str(n_head) +')' ; n_head = +1
+		header += ' X_com('+ str(n_head) +')' ; n_head = +1
+		header += ' Y_com('+ str(n_head) +')' ; n_head = +1
+		header += ' Z_com('+ str(n_head) +')' ; n_head = +1
+		header += '\n'
+
 		return header
 
 	def info(self):
 		h0 = self.hubble 
 		kpc = 1000.
-		file_lg_line = '%ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %s  %5.2f  %5.2f  %5.2f\n' % \
-			(self.LG1.ID, self.LG2.ID, self.LG1.m/h0, self.LG2.m/h0, self.r/h0, self.vrad, \
-				self.LG1.nsub, self.LG2.nsub, self.code, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc)
+		file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f\n' % \
+			(self.code, self.LG1.ID, self.LG2.ID, self.LG1.m/h0, self.LG2.m/h0, self.r/h0, self.vrad, \
+				self.LG1.nsub, self.LG2.nsub, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc)
 
 		return file_lg_line
 

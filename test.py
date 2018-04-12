@@ -39,10 +39,44 @@ for i in range(0, n):
 	mass[i] /= 0.677
 	print 'Name:%s,  Mass:%e, Pos: %s ' % (names[i], mass[i], pos[i])
 
+'''
 
-#ahf_part = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_053.0000.z0.017.AHF_particles'
+ahf_part1 = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_particles'
+ahf_part2 = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_053.0000.z0.017.AHF_particles'
 
-#(ids, parts) = read_particles(ahf_part)
+ahf_halo1 = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+ahf_halo2 = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_053.0000.z0.017.AHF_halos'
+
+(ids1, parts1) = read_particles(ahf_part1)
+#(ids2, parts2) = read_particles(ahf_part2)
+
+ahf1 = read_ahf(ahf_halo1)
+#ahf2 = read_ahf(ahf_halo2)
+
+base_path = '/home/eduardo/CLUES/DATA/2048/00_06/00/'
+root_file = 'snapshot_'
+suff_ahf = '.AHF_halos'
+suff_part = '.AHF_particles'
+
+h1 = []
+p1 = []
+id1 = []
+
+h1.append(ahf1[3])
+p1.append(parts1[3])
+id1.append(ids1[3])
+
+ini_snap = 50
+end_snap = 54
+min_common = 15
+
+merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_ahf, min_common, h1, p1, id1)
+
+#find_progenitors
+#id1 = parts1[0]
+#id2 = parts2[0]
+#common = compare_particles(id1, id2)
+#print 'found particles: ', common
 
 
 '''
@@ -50,15 +84,10 @@ for i in range(0, n):
 
 
 
-base_path = '/home/eduardo/CLUES/DATA/2048/00_06/00/'
 ahf_file = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
-root_file = 'snapshot_'
-ahf_suff = '.AHF_halos'
-part_suff = '.AHF_particles'
 ini_snap = 0
 end_snap = 54
 
-#ahf = read_ahf(ahf_file)
 
 out_path='output/'
 num_run = '00_06_00'
@@ -96,6 +125,7 @@ for i in range(0, 1):
 
 plot_trajectory(all_sub_x, all_sub_y, 'x', 'y', out_path + 'test.png')
 
+'''
 
 '''
 halo = []

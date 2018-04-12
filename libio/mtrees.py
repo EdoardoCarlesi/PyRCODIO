@@ -31,21 +31,3 @@ def n_mah_files(out_path, num_run):
 
 	return (n_main, n_sub_all)
 
-
-def dump_mah(f_name, halo):
-	f_out = open(f_name, 'wb')
-	header = "# " 
-	header += halo.header()
-	header += "\n"
-
-	f_out.write(header)
-
-	for ih in range(0, halo.n_steps):
-		line_z = "%5.3f " % (halo.z_step[ih])
-		line = line_z + halo.halo[ih].info() + "\n"
-		f_out.write(line)
-
-
-
-
-
