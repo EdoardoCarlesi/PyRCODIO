@@ -21,6 +21,7 @@ class Halo:
 	subhalos = [] 		# This one only contains all sub-halo IDs
 	progenitors = []	# Here we store the IDs (and maybe other properties, too) of the progenitors of the halo, based on particles and dynamics
 	npart = 0
+	contam = 0.0	# level of contamination 
 
 	def __init__(self):
 		self.ID = 1234567890123456789
@@ -343,6 +344,7 @@ class LocalGroupModel:
 	def info(self):
 		lg_mod_info = "D_max: %.3f, D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
 				(self.d_max, self.d_iso, self.r_max, self.r_min, self.m_min)
+		return lg_mod_info
 
 # Class for bulk properties of sub halo groups of a given halo - mass functions, spatial distribution, etc.
 class SubHalos():

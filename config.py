@@ -1,5 +1,6 @@
 #!/usr/bin/python
-
+from libcosmo.find_halos import *
+from libcosmo.halo import *
 import numpy as np
 import os
 
@@ -20,43 +21,45 @@ def simu_runs():
 # 2048 runs
 def lg_models():
 	all_lg_models = []
+	model_index = dict()
+	model_count = 0
 
 	d_max = 5000.; r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 00_06 
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'00_06':model_count}) ; model_count += 1
 
 	d_max = 8000.; r_iso = 1550.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 8.5e+12; ratio_max = 3.5; vrad_max = -1.0	# 01_12
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'01_12':model_count}) ; model_count += 1
 
 	d_max = 8000.; r_iso = 1900.; r_max = 1700.; r_min = 200.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = -1.0	# 17_10
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'17_10':model_count}) ; model_count += 1
 
 	d_max = 7000.; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 34_13
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'34_13':model_count}) ; model_count += 1
 
 	d_max = 5000.; r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 45_17
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'45_17':model_count}) ; model_count += 1
 
 	d_max = 7000.; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 55_02
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'55_02':model_count}) ; model_count += 1
 
 	d_max = 7000.; r_iso = 1800.; r_max = 1400.; r_min = 200.; m_min = 8.0e+11; m_max = 4.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 64_14
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	all_lg_models.append(lg_model)
-	del lg_model
+	model_index.update({'64_14':model_count}) ; model_count += 1
 
-	return all_lg_models
+	return (all_lg_models, model_index)
 
 class Settings:
 	home_dir = ''

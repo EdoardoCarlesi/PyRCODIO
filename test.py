@@ -6,12 +6,36 @@ from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
-from libcosmo.lg_plot import *
+#from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
-from libio.history_trees import *
 from pygadgetreader import *
+from config import *
 import time
+
+ahf_file='/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/55_02/AHF_output/HESTIA_100Mpc_4096_55_02.127.z0.000.AHF_halos'
+
+(lg_model, lg_dict) = lg_models()
+
+this_index = int(lg_dict['55_02'])
+this_model = lg_model[this_index]
+
+print lg_model[0].info()
+print lg_model[1].info()
+print lg_model[2].info()
+print lg_model[4].info()
+
+print lg_dict
+print this_index, this_model.info(), this_model
+
+ahf = read_ahf(ahf_file)
+hs = find_lg(ahf, this_model)
+
+print hs[0].info()
+print hs[1].info()
+
+print hs[2].info()
+print hs[3].info()
 
 '''
 #base_path = '/home/eduardo/CLUES/DATA/1024/00_06/LV/'
@@ -39,7 +63,6 @@ for i in range(0, n):
 	mass[i] /= 0.677
 	print 'Name:%s,  Mass:%e, Pos: %s ' % (names[i], mass[i], pos[i])
 
-'''
 
 ahf_part1 = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_particles'
 ahf_part2 = '/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_053.0000.z0.017.AHF_particles'
@@ -79,7 +102,6 @@ merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_ahf, min_c
 #print 'found particles: ', common
 
 
-'''
 
 
 

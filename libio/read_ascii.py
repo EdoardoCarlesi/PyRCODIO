@@ -29,11 +29,13 @@ def read_ahf(file_name):
 			nsub = int(column[2])
 			npart = int(column[4])
 			angmom = [float(column[21]), float(column[22]), float(column[23])]
+			contam = float(column[38])
 
 			# Initialize and append halo to the list
 			halo = Halo()
 			halo.initialize(idn, mass, pos, vel, rvir, nsub, npart)
 			halo.l = angmom
+			halo.contam = contam
 			halos_ahf.append(halo)
 			count += 1
 
