@@ -11,7 +11,6 @@ from libcosmo.find_halos import *
 from libcosmo.lg_plot import *
 
 resolution='2048'
-#resolution='2048b'
 #resolution='1024'
 run_init = 3
 run_end = 4
@@ -19,10 +18,11 @@ run_end = 4
 subrun_init = 0
 subrun_end = 10
 
-base_path = '/home/eduardo/CLUES/DATA/'
+base_path = '/home/eduardo/CLUES/'
 outp_path = 'output/'
+env_type = 'zoom'
 
-ahf_snap = 'snapshot_054.0000.z0.000.AHF_halos'
+ahf_snap = 'snapshot_054.0000.z0.000.AHF_halos'; ahf_snap_alt = 'snapshot_054.0000.z0.001.AHF_halos'
 snapshot = 'snapshot_054'
 
 #do_plots = "true"
@@ -33,20 +33,22 @@ plot_pos = "false"
 
 hubble = 0.67		
 part_min = 25000
-base_path = '/home/eduardo/CLUES/DATA/' 
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
 
 # Allocate LG Models
 all_runs = simu_runs()
-all_lg_models = lg_models()
+(all_lg_models, hash_run) = lg_models()
 
 lg_dummy = LocalGroup(all_runs[0])
 sub_dummy = SubHalos(0, '00', '00', [0, 0])
 
 file_sub_header = sub_dummy.header()
 file_lg_header = lg_dummy.header()
+
+settings = Settings(base_path, outp_path, env_type, resolution, snapshot)
+settings.box_center = center
 
 # Subhalo identification criterion
 r_sub_min = 10.0   # Minimum distance from the main halo - if it's too close it might be double counting the host
@@ -55,17 +57,24 @@ n_sub_min = 4 # Minimum number of subhalos required to compute the moment of ine
 fac_r = 1.0
 np_sub_min = 50
 
+
 # when several LG-like pairs are found, get the first pair (0) second pair (2) etc.
 ind_lg = 0
 
 for run_j in range(run_init, run_end):
 	base_run = all_runs[run_j]
-	lg_model = all_lg_models[run_j]
-	file_lg_name = outp_path + 'lg_candidates_'+resolution+'_'+base_run+'.txt'
-	file_sub_name = outp_path + 'lg_subhalos_'+resolution+'_'+base_run+'.txt'
-	file_lg_txt = open(base_path + file_lg_name, 'wb')
+	this_run = hash_run[base_run]
+	lg_model = all_lg_models[this_run]
+
+	settings.base_run = base_run
+	settings.re_init()
+
+	#print base_run, settings.base_run
+	(file_lg_name, file_sub_name) = settings.get_zoom_output()
+
+	file_lg_txt = open(file_lg_name, 'wb')
 	file_lg_txt.write(file_lg_header)
-	file_sub_txt = open(base_path + file_sub_name, 'wb')
+	file_sub_txt = open(file_sub_name, 'wb')
 	file_sub_txt.write(file_sub_header)
 
 	# Subhalo mass function variables
@@ -77,9 +86,11 @@ for run_j in range(run_init, run_end):
 
 	for subrun_i in range(subrun_init, subrun_end):
 		run_num = '%02d' % subrun_i
+		settings.init_files(base_run, run_num)
+
 		file_png_name = outp_path + 'lg_' + resolution+'_' + base_run + '_' + run_num + '.png'
-		this_file_ahf = base_path + resolution + '/' + base_run + '/' + run_num + '/' + ahf_snap
-		this_file_gad = base_path + resolution + '/' + base_run + '/' + run_num + '/' + snapshot
+		this_file_ahf = settings.ahf_path + ahf_snap; 		this_file_ahf_alt = settings.ahf_path + ahf_snap_alt
+		this_file_gad = settings.file_z0
 		print_run = base_run + '_' + run_num
 		good_lgs = 0
 		
@@ -87,7 +98,13 @@ for run_j in range(run_init, run_end):
 				print 'Reading in AHF file: ', this_file_ahf
 				ahf_all = read_ahf(this_file_ahf)
 				these_lg = find_lg(ahf_all, lg_model)
-				n_lgs = int(len(these_lg) / 2)
+				n_lgs = int(len(these_lg))
+
+		elif os.path.exists(this_file_ahf_alt):
+				print 'Reading in alternative AHF file: ', this_file_ahf_alt
+				ahf_all = read_ahf(this_file_ahf_alt)
+				these_lg = find_lg(ahf_all, lg_model)
+				n_lgs = int(len(these_lg))
 		else:
 				print 'No AHF file: ', this_file_ahf
 				n_lgs = 0;
@@ -98,12 +115,9 @@ for run_j in range(run_init, run_end):
 			# If there are more candidates we need to find the right one
 			rating = 1000
 			for ind in range(0, n_lgs):
-				mw = these_lg[2 * ind]			
-				m31 = these_lg[2 * ind + 1]		
+				lg = these_lg[ind]
+				lg.c_box = settings.box_center
 
-				lg = LocalGroup(print_run)
-				lg.init_halos(m31, mw)				
-				 
 				if lg.rating() < rating and (lg.LG1.npart > part_min) and (lg.LG2.npart > part_min):
 					print 'Old rating: %f new rating %f this index %d' % (rating, lg.rating, ind)
 					good_lgs += 1

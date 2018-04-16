@@ -50,6 +50,7 @@ class Halo:
 		self.x  = pos 
 		self.v  = vel
 		self.r  = rad 
+		self.nsub = n_sub
 		self.npart = n_part
 
 	def distance(self, rad):
@@ -329,7 +330,7 @@ class LocalGroupModel:
 	mratio_max = 4.
 	vrad_max = -1.0
 	center = [50000.0] * 3
-	model_type = '00'
+	model_code = '00'
 
 	def __init__(self, d_max, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
 		self.d_max = d_max
@@ -526,7 +527,6 @@ class LocalGroup:
 	ahf_file = 'this_file.AHF_halos'
 	vrad = -100.
 	r = 770.
-	virgo_x = [47500., 61000., 49500.]
 	d_cbox = 0.0
 	d_virgo = 0.0
 	rating = 0.0
@@ -542,6 +542,10 @@ class LocalGroup:
 
 	def __init__(self, code):
 		self.code = code
+		self.c_box = []
+		self.com = []
+		self.LG1 = Halo()
+		self.LG2 = Halo()
 
 	def init_halos(self, lg1, lg2):
 
@@ -555,12 +559,13 @@ class LocalGroup:
 		if lg1.x[0] != 0 and lg2.x != 0:
 			self.r = self.r_halos()
 			self.vrad = self.v_radial()
-			self.com = self.com()
-
+			self.com = self.do_com()
+			
+	
 	def rating(self):
-		self.rating = rate_lg_pair(self.LG1, self.LG2, self.c_box)
+		self.rating = fh.rate_lg_pair(self.LG1, self.LG2, self.c_box)
 
-	def com(self):
+	def do_com(self):
 		self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
 		return self.com 
 

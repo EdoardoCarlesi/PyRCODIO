@@ -49,12 +49,14 @@ def find_lg(halos, lgmod):
 	m_min = lgmod.m_min
 	r_min = lgmod.r_min
 	r_max = lgmod.r_max
-	
+	model_code = lgmod.model_code	
+
 	print lgmod.info()
 
 	# Center is a three-D variable
 	# These are initialized empty
-	halos_lg = []
+	halos_lg = []		# list of individual halos
+	lgs = []		# Haloes paired as LG structures
 	halos_center = []	# List of haloes with the right mass range and distance from centrum
 
 	n_halos = len(halos)
@@ -131,9 +133,12 @@ def find_lg(halos, lgmod):
 					# A new first & second LG halos have been found:
 					halos_lg.append(halo_lg0)
 					halos_lg.append(halo_lg2)
+					this_lg = LocalGroup(model_code)
+					this_lg.init_halos(halo_lg0, halo_lg2)
+					lgs.append(this_lg)
 					n_all_lgs += 1
 
-	return halos_lg
+	return lgs
 
 
 def rate_lg_pair(lg1, lg2, box_center):
