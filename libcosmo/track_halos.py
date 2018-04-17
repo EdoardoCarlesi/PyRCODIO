@@ -89,7 +89,7 @@ def merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_halo, 
 				old_main_part[i_main] = this_part
 				old_main_ids[i_main] = this_ids
 			
-				# Store the halo into the general 
+				# Store the halo into the general structure
 				all_halo_z[i_main].add_step(this_halo, this_z)
 				
 			old_t = this_t

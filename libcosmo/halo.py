@@ -103,6 +103,8 @@ class HaloThroughZ:
 	subhalos = []		# List storing a Halo structure per each timestep
 	n_mergers = []		# Number of mergers happening at that timestep
 
+	progenitors = None	# This variable contains the list of progenitors at each step
+
 	#min_common = 20		# CLASS VARIABLE - This is shared through ALL the instances of the HaloThroughZ class! Minimum number of shared 
 	#			# particles between progenitors, it is 20 by default (but can be changed)
 	n_steps = 0		# Number of steps available for this halo
@@ -346,6 +348,7 @@ class LocalGroupModel:
 		lg_mod_info = "D_max: %.3f, D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
 				(self.d_max, self.d_iso, self.r_max, self.r_min, self.m_min)
 		return lg_mod_info
+
 
 # Class for bulk properties of sub halo groups of a given halo - mass functions, spatial distribution, etc.
 class SubHalos():

@@ -99,39 +99,40 @@ def lg_models():
 	return (all_lg_models, model_index)
 
 class Settings:
-	home_dir = ''
-	data_dir = ''
-	outp_dir = ''	
+	home_dir = None
+	data_dir = None
+	outp_dir = None
 	env_type = None
 	data_dir = None 
-	ahf_path = ''
-	sub_path = ''
-	base_path = ''
-	plot_out = ''
+	ahf_path = None
+	sub_path = None
+	base_path = None
+	plot_out = None
 	base_run = None
 	run_num = None
-	sub_path_ahf = ''
-	sub_path_ics = ''
-	sub_path_snap = ''
+	sub_path_ahf = None
+	sub_path_ics = None
+	sub_path_snap = None
 	resolution = None
 	n_ic = None
 	n_z0 = None
-	file_z0 = ''
-	base_out = '' 
+	file_z0 = None
+	base_out = None
 
-	snapshot=''
+	snapshot = None 
 
-	file_lg_name = ''
-	file_lgall_name = ''
-	file_lare_name = ''
-	file_codes_name = ''
+	file_png_name = None
+	file_lg_name = None
+	file_lgall_name = None
+	file_lare_name = None
+	file_codes_name = None
 
-	file_ahf_in = ''
-	file_ic_in = ''
-	file_z0_in = ''
-	file_ahf = ''
-	file_ic = ''
-	file_z0 = ''
+	file_ahf_in = None
+	file_ic_in = None
+	file_z0_in = None
+	file_ahf = None
+	file_ic = None
+	file_z0 = None
 
 	box_center = []
 
@@ -270,6 +271,10 @@ class Settings:
 
 		# This is the same for all
 		self.plot_out =	self.base_path + self.outp_dir + self.base_run + '_particles_LG_LV.png'
+
+	def get_png_output(self, info):
+		self.file_png_name = self.base_path + self.outp_dir + info + '_' + self.resolution + '_' + self.base_run + '.png'
+		return self.file_png_name
 
 	def get_zoom_output(self):
 		return (self.file_lg_name, self.file_lgsub_name)

@@ -78,8 +78,8 @@ for run_j in range(run_init, run_end):
 	file_sub_txt.write(file_sub_header)
 
 	# Subhalo mass function variables
-	file_png_mfs1 = outp_path + 'mf_01_' + resolution+'_' + base_run + '.png'
-	file_png_mfs2 = outp_path + 'mf_02_' + resolution+'_' + base_run + '.png'
+	file_png_mfs1 = settings.get_png_output('mf_01')
+	file_png_mfs2 = settings.get_png_output('mf_02')
 	x_mf1 = []; 	y_mf1 = []
 	x_mf2 = []; 	y_mf2 = []
 	n_mf = 0
@@ -88,7 +88,7 @@ for run_j in range(run_init, run_end):
 		run_num = '%02d' % subrun_i
 		settings.init_files(base_run, run_num)
 
-		file_png_name = outp_path + 'lg_' + resolution+'_' + base_run + '_' + run_num + '.png'
+		file_png_name = settings.get_png_output('lg')
 		this_file_ahf = settings.ahf_path + ahf_snap; 		this_file_ahf_alt = settings.ahf_path + ahf_snap_alt
 		this_file_gad = settings.file_z0
 		print_run = base_run + '_' + run_num
