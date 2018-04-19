@@ -23,6 +23,8 @@ class Halo:
 	npart = 0
 	contam = 0.0	# level of contamination 
 
+	id_index = dict()
+
 	def __init__(self):
 		self.ID = 1234567890123456789
 		self.m  = 0.0
@@ -43,6 +45,11 @@ class Halo:
 			return self.r
 		else:
 			return self.nsub
+
+	# Dictionary variable shared by all halos
+	def update_id_index(self, ID, index):
+		ID_str = str(ID)
+		Halo.id_index.update({ID_str:index})
 
 	def initialize(self, ind, mass, pos, vel, rad, n_sub, n_part):
 		self.ID = ind
@@ -536,6 +543,7 @@ class LocalGroup:
 	com = [0.0] * 3
 	hubble = 0.67
 
+
 	LG1 = Halo()
 	LG2 = Halo()
 
@@ -562,13 +570,14 @@ class LocalGroup:
 		if lg1.x[0] != 0 and lg2.x != 0:
 			self.r = self.r_halos()
 			self.vrad = self.v_radial()
-			self.com = self.do_com()
+			self.com = self.get_com()
 			
-	
+
+
 	def rating(self):
 		self.rating = fh.rate_lg_pair(self.LG1, self.LG2, self.c_box)
 
-	def do_com(self):
+	def get_com(self):
 		self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
 		return self.com 
 

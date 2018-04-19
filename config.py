@@ -158,6 +158,9 @@ class Settings:
 		self.resolution = resolution
 		self.snapshot_str = snap_str
 
+		self.redshifts = []
+		self.snapshots = []
+
 		self.base_run = ''
 		self.info()
 		self.init_paths()

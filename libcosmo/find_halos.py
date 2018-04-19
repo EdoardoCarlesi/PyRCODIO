@@ -25,6 +25,34 @@ def find_halos(halo_c, halo_all, radius):
 
 	return halo_s
 
+def find_ids(halos, all_ids, all_parts):
+	n_halos = len(halos)
+	these_ids = []
+	these_parts = []
+
+	for i_halo in range(0, n_halos):
+		this_id = str(halos[i_halo].ID)
+		this_index = all_ids[this_id] 
+		these_ids.append(this_id)
+		these_parts.append(all_parts[this_index[0]])
+
+	return (these_ids, these_parts)
+
+# Returns an array of all the haloes whose com is located within a given radius from a given point in space, and above a given mass
+def find_halos_mass_radius(x_c, halo_all, radius, mass):
+	n_halos = len(halo_all)
+	halo_s = []
+
+	for h in range(0, n_halos):
+		halo_0 = halo_all[h]
+		m_c = halo_0.m
+		d_c = halo_0.distance(x_c)	
+	
+		if d_c < radius and m_c > mass:
+			halo_s.append(halo_0)
+
+	return halo_s
+
 
 # Returns an array of all the haloes whose com is located within a given radius from a given point in space
 def find_halos_point(x_c, halo_all, radius):
@@ -324,13 +352,13 @@ def locate_clusters(ahf_all, box_center):
 	return (ahf_x, ahf_m, cluster_name)
 
 
+'''
 # Find the best match for each halo, ahf_now contains all the haloes we want to trace at z and ahf_back all the possible candidates at z+1
 def match_progenitors(ahf_now, ahf_back):
 	n_now = len(ahf_now)
 	n_back = len(ahf_back)
 
 # FIXME check this function maybe it is not needed to track all the subhalos... maybe it is... restructure this anyway FIXME
-'''
 def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_halo, suff_part, main_halos, main_parts, r_subs):
 	zs = ahf_redshifts(base_path)
 	ss = ahf_snapshots(base_path)

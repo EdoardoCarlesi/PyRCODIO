@@ -18,11 +18,11 @@ def module(vec):
 
 def is_there(val, vec):
 	is_there = False
-	entries = []
 	n_vec = len(vec)
+	entries = []
 
 	for i_vec in range(0, n_vec):
-		if vec[i_vec] == val:
+		if str(vec[i_vec]) == str(val):
 			is_there = True
 			entries.append(i_vec)
 
@@ -165,6 +165,34 @@ def moment_inertia_reduced(coord, masses):
 	print e_val/e_max
 
 	return (e_val, e_vec)
+
+
+def inertiaTensor(x, y, z):
+	I=[]
+	for index in range(9):
+        	I.append(0)
+
+	I[0] = np.sum(y*y+z*z) 
+	I[1] = np.sum(-y*x)    
+	I[2] = np.sum(-x*z)    
+	I[3] = np.sum(-y*x)    
+	I[4] = np.sum(x*x+z*z) 
+	I[5] = np.sum(-y*z)    
+	I[6] = np.sum(-z*x)    
+	I[7] = np.sum(-z*y)    
+	I[8] = np.sum(x*x+y*y) 
+
+	tensor = np.array([(I[0:3]), (I[3:6]), (I[6:9])])
+	vals, vects = np.linalg.eig(tensor)  # they come out unsorted, so the command below is needed
+	eig_ord = np.argsort(vals)  # a thing to note is that here COLUMN i corrensponds to eigenvalue i.
+	ord_vals = vals[eig_ord]
+	ord_vects = vects[:, eig_ord].T
+
+	TriaxParam = (ord_vals[2]*ord_vals[2]-ord_vals[1]*ord_vals[1])/(ord_vals[2]*ord_vals[2]-ord_vals[0]*ord_vals[0])
+	AxisRatio = ord_vals[0]/ord_vals[2]
+
+	return ord_vals, ord_vects, TriaxParam, AxisRatio
+
 
 def moment_inertia(coord, masses):
 	n_parts = masses.size
