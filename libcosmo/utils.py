@@ -16,6 +16,18 @@ def module(vec):
 
 	return math.sqrt(elem)
 
+def is_there(val, vec):
+	is_there = False
+	entries = []
+	n_vec = len(vec)
+
+	for i_vec in range(0, n_vec):
+		if vec[i_vec] == val:
+			is_there = True
+			entries.append(i_vec)
+
+	return (is_there, entries)
+	
 def max_list(vec):
 	n_y = len(vec)
 	v0 = vec[0][0]

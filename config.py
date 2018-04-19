@@ -1,6 +1,8 @@
 #!/usr/bin/python
 from libcosmo.find_halos import *
 from libcosmo.halo import *
+from libcosmo.units import *
+from libcosmo.utils import *
 import numpy as np
 import os
 
@@ -99,6 +101,7 @@ def lg_models():
 	return (all_lg_models, model_index)
 
 class Settings:
+	# Standard paths where the files are kept
 	home_dir = None
 	data_dir = None
 	outp_dir = None
@@ -113,20 +116,34 @@ class Settings:
 	sub_path_ahf = None
 	sub_path_ics = None
 	sub_path_snap = None
+	base_out = None
+
+	# Properties of the files and simulation
 	resolution = None
 	n_ic = None
 	n_z0 = None
+	n_ahf = 1	
 	file_z0 = None
-	base_out = None
+	box_center = []
+	
+	# Redshift values and snapshot numbers for the simulation
+	redshifts = []
+	snapshots = []
 
-	snapshot = None 
+	# Suffixes
+	ahf_file = ''
+	ahf_halos_str = '.AHF_halos'
+	ahf_parts_str = '.AHF_particles'
+	snapshot_str = 'snapshot_'
 
+	# Output file names
 	file_png_name = None
 	file_lg_name = None
 	file_lgall_name = None
 	file_lare_name = None
 	file_codes_name = None
 
+	# Input file names
 	file_ahf_in = None
 	file_ic_in = None
 	file_z0_in = None
@@ -134,14 +151,12 @@ class Settings:
 	file_ic = None
 	file_z0 = None
 
-	box_center = []
-
-	def __init__(self, home_dir, outp_dir, env_type, resolution, snapshot):
-		self.snapshot = snapshot
+	def __init__(self, home_dir, outp_dir, env_type, resolution, snap_str):
 		self.home_dir = home_dir
 		self.outp_dir = outp_dir
 		self.env_type = env_type
 		self.resolution = resolution
+		self.snapshot_str = snap_str
 
 		self.base_run = ''
 		self.info()
@@ -157,8 +172,7 @@ class Settings:
 	def re_init(self):
 		self.init_paths()
 		self.init_ascii()
-		#self.init_files()
-	
+
 	# Initialize local paths - where to look for all the files and stuff
 	def init_paths(self):
 		if self.env_type == "HESTIA" :
@@ -219,22 +233,23 @@ class Settings:
 			self.file_lare_name = self.base_path + self.outp_dir + 'lg_candidates_LaReLGF_'+self.resolution+'.txt'
 			self.file_codes_name = self.base_path + self.outp_dir + 'lg_codes_'+self.resolution+'.txt'
 
-
+	# These files change at different steps, are "dynamically" allocated
 	def init_files(self, base_run, run_num):
 		self.base_run = base_run
 		self.run_num = run_num
-	
+
+		# TODO change all the numbers!!!!! add a use_snap variable to substitute the 054 and 127
 		if self.resolution == "1024" or self.resolution == "2048":
 			self.base_run = self.base_run + '/' + self.run_num
 
 		if self.env_type == "HESTIA" :
-			self.snapshot = 'HESTIA_100Mpc_512_'+self.base_run+'.127.z0.000.AHF_halos'
+			self.ahf_file = 'HESTIA_100Mpc_512_'+self.base_run+'.127.z0.000.AHF_halos'
 			self.file_z0 = 'snapshot_127'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.home_dir + '/HESTIA/LaRe/' + self.base_out
 			self.n_ic = 2
 			self.n_z0 = 8
-			self.file_ahf_in = self.base_path + '/'+ self.sub_path + self.base_run + '/' + self.sub_path_ahf + self.snapshot
+			self.file_ahf_in = self.base_path + '/'+ self.sub_path + self.base_run + '/' + self.sub_path_ahf + self.ahf_file
 			self.file_z0_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_snap + self.file_z0
 			self.file_ic_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_ics + self.file_ic
 
@@ -244,7 +259,7 @@ class Settings:
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out
 			self.n_ic = 1
 			self.n_z0 = 1
-			self.file_ahf_in = self.base_path + self.sub_path_ahf  + self.base_run + '/' + self.snapshot
+			self.file_ahf_in = self.base_path + self.sub_path_ahf  + self.base_run + '/' + self.ahf_file
 			self.file_z0_in = self.base_path +  self.sub_path_snap + self.base_run + '/' + self.file_z0
 			self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
 
@@ -255,10 +270,14 @@ class Settings:
 			self.n_ic = 1
 			self.n_z0 = 1
 			self.ahf_path = self.base_path + self.resolution + '/' + self.base_run + '/'
-			self.file_ahf_in = self.base_path + self.sub_path_ahf  + self.base_run + '/' + self.snapshot
+			self.file_ahf_in = self.base_path + self.sub_path_ahf  + self.base_run + '/' + self.ahf_file
 			self.file_z0_in = self.base_path +  self.sub_path_snap + self.base_run + '/' + self.file_z0
-			self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
+			#self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
 	
+			# Initialize 
+			self.redshifts = ahf_redshifts(self.ahf_path)
+			self.snapshots = ahf_snapshots(self.ahf_path)
+
 		else:
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
@@ -271,6 +290,20 @@ class Settings:
 
 		# This is the same for all
 		self.plot_out =	self.base_path + self.outp_dir + self.base_run + '_particles_LG_LV.png'
+
+	def get_ahf_files(self, i_snap, mpi_task):
+		this_z = str(self.redshifts[i_snap])
+		this_s = str(self.snapshots[i_snap])
+		mpi_str = '%04d' % mpi_task
+	
+		if self.env_type == "HESTIA" :	# FIXME this needs to be set straight
+			this_part_file = self.ahf_path+self.snapshot_str+self.snapshots[i_snap]+'.'+mpi_str+'.z'+self.redshifts[i_snap]+self.ahf_parts_str
+			this_halo_file = self.ahf_path+self.snapshot_str+self.snapshots[i_snap]+'.'+mpi_str+'.z'+self.redshifts[i_snap]+self.ahf_halos_str
+		else:
+			this_part_file = self.ahf_path+self.snapshot_str+self.snapshots[i_snap]+'.'+mpi_str+'.z'+self.redshifts[i_snap]+self.ahf_parts_str
+			this_halo_file = self.ahf_path+self.snapshot_str+self.snapshots[i_snap]+'.'+mpi_str+'.z'+self.redshifts[i_snap]+self.ahf_halos_str
+
+		return (this_part_file, this_halo_file)
 
 	def get_png_output(self, info):
 		self.file_png_name = self.base_path + self.outp_dir + info + '_' + self.resolution + '_' + self.base_run + '.png'

@@ -1,12 +1,17 @@
+from find_halos import *
 from utils import *
 from units import *
-from find_halos import *
+from halo import *
+
 import numpy as np
 import math
 
-# Computes the merger tree for a given number of halos
-# Subhalos: maybe they can be included in the main_halos list ? Then they can be put inside a SubHaloThroughZ class later
-def merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_halo, min_common, main_halos, main_parts, main_ids):
+'''
+	Computes the merger tree for a given number of halos. This is generally the two main LG halos at z=0 and their satellites
+	Subhaloes are stored separately if the trace_subs boolean variable is set to true. Then ids_subs contains the ids of the main haloes
+	whose subhaloes need to be tracked at each step, using a factor r_subs * Rvir to identify them
+'''
+def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids, settings, track_subs, ids_subs, r_subs):
 	zs = ahf_redshifts(base_path)
 	ss = ahf_snapshots(base_path)
 
@@ -14,6 +19,9 @@ def merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_halo, 
 
 	# Final list containing HaloThroughZ objects
 	all_halo_z = []
+
+	# These are simply all the haloes within a given radius at each step
+	all_subs_z = []		
 
 	# Temporary lists that allow intra-snapshot comparisons - only for the haloes being tracked
 	old_main_halo = []
@@ -24,12 +32,13 @@ def merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_halo, 
 	for i_halo in range(0, n_halos):
 		halo_z = HaloThroughZ(end_snap - ini_snap)
 		all_halo_z.append(halo_z)
+		#subs_z = SubHaloThroughZ(end_snap - ini_snap)
+		#all_subs_z.append(subs_z)
 
 	# Now loop over all the particle and halo files
 	for i_snap in range(end_snap, ini_snap, -1):
 		# TODO this assumes one MPI task only !!!!!
-		this_part_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_part
-		this_halo_file = base_path + root_file + ss[i_snap] + '.0000.z' + zs[i_snap] + suff_halo
+		(this_part_file, this_halo_file) = settings.get_ahf_files(i_snap, 0)
 
 		this_all_halo = read_ahf(this_halo_file)
 		(this_all_ids, this_all_parts) = read_particles(this_part_file)
@@ -42,7 +51,7 @@ def merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_halo, 
 		# This is the first step
 		if i_snap == end_snap:
 
-			# Loop on the main halos to track (usually the two LG main members)
+			# Loop on the main halos to be tracked (usually the two LG main members)
 			for i_main in range(0, n_halos):
 				this_halo = main_halos[i_main]
 				this_part = main_parts[i_main]
@@ -55,6 +64,14 @@ def merger_tree(end_snap, ini_snap, base_path, root_file, suff_part, suff_halo, 
 				old_main_halo.append(this_halo)
 				old_main_part.append(this_part)
 				old_main_ids.append(this_ids)
+			
+				if track_subs == True:
+					(is_there, entries) = is_there(this_ids, ids_subs)
+
+					if is_there == True:
+						sub_halos = find
+						this_subs = SubHalos(this_halo, sub_halos, )
+						all_subs_z.append(this_subs)
 
 			# Do this once the loop on all the halos is finished
 			old_t = this_t

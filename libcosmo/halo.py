@@ -354,10 +354,9 @@ class LocalGroupModel:
 class SubHalos():
 	host = Halo()
 	header = ''
-	host_name = 'LG'
 	hubble = 1.0
+	code = ''
 	sub = []
-	code = '00_00_00'
 	n_sub = 0
 	
 	# This one holds the selected subhalos above a given threshold	
@@ -370,11 +369,7 @@ class SubHalos():
 	moi_red_evals = np.zeros((3))
 	moi_red_evecs = np.zeros((3, 3))
 
-	def __new__(cls, *args, **kwargs):
-		instance = super(SubHalos, cls).__new__(cls, *args, **kwargs)
-		return instance
-
-	def __init__(self, host, subs, code, host_name):
+	def __init__(self, host, subs):
 		self.sub = []
 		self.select_subs = []
 		self.host_coords = []
@@ -385,8 +380,6 @@ class SubHalos():
 		self.moi_red_evecs = np.zeros((3, 3))
 
 		self.host = host
-		self.code = code
-		self.host_name = host_name
 		self.init_subs(subs)
 
 	def init_subs(self, subs):
@@ -396,13 +389,20 @@ class SubHalos():
 		for ih in range(0, self.n_sub):
 			self.sub.append(subs[ih])
 
+	def sub_within_r(self, r_max):
+		subs_r = []
+	
+		for ih in range(0, self.n_sub):
+			if self.sub[ih].distance(host.x) < r_max:
+				subs_min.append(self.sub[ih])
+
+		return subs_r
+
 	def sub_over_m(self, m_min):
-		n_sub_min = 0
 		subs_min = []
 
 		for ih in range(0, self.n_sub):
 			if self.sub[ih].m > m_min:
-				n_sub_min += 1
 				subs_min.append(self.sub[ih])
 
 		return subs_min

@@ -13,6 +13,27 @@ from pygadgetreader import *
 from config import *
 import time
 
+ids = [0] * 6
+#ids = np.zeros((6))
+ids[0] = 10283893
+ids[1] = 123456789
+ids[2] = 123456789
+ids[3] = 18923838
+ids[4] = 123456789
+ids[5] = 123456789
+
+
+#ids = [10283747492921, 123456789, 1903784749321]
+this = 123456789
+
+#ids = [0, 1, 2, 3, 4, 5, 6, 7]
+
+pts = np.where(ids == this)
+#pts = np.where(ids > 3 and ids < 5)
+
+print pts[0], pts
+
+'''
 ahf_file='/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/55_02/AHF_output/HESTIA_100Mpc_4096_55_02.127.z0.000.AHF_halos'
 
 (lg_model, lg_dict) = lg_models()
@@ -37,7 +58,6 @@ print hs[1].info()
 print hs[2].info()
 print hs[3].info()
 
-'''
 #base_path = '/home/eduardo/CLUES/DATA/1024/00_06/LV/'
 #snap_file = base_path + 'snapshot_020'
 #ahf_file = base_path + 'snapshot_020.0000.z0.000.AHF_halos.pttype1'
