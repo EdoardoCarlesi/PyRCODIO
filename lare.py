@@ -4,10 +4,9 @@ import numpy as np
 import os
 
 from libio.read_ascii import * 
-from libcosmo.halo import Halo
+from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.utils import *
-#from libcosmo.lg_plot import *
 from libio.lare import *
 from config import *
 
@@ -31,8 +30,8 @@ generate_lare='false'
 do_plots='false'
 #do_plots='true'
 
-#env_type="std"
-env_type="512box100"
+env_type="std"
+#env_type="512box100"
 #env_type="HESTIA"
 
 resolution='512'
@@ -56,30 +55,32 @@ d_virgo_max = 20000. / h0
 d_virgo_min = 7000. / h0
 
 # This one specifies the number and the types of LSS modes to be analyzed
-lss_init = 1
-lss_end = 14
+lss_init = 0
+lss_end = 1
 
 # How many sub-runs per LS realisation
 run_init = 0
 run_end = 1
 
 # If running on all seeds
-ice_init = 8
-ice_end = 12
-gin_init = 8
-gin_end = 20
+ice_init = 5
+ice_end = 6
+
+gin_init = 14
+gin_end = 15
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
 radius = 8000. 
-iso_radius = 2300. * h0
-r_max = 2000. * h0
-r_min = 400. * h0
-m_min = 1.e+12 * h0 
-m_max = 8.e+12 * h0
-
+iso_radius = 1000.
+r_max = 1500.
+r_min = 300. 
+m_min = 5.e+11  
+m_max = 8.e+12 
 ratio_max = 3.
-vrad_max = -1.0
+vrad_max = 10.0
+
+
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
@@ -166,12 +167,20 @@ for irun in range(lss_init, lss_end):
 			print 'Reading in AHF file: ', settings.file_ahf_in
 		
 			ahf_all = read_ahf(settings.file_ahf_in)
+			
+			point = [47000., 47000., 53000.]
+			rad = 12500.
+	
+			halo_centers = find_halos_point(point, ahf_all, rad)
+			
+			for ih in (halo_centers):
+				print ih.info()
 
 			if find_virgo == "true":
 				(x0, m0, mtotVirgo) = locate_virgo(ahf_all)
 
 			these_lg = find_lg(ahf_all, lg_model)
-			n_lgs = int(len(these_lg) / 2)
+			n_lgs = int(len(these_lg))
 
 			print 'Found a total of %d LG pairs for the %s run.' % (n_lgs, base_run)
 
@@ -185,8 +194,8 @@ for irun in range(lss_init, lss_end):
 				save_lg = "false"
 
 				for ilg in range(0, n_lgs):
-					mw = these_lg[2 * ilg]			
-					m31 = these_lg[2 * ilg + 1]		
+					mw = these_lg[ilg].LG2			
+					m31 = these_lg[ilg].LG1		
 
 					lg = LocalGroup(print_run)
 					lg.init_halos(m31, mw)				

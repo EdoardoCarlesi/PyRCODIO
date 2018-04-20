@@ -257,6 +257,7 @@ class Settings:
 			self.file_ic_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_ics + self.file_ic
 
 		elif self.env_type == "512box100" :
+			self.ahf_file = 'snapshot_054.z0.000.AHF_halos'
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out
@@ -267,6 +268,7 @@ class Settings:
 			self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
 
 		elif self.env_type == "zoom" :
+			self.ahf_file = 'snapshot_054.0000.z0.000.AHF_halos'
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out
@@ -275,21 +277,22 @@ class Settings:
 			self.ahf_path = self.base_path + self.resolution + '/' + self.base_run + '/'
 			self.file_ahf_in = self.base_path + self.sub_path_ahf  + self.base_run + '/' + self.ahf_file
 			self.file_z0_in = self.base_path +  self.sub_path_snap + self.base_run + '/' + self.file_z0
-			#self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
+			self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
 	
 			# Initialize 
 			self.redshifts = ahf_redshifts(self.ahf_path)
 			self.snapshots = ahf_snapshots(self.ahf_path)
 
 		else:
+			self.ahf_file = 'snapshot_054.0000.z0.000.AHF_halos'
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out
 			self.n_ic = 2
 			self.n_z0 = 1
-			self.file_ahf_in = self.base_path + self.resolution + '/' + self.base_run + '/' + self.snapshot
+			self.file_ahf_in = self.base_path + self.resolution + '/' + self.base_run + '/' + self.ahf_file
 			self.file_z0_in = self.base_path + self.resolution + '/' + self.base_run + '/' + self.file_z0
-			self.file_ic_in = self.base_path + self.resolution + '/ICs/' + self.file_ic
+			#self.file_ic_in = self.base_path + self.resolution + '/ICs/' + self.file_ic
 
 		# This is the same for all
 		self.plot_out =	self.base_path + self.outp_dir + self.base_run + '_particles_LG_LV.png'

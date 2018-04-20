@@ -1,14 +1,12 @@
-from halo import *
+import halo as hl
 from utils import *
 from particles import *
 
+import numpy as np 
 import sys
-
 sys.path.append('../libio/')
-
 from libio.find_files import *
 from libio.read_ascii import *
-import numpy as np 
 
 # Returns an array of all the haloes whose com is located within a given radius from a given halo
 def find_halos(halo_c, halo_all, radius):
@@ -161,7 +159,7 @@ def find_lg(halos, lgmod):
 					# A new first & second LG halos have been found:
 					halos_lg.append(halo_lg0)
 					halos_lg.append(halo_lg2)
-					this_lg = LocalGroup(model_code)
+					this_lg = hl.LocalGroup(model_code)
 					this_lg.init_halos(halo_lg0, halo_lg2)
 					lgs.append(this_lg)
 					n_all_lgs += 1
@@ -375,7 +373,7 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 #	print old_sub
 
 	for ihz in range(0, n_halos):
-		halo_z = HaloThroughZ(end_snap - ini_snap)
+		halo_z = hl.HaloThroughZ(end_snap - ini_snap)
 		all_halo_z.append(halo_z)
 		dummy_list = []
 		all_sub_z.append(dummy_list)
@@ -421,13 +419,13 @@ def halos_and_subhalos_through_z(end_snap, ini_snap, base_path, root_file, suff_
 					this_sub = subs[i_sub]
 					this_sub_part = subs[i_sub]
 					old_sub[i_main].append(this_sub)
-					tmp_sub = SubHaloThroughZ(end_snap - ini_snap)
+					tmp_sub = hl.SubHaloThroughZ(end_snap - ini_snap)
 					tmp_sub.add_step(this_sub, this_t, this_z)
 					tmp_sub.host.add_step(this_halo, this_t, this_z)
 					tmp_subs.append(tmp_sub)
 
 				# Allocate subhalo list for the i_main-th halo
-				all_sub_z[i_main] = [SubHaloThroughZ(end_snap-ini_snap) for i in range(0, n_sub)]
+				all_sub_z[i_main] = [hl.SubHaloThroughZ(end_snap-ini_snap) for i in range(0, n_sub)]
 
 				for i_sub in range(0, n_sub):
 					all_sub_z[i_main][i_sub] = tmp_subs[i_sub]
