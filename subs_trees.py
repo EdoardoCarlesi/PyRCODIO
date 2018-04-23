@@ -11,6 +11,7 @@
 
 import numpy as np
 import os
+import pickle
 
 from config import *
 from libio.read_ascii import *
@@ -22,13 +23,13 @@ from libcosmo.lg_plot import *
 
 resolution='2048'
 
-run_init = 0
-run_end = 1
+run_init = 4
+run_end = 5
 
 subrun_init = 0
-subrun_end = 1
+subrun_end = 10
 
-ini_snap = 50
+ini_snap = 0
 end_snap = 54
 
 base_path = '/home/eduardo/CLUES/'
@@ -36,6 +37,8 @@ outp_path = 'output/'
 env_type = 'zoom'
 snap_base = 'snapshot_'
 
+save_path = 'saved/'
+save_ext = '.pkl'
 
 hubble = 0.67		
 
@@ -67,6 +70,8 @@ for run_j in range(run_init, run_end):
 	base_run = all_runs[run_j]
 	this_run = hash_run[base_run]
 	lg_model = all_lg_models[this_run]
+
+	print base_run
 
 	# Loop on the different small scale realisations of the LGs
 	for subrun_i in range(subrun_init, subrun_end):
@@ -125,6 +130,14 @@ for run_j in range(run_init, run_end):
 	
 				# NOW DO THE FULL BLOWN IDENTIFICATION OF THE LGs and their satellites at all steps!
 				(mains, sats) = merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids, halos, settings, track_subs, ids_sub, fac_r)
+				file_mains = save_path + base_run + '_' + run_num + '_mains' + save_ext
+				file_sats = save_path + base_run + '_' + run_num + '_sats' + save_ext
+
+				filehand_mains = open(file_mains, 'w')
+				filehand_sats = open(file_sats, 'w')
+
+				pickle.dump(mains, filehand_mains)
+				pickle.dump(sats, filehand_sats)
 
 				# TODO SALVARE gli oggetti CON pickle TODO
 

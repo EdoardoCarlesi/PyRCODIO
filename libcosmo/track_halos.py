@@ -18,19 +18,23 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 	n_halos = len(main_halos)
 
 	# Final list containing HaloThroughZ objects
-	all_halo_z = []
+	all_halo_z = [] 
 
 	# How many haloes among the _main ones do we want to track with subhalo distribution?
 	n_ids = len(ids_subs)
 
 	# These are simply all the haloes within a given radius at each step
-	all_subs_z = [[]] * n_ids
+	#all_subs_z = [[] * n_ids] 
+
+	all_subs_z = [[] for i_sub in range(0, n_ids)]
 	track_sub_index = []
 
+	#print all_subs_z
+
 	# Append a list of subhalos to each main id halo being tracked
-	for i_sub in range(0, n_ids):
-		this_subs = []
-		all_subs_z[i_sub].append(this_subs)
+	#for i_sub in range(0, n_ids):
+	#	this_subs = []
+	#	all_subs_z[i_sub].append(this_subs)
 
 	# Temporary lists that allow intra-snapshot comparisons - only for the haloes being tracked
 	old_main_halo = []
@@ -108,13 +112,16 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 				# We only take the main progenitor, all the progenitors are sorted by merit
 				this_halo = halo_progenitors[0]			
 				this_id = str(this_halo.ID)
-				this_index = this_all_ids[this_id]
+				try:
+					this_index = this_all_ids[this_id]
+				except:
+					print 'Halo ID %s not found.' % this_id
 
 				# If no likely progenitor has been found but only a token halo has been returned, then save the old particle list
 				# also for the next step
 				if token_halo == True:
-					this_part = old_part[i_main]
-					this_ids = old_ids[i_main]
+					this_part = old_main_part[i_main]
+					this_ids = old_main_ids[i_main]
 				else:
 					# Find the particle ID list of the main progenitor
 					#print i_main, this_index, this_id, len(this_all_parts)
@@ -202,7 +209,6 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 		dummy_halo.x = guess_x
 		dummy_halo.m = halo_z.m
 		dummy_id = -1
-		id_progenitors.append(dummy_id)
 		progenitors.append(dummy_halo)
 
 	return (progenitors, token_halo)

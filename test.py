@@ -12,7 +12,43 @@ from libio.find_files import *
 from pygadgetreader import *
 from config import *
 import time
+import pickle
 
+#fname='/home/eduardo/CLUES/PyRCODIO/saved/mains_test.pkl'
+
+substart = 0
+subend = 10
+
+satfname='/home/eduardo/CLUES/PyRCODIO/saved/00_06_'+subrun+'_sats.pkl'
+mainfname='/home/eduardo/CLUES/PyRCODIO/saved/00_06_'+subrun+'_mains.pkl'
+fhandsat=open(satfname, 'r')
+fhandmain=open(mainfname, 'r')
+
+mains = pickle.load(fhandmain)
+ssats = pickle.load(fhandsat)
+
+print len(ssats[1][:])#.anisotropy("part", 20)
+
+for i in range(0, 40):
+	#print ssats[0][i].anisotropy('part', 10)
+	
+	(vals, red_vals, it_vals) = ssats[1][i].anisotropy('part', 30)
+
+	#print 'Step ', i
+	#print 'Vals   : ', vals[0]/vals[2], vals[1]/vals[2]
+	#print 'RedVals: ', red_vals[0]/red_vals[2], red_vals[1]/red_vals[2]
+	#print 'ItVals : ', it_vals[0]/it_vals[2], it_vals[1]/it_vals[2]
+	#print ''	
+
+#print mains
+#print len(ssats[1])
+#print (ssats[0])
+#print ssats[0].host[0].info()
+#print ssats
+#print mains[0].halo[0].info()
+
+
+'''
 ids = [0] * 6
 #ids = np.zeros((6))
 ids[0] = 10283893
@@ -33,7 +69,6 @@ pts = np.where(ids == this)
 
 print pts[0], pts
 
-'''
 ahf_file='/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/55_02/AHF_output/HESTIA_100Mpc_4096_55_02.127.z0.000.AHF_halos'
 
 (lg_model, lg_dict) = lg_models()

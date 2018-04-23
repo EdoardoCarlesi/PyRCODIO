@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import time
 import numpy as np
+import math
 from libcosmo.utils import *
 from pygadgetreader import *
 from particles import *
@@ -432,6 +433,53 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 		
 	print 'Saving png to file: ', f_out
 	plt.savefig(f_out)
+
+
+def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
+	size_x = 20
+	size_y = 20
+	lnw = 1.0
+	col = 'b'
+	
+	x_min = 0; 	x_max = 54 * 0.25 # GYrs
+	y_min = 0; 	y_max = 1.0
+
+	print 'Plotting anisotropies to file: ', f_out
+
+	plt.axis([x_min, x_max, y_min, y_max])
+	plt.axis([x_min, x_max, y_min, y_max])
+
+	x_m = np.zeros((n_snap))
+	y_n = np.zeros((n_snap))
+	z_n = np.zeros((n_snap))
+	w_n = np.zeros((n_snap))
+	e1 = np.zeros((n_snap))
+	e2 = np.zeros((n_snap))
+	e3 = np.zeros((n_snap))
+
+	for i_sub in range(0, n_sub):
+		
+		e1 = anisotropies[i_main, i_sub, :, 0]
+		e2 = anisotropies[i_main, i_sub, :, 1]
+		e3 = anisotropies[i_main, i_sub, :, 2]
+
+		for i_snap in range(0, n_snap):
+			x_m[i_snap] = (n_snap - i_snap) * 0.25	# FIXME this assumes a fixed 250 myr timestep
+			y_n[i_snap] = e1[i_snap] / e3[i_snap]
+			z_n[i_snap] = e2[i_snap] / e3[i_snap]
+			w_n[i_snap] = (e2[i_snap]-e1[i_snap]) / e3[i_snap]
+
+		for i_y in range(0, len(e1)):
+			if math.isnan(y_n[i_y]):
+				y_n[i_y] = 0.0
+
+			if math.isnan(y_n[i_y]):
+				z_n[i_y] = 0.0
+
+		plt.plot(x_m, w_n, linewidth=lnw, color=col)
+
+	plt.savefig(f_out)
+	plt.clf()
 
 
 

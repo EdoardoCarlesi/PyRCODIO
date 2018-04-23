@@ -277,7 +277,7 @@ class Settings:
 			self.ahf_path = self.base_path + self.resolution + '/' + self.base_run + '/'
 			self.file_ahf_in = self.base_path + self.sub_path_ahf  + self.base_run + '/' + self.ahf_file
 			self.file_z0_in = self.base_path +  self.sub_path_snap + self.base_run + '/' + self.file_z0
-			self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
+			#self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic	#FIXME
 	
 			# Initialize 
 			self.redshifts = ahf_redshifts(self.ahf_path)
@@ -292,7 +292,7 @@ class Settings:
 			self.n_z0 = 1
 			self.file_ahf_in = self.base_path + self.resolution + '/' + self.base_run + '/' + self.ahf_file
 			self.file_z0_in = self.base_path + self.resolution + '/' + self.base_run + '/' + self.file_z0
-			#self.file_ic_in = self.base_path + self.resolution + '/ICs/' + self.file_ic
+			#self.file_ic_in = self.base_path + self.resolution + '/ICs/' + self.file_ic	#FIXME
 
 		# This is the same for all
 		self.plot_out =	self.base_path + self.outp_dir + self.base_run + '_particles_LG_LV.png'

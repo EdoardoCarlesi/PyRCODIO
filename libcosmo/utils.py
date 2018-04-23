@@ -132,45 +132,14 @@ def vel_radial(x1, x2, v1, v2):
 	nr12 = r12 / n12
 	return nr12
 
-def moment_inertia_reduced(coord, masses):
-	n_parts = len(masses)
-	m_in = np.zeros((3,3))
-	center = [0.0] * 3		
-
-
-	for ip in range(0, n_parts):
-		# Diagonal elements
-		R = distance(coord[ip], center)
-		
-		if R != 0.0:
-			m_in[0][0] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][2], 2)) / R
-			m_in[1][1] += masses[ip] * (pow(coord[ip][0], 2) + pow(coord[ip][2], 2)) / R
-			m_in[2][2] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][0], 2)) / R
-
-			# Off-diagonal
-			m_in[1][0] += -masses[ip] * (coord[ip][1] * coord[ip][0]) / R
-			m_in[1][2] += -masses[ip] * (coord[ip][1] * coord[ip][2]) / R
-			m_in[0][2] += -masses[ip] * (coord[ip][0] * coord[ip][2]) / R
-
-	for ix in range(0, 3):
-		for iy in range(0, 3):
-			m_in[ix][iy] /= n_parts
-
-	m_in[0][1] = m_in[1][0]
-	m_in[2][1] = m_in[1][2]
-	m_in[2][0] = m_in[0][2]
-
-	(e_val, e_vec) = la.eig(m_in)
-	e_max = np.amax(e_val)
-	print e_val/e_max
-
-	return (e_val, e_vec)
-
-
 def inertiaTensor(x, y, z):
 	I=[]
 	for index in range(9):
         	I.append(0)
+	
+	#n_x = len(x)
+	#for ix in range(0, n_x):
+	#	I[0] += y[ix] * y[ix] + z[ix] * z[ix]
 
 	I[0] = np.sum(y*y+z*z) 
 	I[1] = np.sum(-y*x)    
@@ -198,20 +167,17 @@ def moment_inertia(coord, masses):
 	n_parts = masses.size
 	m_in = np.zeros((3,3))
 
-	for ip in range(0, n_parts):
-		# Diagonal elements
-		m_in[0][0] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][2], 2))
-		m_in[1][1] += masses[ip] * (pow(coord[ip][0], 2) + pow(coord[ip][2], 2))
-		m_in[2][2] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][0], 2))
+	x = coord[:, 0]
+	y = coord[:, 1]
+	z = coord[:, 2]
 
-		# Off-diagonal
-		m_in[1][0] += -masses[ip] * (coord[ip][1] * coord[ip][0])
-		m_in[1][2] += -masses[ip] * (coord[ip][1] * coord[ip][2])
-		m_in[0][2] += -masses[ip] * (coord[ip][0] * coord[ip][2])
+	m_in[0][0] = np.sum(y*y + z*z) 
+	m_in[1][1] = np.sum(x*x + z*z)
+	m_in[2][2] = np.sum(x*x + y*y)
 
-	for ix in range(0, 3):
-		for iy in range(0, 3):
-			m_in[ix][iy] /= n_parts
+	m_in[1][0] = np.sum(-y * x)
+	m_in[1][2] = np.sum(-y * z)
+	m_in[0][2] = np.sum(-x * z)
 
 	m_in[0][1] = m_in[1][0]
 	m_in[2][1] = m_in[1][2]
@@ -219,10 +185,44 @@ def moment_inertia(coord, masses):
 
 	(e_val, e_vec) = la.eig(m_in)
 	e_max = np.amax(e_val)
-	print e_val/e_max
-	#print e_vec
 
-	return (e_val, e_vec)
+	eig_ord = np.argsort(e_val)  # a thing to note is that here COLUMN i corrensponds to eigenvalue i.
+	ord_vals = e_val[eig_ord]
+	ord_vecs = e_vec[:, eig_ord].T
+
+	return (ord_vals, ord_vecs)
+
+def moment_inertia_reduced(coord, masses):
+	n_parts = len(masses)
+	m_in = np.zeros((3,3))
+	center = [0.0] * 3		
+
+	for ip in range(0, n_parts):
+		# Diagonal elements
+		R = distance(coord[ip], center)
+		
+		if R != 0.0:
+			m_in[0][0] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][2], 2)) / R
+			m_in[1][1] += masses[ip] * (pow(coord[ip][0], 2) + pow(coord[ip][2], 2)) / R
+			m_in[2][2] += masses[ip] * (pow(coord[ip][1], 2) + pow(coord[ip][0], 2)) / R
+
+			# Off-diagonal
+			m_in[1][0] += -masses[ip] * (coord[ip][1] * coord[ip][0]) / R
+			m_in[1][2] += -masses[ip] * (coord[ip][1] * coord[ip][2]) / R
+			m_in[0][2] += -masses[ip] * (coord[ip][0] * coord[ip][2]) / R
+
+	m_in[0][1] = m_in[1][0]
+	m_in[2][1] = m_in[1][2]
+	m_in[2][0] = m_in[0][2]
+
+	(e_val, e_vec) = la.eig(m_in)
+
+	eig_ord = np.argsort(e_val)  # a thing to note is that here COLUMN i corrensponds to eigenvalue i.
+	ord_vals = e_val[eig_ord]
+	ord_vecs = e_vec[:, eig_ord].T
+
+	return (ord_vals, ord_vecs)
+
 
 def mass_function(masses):
 	n_m = len(masses)
@@ -233,6 +233,7 @@ def mass_function(masses):
 		y_n[im] = n_m - im
 
 	return (x_m, y_n)
+
 
 def rand_points_sphere(n_pts, center, radius):
 	xyz_pts = np.zeros((n_pts, 3))

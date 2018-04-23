@@ -9,92 +9,63 @@ from libcosmo.utils import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.lg_plot import *
+import pickle
 
 resolution='2048'
-#resolution='2048b'
-#resolution='1024'
 
-i_init = 0
-i_end = 100
-g_init = 0
-g_end = 40
-s_init = 0
-s_end = 10
+sub_init = 0
+sub_end = 7
 
-base_path = '/home/eduardo/CLUES/DATA/'
+snap_init = 0
+snap_end = 54
+
+base_path = '/home/eduardo/CLUES/PyRCODIO/'
 outp_path = 'output/'
+save_path = 'saved/'
 
-ahf_snap = 'snapshot_054.0000.z0.000.AHF_halos'
-#ahf_snap = 'snapshot_t1_054.0000.z0.000.AHF_halos'
-snapshot = 'snapshot_054'
+n_part = 75
 
-do_plots = "true"
+#simurun = '00_06'
+simurun = '01_12'
+
+#do_plots = "true"
 #do_plots = "false"
 
-reduce_fac = 8
-plot_pos = "false"
+n_main = 2
+this_main = 0
 
-# this is going to multiply kpc/h distances - thus it is rescaled by a factor of 1000.
-hubble = (67.1 / 1000.)		
-base_path = '/home/eduardo/CLUES/DATA/' 
+mass_histories = np.zeros((n_main, sub_end - sub_init, snap_end-snap_init))
+anisotropies = np.zeros((n_main, sub_end - sub_init, snap_end-snap_init, 3))
 
-# Subhalo identification criterion
-fac_r = 1.2
-np_sub_min = 30
+for i_sub in range(sub_init, sub_end):
 
-# LGs will be appendend to this as they are found
-m_bins = []
-n_bins = []
+	subrun = '%02d' % i_sub
 
-# when several LG-like pairs are found, get the first pair (0) second pair (2) etc.
-ind_bins = 0
+	s_fname='/home/eduardo/CLUES/PyRCODIO/saved/'+simurun+'_'+subrun+'_sats.pkl'
+	m_fname='/home/eduardo/CLUES/PyRCODIO/saved/'+simurun+'_'+subrun+'_mains.pkl'
 
-this_file_png = base_path + outp_path + 'lg_stat_' + resolution + '.png'
+	hand_main = open(m_fname, 'r')
+	hand_sats = open(s_fname, 'r')
 
-for i_i in range(i_init, i_end):
-	i_num = '%02d' % i_i
+	main = pickle.load(hand_main)
+	sats = pickle.load(hand_sats)
 
-	for i_g in range(g_init, g_end):
-		g_num = '%02d' % i_g
-		base_num = i_num + '_' + g_num
-		this_path = base_path + resolution + '/' + base_num
-	
-		if os.path.exists(this_path):
-
-			this_file_txt = base_path + outp_path + 'lg_candidates_' + resolution + '_' + base_num + '.txt' 
- 
-			if os.path.exists(this_file_txt):
-				print ind_bins, ') Reading in TXT LG file: ', this_file_txt
-				lgs = read_lgs(this_file_txt)
-				(this_m_bin, this_n_bin) = bin_lg_sub(lgs)
-				
-				print this_m_bin
-	
-				m_bins.append(this_m_bin)
-				n_bins.append(this_n_bin)
-
-				ind_bins += 1
-
-			else:
-				print 'TXT LG file not found: ', this_file_txt
-			
-plot_lg_bins(m_bins, n_bins, this_file_png)
+	#this_mah = main[this_main].m_t() 
+	#this_mah[:] /= this_mah[this_main]
+	#mass_histories[this_main, i_sub] = this_mah
 
 
-#print m_bins
-#print n_bins
+	for i_snap in range(snap_init, snap_end):
 
+		if sats[this_main][i_snap].n_sub > 5:
+			(evals, red_evals) = sats[this_main][i_snap].anisotropy('part', n_part)			
+			#print i_snap, evals
+			print i_sub, i_snap, (evals[1] - evals[0])/evals[2]
+			anisotropies[this_main, i_sub, i_snap] = evals 
 
-'''
-			for i_s in range(s_init, s_end):
-				s_num = '%02d' % i_s
-				print_num = base_num + '_' + s_num
-				#file_png_name = outp_path + 'stat_' + resolution+'_' + print_num + '.png'
-				this_file_ahf =  this_path + '/' + s_num + '/' + ahf_snap
-			
-				if os.path.exists(this_file_ahf):
-					print 'Reading in AHF file: ', this_file_ahf
-					#ahf_all = read_ahf(this_file_ahf)
-	
-'''
+	#print 'LMM: ', main[this_main].last_major_merger()
+	#print 'FT : ', main[this_main].formation_time()
+	#print this_mah
+f_out = 'output/anis_test_e1.png'
+plot_anisotropies(anisotropies, this_main, sub_end, snap_end, f_out)
 

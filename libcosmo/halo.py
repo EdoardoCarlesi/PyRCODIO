@@ -100,7 +100,7 @@ class Halo:
 		return "%ld %.3e %.3f %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f %d %d" % \
 			(self.ID, self.m, self.r, self.x[0], self.x[1], self.x[2], self.v[0], self.v[1], self.v[2], self.nsub, self.npart)
 
-
+	
 
 class HaloThroughZ:
 	'This class is a wrapper for haloes at different redshifts, allowing to compute quickly major merging and formation times'
@@ -116,8 +116,8 @@ class HaloThroughZ:
 	#			# particles between progenitors, it is 20 by default (but can be changed)
 	n_steps = 0		# Number of steps available for this halo
 	is_smooth = False
-	formation_time = 0.0
-	last_major_merger = 0.0
+	f_time = 0.0
+	l_major_merger = 0.0
 
 	def __init__(self, n_steps):
 		self.n_steps = n_steps
@@ -126,11 +126,11 @@ class HaloThroughZ:
 		self.z_step = []		
 		self.subhalos = []		
 		self.n_mergers = []	
-		self.formation_time = 0.0
-		self.last_major_merger = 0.0
+		self.f_time = 0.0
+		self.l_major_merger = 0.0
 
 	def m_t(self):
-		mass_t = np.zeros((self.n_steps3))
+		mass_t = np.zeros((self.n_steps))
 
 		for ixy in range(0, self.n_steps):
 			mass_t[ixy] = self.halo[ixy].m
@@ -169,6 +169,7 @@ class HaloThroughZ:
 	# TODO do all mmt computation
 	def last_major_merger(self):
 		m_merg = 0.1 
+		lmmz = 0.0
 
 		#for im in range(self.n_steps+1, 0, -1):
 		for jm in range(0, self.n_steps-1):
@@ -187,10 +188,10 @@ class HaloThroughZ:
 				lmmz = dZ 
 				itime = im
 
-		self.last_major_merger = z2Myr(lmmz)
+		self.l_major_merger = z2Myr(lmmz)
 
 		#print im, lmmz, self.last_major_merger
-		return self.last_major_merger
+		return self.l_major_merger
 	
 	# Use Z in computations - will be helpful if will be needed to use mass(z) interpolation functions
 	def formation_time(self):
@@ -198,7 +199,7 @@ class HaloThroughZ:
 		im = 0
 		m0 = 1.e+16
 
-		while m0 > m_half:
+		while m0 > m_half and im < self.n_steps-1:
 			m0 = self.halo[im].m
 			z0 = self.z_step[im]
 			# Only add a step if the object is above the threshold
@@ -206,9 +207,9 @@ class HaloThroughZ:
 				im += 1
 
 		form_z = 0.5 * (self.z_step[im] + self.z_step[im-1])
-		self.formation_time = z2Myr(form_z)
+		self.f_time = z2Myr(form_z)
 
-		return self.formation_time
+		return self.f_time
 
 	def dump_history(self, f_name):
        		f_out = open(f_name, 'wb')
@@ -260,6 +261,11 @@ class HaloThroughZ:
 				halo.initialize(hid, mass, pos, vel, rvir, nsub, npart)
 				self.add_step(halo, t_step, z_step)
 
+
+	def save(self, f_name):
+		# Use pickle to save file
+		save = 0
+
 	# TODO Get rid of flybys and spurious events polluting the halo merger history
 	def smooth_history(self):
 		self.is_smooth = True
@@ -282,8 +288,6 @@ class SubHaloThroughZ(HaloThroughZ):
 		self.z_step = []		
 		self.subhalos = []		
 		self.n_mergers = []	
-		self.formation_time = 0.0
-		self.last_major_merger = 0.0
 
 	def x_t_host_center(self):
 		pos_t = np.zeros((3, self.n_steps))
@@ -453,6 +457,8 @@ class SubHalos():
 			subs_n = len(these_subs)
 			subs_m = np.zeros((subs_n))
 
+			#print 'Using %d subhaloes for anisotropy calculation instead of %d.' % (subs_n, self.n_sub)
+
 			self.select_subs = these_subs
 			self.n_select_subs = subs_n
 			
@@ -468,14 +474,32 @@ class SubHalos():
 				else:
 					subs_x.resize((ih+1, 3))
 					subs_x[ih] = this_x
+
+			#print len(subs_x)
 			self.host_coords = subs_x
+			#x = subs_x[:, 0]
+			#y = subs_x[:, 1]
+			#z = subs_x[:, 2]
 
 			# Automatically compute all types of tensors
-			print 'Inertia tensor computed using %d subhalos.' % subs_n
+			#print 'Inertia tensor computed using %d subhalos.' % subs_n
 			(self.moi_evals, self.moi_evecs) = moment_inertia(subs_x, subs_m)
 			
-			print 'Reduced inertia tensor computed using %d subhalos.' % subs_n
+			#print 'Reduced inertia tensor computed using %d subhalos.' % subs_n
 			(self.moi_red_evals, self.moi_red_evecs) = moment_inertia_reduced(subs_x, subs_m)
+
+			#(evals, evecs, triax, ratio) = inertiaTensor(x, y, z)			
+
+			#return (self.moi_red_evals, self.moi_red_evecs, self.moi_evals, self.moi_evecs)
+			#return (self.moi_evals, self.moi_red_evals, evals)
+			return (self.moi_evals, self.moi_red_evals)
+			#return (self.moi_red_evals, self.moi_evals)
+			#return (self.moi_red_evals) #, self.moi_evals)
+
+
+
+			#return (evals, evecs, triax, ratio)
+
 
 	def basis_eigenvectors(self, evec_type):
 		change_basis = True
