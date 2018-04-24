@@ -83,7 +83,7 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 					(there_is, entries) = is_there(this_ids, ids_subs)
 
 					if there_is == True:
-						print 'Tracking subs, ', there_is, entries, ids_subs, this_ids
+						#print 'Tracking subs, ', there_is, entries, ids_subs, this_ids
 						this_r = this_halo.r * r_subs
 						sub_halos = find_halos(this_halo, all_halos, this_r)
 						this_subs = SubHalos(this_halo, sub_halos)
@@ -106,11 +106,9 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 			for i_main in range(0, n_halos):
 				#print i_main, old_main_part
 				#print i_main, old_main_ids
-				(halo_progenitors, token_halo) = find_progenitors(old_main_halo[i_main], old_main_part[i_main],\
+				(this_halo, token_halo) = find_progenitors(old_main_halo[i_main], old_main_part[i_main],\
 							this_all_halo, this_all_parts, min_common, this_a, time_step)
 
-				# We only take the main progenitor, all the progenitors are sorted by merit
-				this_halo = halo_progenitors[0]			
 				this_id = str(this_halo.ID)
 				try:
 					this_index = this_all_ids[this_id]
@@ -138,12 +136,12 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 					
 			if track_subs == True:
 				for i_sub in range(0, n_ids):
-					print i_sub, track_sub_index
+					#print i_sub, track_sub_index
 					this_halo = old_main_halo[track_sub_index[i_sub]]
 					this_r = this_halo.r * r_subs
 					sub_halos = find_halos(this_halo, this_all_halo, this_r)
 					this_subs = SubHalos(this_halo, sub_halos)
-					print i_main, len(sub_halos), this_halo.info()
+					#print i_main, len(sub_halos), this_halo.info()
 					all_subs_z[i_subs].append(this_subs)
 					i_subs += 1
 
@@ -183,7 +181,10 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	
 	token_halo = False
 	progenitors = []
-	n_progenitors = 0
+	scores = []
+	n_progenitors = 0	
+	score_zero = 10000.
+	npart = halo_z.npart
 	n_zp1 = len(halos_zp1)
 	
 	for i_prog in range(0, n_zp1):
@@ -196,12 +197,28 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	
 		if this_common > min_common:
 			this_progenitor = halos_zp1[i_prog]
+			this_npart = this_progenitor.npart
 			progenitors.append(this_progenitor)
+
+			share_son = float(this_common) / float(this_npart )
+			share_dad = float(this_common) / float(npart)
+
+			this_score = compare_dynamics(halo_z, this_progenitor, aFactor, timeStep)
+			this_score /= (share_son * share_dad)
+			scores.append(this_score)	
+			
+			if this_score < score_zero:
+				return_halo = this_progenitor
+				#index_prog = i_prog
+				score_zero = this_score
+		
+			#print halo_z.info()
+			#print this_progenitor.info()
+			#print i_prog, this_common, this_score, share_son, share_dad
+			#print '...'
+					
 			n_progenitors += 1
-	
-		# TODO add dynamical properties of the halos (relative orientation, masses etc.) to determine the likeliest progenitor
-		# compare_dynamics()
-	
+
 	# If there is no likely progenitor then we place a token halo instead	FIXME	do a better modeling
 	if n_progenitors == 0:
 		token_halo = True
@@ -209,9 +226,13 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 		dummy_halo.x = guess_x
 		dummy_halo.m = halo_z.m
 		dummy_id = -1
-		progenitors.append(dummy_halo)
+		return_halo = dummy_halo
 
-	return (progenitors, token_halo)
+	#print halo_z.info()
+	#print return_halo.info()
+	#print '(--)'
+
+	return (return_halo, token_halo)
 
 
 # Old_a is the expansion factor at the time where the halo is in old_x position - FIXME improve expansion implementation 
@@ -262,7 +283,7 @@ def mass_z(m0, z):
 
 
 # This one compares the dynamical state of two haloes to determine whether it is a progenitor or not
-def compare_dynamics(halo_z, halo_zp1):
+def compare_dynamics(halo_z, halo_zp1, aFactor, timeStep):
 	# The progenitor halo will be evaluated using these four quantities as proxy
 	fac_a = 0.5
 	fac_d = 1.0 # Distance from the expected position (in v * dT units)
@@ -271,33 +292,29 @@ def compare_dynamics(halo_z, halo_zp1):
 	fac_v = 0.05
 	fac_x = 3.0 # Angle between the velocity of the halo and the displacement of the new candidate, to check that no "parallel" object has been 
 		    # incorrectly identified
-	
 	pos = halo_z.x
 	vel = halo_z.v
 	mass = halo_z.m
 
-	# No likely progenitors 
-	if n_zp1 == 0:
-		this_eval = 100.0
-	else:	
-		for izp1 in range(0, n_zp1):
-			halo_x = halos_zp1[izp1].x
-			halo_v = halos_zp1[izp1].v
-			halo_m = halos_zp1[izp1].m
+	# FIXME
+	guess_x = backward_x(pos, vel, aFactor, timeStep)
 
-			#print mass, vel, pos
-			#print halos_zp1[izp1].info()
+	halo_x = halo_zp1.x
+	halo_v = halo_zp1.v
+	halo_m = halo_zp1.m
+	r_prog = halo_zp1.r
 			
-			direction = vec_subt(pos, halo_x) 
+	direction = vec_subt(pos, halo_x) 
 			
-			this_x = 1.0 - abs_val(angle(direction, halo_v))
-			this_a = 1.0 - abs_val(angle(halo_v, vel))
-			this_d = distance(guess_x, halo_x) / r_prog #distance(pos, this_x))
-			this_r = distance(pos, halo_x) / r_prog #distance(pos, this_x))
-			this_m = abs_val(np.log10(mass/halo_m))
-			this_v = abs_val(distance(halo_v, vel)/module(vel))
+	this_x = 1.0 - abs_val(angle(direction, halo_v))
+	this_a = 1.0 - abs_val(angle(halo_v, vel))
+	this_d = distance(guess_x, halo_x) / r_prog #distance(pos, this_x))
+	this_r = distance(pos, halo_x) / r_prog #distance(pos, this_x))
+	this_m = abs_val(np.log10(mass/halo_m))
+	this_v = abs_val(distance(halo_v, vel)/module(vel))
 
-			eval_this = fac_a * this_a + fac_m * this_m + fac_d * this_d + fac_v * this_v + fac_r * this_r + this_x * fac_x
+	#eval_this = fac_a * this_a + fac_m * this_m + fac_d * this_d + fac_v * this_v + fac_r * this_r + this_x * fac_x
+	eval_this = fac_a * this_a + fac_m * this_m + fac_d * this_d + fac_v * this_v + fac_r * this_r + this_x * fac_x
 
 	return eval_this
 

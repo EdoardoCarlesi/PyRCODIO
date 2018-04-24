@@ -14,7 +14,7 @@ import pickle
 resolution='2048'
 
 sub_init = 0
-sub_end = 7
+sub_end = 1
 
 snap_init = 0
 snap_end = 54
@@ -23,16 +23,15 @@ base_path = '/home/eduardo/CLUES/PyRCODIO/'
 outp_path = 'output/'
 save_path = 'saved/'
 
-n_part = 75
+n_part = 50
 
-#simurun = '00_06'
-simurun = '01_12'
+simurun = '00_06'
+#simurun = '01_12'
 
 #do_plots = "true"
 #do_plots = "false"
 
 n_main = 2
-this_main = 0
 
 mass_histories = np.zeros((n_main, sub_end - sub_init, snap_end-snap_init))
 anisotropies = np.zeros((n_main, sub_end - sub_init, snap_end-snap_init, 3))
@@ -50,17 +49,56 @@ for i_sub in range(sub_init, sub_end):
 	main = pickle.load(hand_main)
 	sats = pickle.load(hand_sats)
 
-	#this_mah = main[this_main].m_t() 
-	#this_mah[:] /= this_mah[this_main]
-	#mass_histories[this_main, i_sub] = this_mah
+	'''
+		Analyze the trajectories and properties of the main LG halos
+	'''
 
+	n_main = len(main)
+	m31_main = 0
+	mw_main = 1
+	r_sub = 2.5
 
-	for i_snap in range(snap_init, snap_end):
+	mw_subs = []
+	mw_subs_xt = []
+	mw_subs_yt = []
+	mw_subs_zt = []
+	m31_subs = []
+	m31_subs_xt = []
+
+	x_mw0 = main[mw_main].halo[0].x
+	r_mw0 = main[mw_main].halo[0].r
+	xt_mw = main[mw_main].x_t()
+
+	x_m310 = main[m31_main].halo[0].x
+	r_m310 = main[mw_main].halo[0].r
+	xt_m31 = main[m31_main].x_t()
+
+	center = 0.5 * (xt_m31 + xt_mw)
+	#print center
+
+	for i_main in range(0, n_main):
+		this_sub = main[i_main].halo[0]
+
+		if this_sub.distance(x_mw0) < r_mw0 * r_sub:
+			#this_xt = main[i_main].x_t()
+			this_xt = main[i_main].x_t_center(center)
+
+	#		print i_main, this_xt
+			mw_subs_xt.append(this_xt[0, :])
+			mw_subs_yt.append(this_xt[1, :])
+
+	this_run = '%02d' % i_main
+	out_fname = 'output/' + simurun + '_' + subrun + 'trajectories_' + this_run + '.png'
+	plot_trajectory(mw_subs_xt, mw_subs_yt, 'x', 'y', out_fname)
+
+	'''
+		Planes of satellites in substructure
+	for i_snap in range(0, snap_end-snap_init):
 
 		if sats[this_main][i_snap].n_sub > 5:
 			(evals, red_evals) = sats[this_main][i_snap].anisotropy('part', n_part)			
 			#print i_snap, evals
-			print i_sub, i_snap, (evals[1] - evals[0])/evals[2]
+			#print i_sub, i_snap, (evals[1] - evals[0])/evals[2]
 			anisotropies[this_main, i_sub, i_snap] = evals 
 
 	#print 'LMM: ', main[this_main].last_major_merger()
@@ -69,3 +107,4 @@ for i_sub in range(sub_init, sub_end):
 f_out = 'output/anis_test_e1.png'
 plot_anisotropies(anisotropies, this_main, sub_end, snap_end, f_out)
 
+	'''

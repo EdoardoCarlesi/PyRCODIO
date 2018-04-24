@@ -31,6 +31,7 @@ def is_there(val, vec):
 def max_list(vec):
 	n_y = len(vec)
 	v0 = vec[0][0]
+	#v0 = None
 
 	for iy in range(0, n_y):
 		n_x = len(vec[iy])
@@ -43,6 +44,7 @@ def max_list(vec):
 def min_list(vec):
 	n_y = len(vec)
 	v0 = vec[0][0]
+	#v0 = vec[0]
 
 	for iy in range(0, n_y):
 		n_x = len(vec[iy])

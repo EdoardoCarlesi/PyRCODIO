@@ -147,6 +147,16 @@ class HaloThroughZ:
 
 		return vel_t
 
+	def x_t_center(self, x_c):
+		pos_t = np.zeros((3, self.n_steps))
+
+		for ixy in range(0, self.n_steps):
+			for ip in range(0, 3):
+				pos_t[ip, ixy] = self.halo[ixy].x[ip] - x_c[ip, ixy]
+
+		return pos_t
+
+
 	def x_t(self):
 		pos_t = np.zeros((3, self.n_steps))
 
