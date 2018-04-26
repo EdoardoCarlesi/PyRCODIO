@@ -23,10 +23,10 @@ from libcosmo.lg_plot import *
 
 resolution='2048'
 
-run_init = 0
-run_end = 1
+run_init = 1
+run_end = 10
 
-subrun_init = 9
+subrun_init = 0
 subrun_end = 10
 
 ini_snap = 0

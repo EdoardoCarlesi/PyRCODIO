@@ -83,6 +83,24 @@ def center_of_mass(m,x):
 
 	return com
 
+def change_basis(vec, new_base):
+	new_vec = np.zeros((3))
+	base_change = np.zeros((3, 3))
+
+	I = np.zeros((3, 3))
+	
+	for iv in range(0, 3):
+		I[iv, iv] = 1.0
+
+	# Find out the matrix of base change:
+	for iv in range(0, 3):
+		base_change[iv, :] = np.linalg.solve(new_base, I[iv, :])
+
+	for iv in range(0, 3):
+		new_vec[iv] = dot_prod(vec, base_change[iv, :])
+
+	return new_vec
+
 def abs_val(x):
 	absval = math.sqrt(x * x)
 	return absval

@@ -298,6 +298,8 @@ class SubHaloThroughZ(HaloThroughZ):
 		self.z_step = []		
 		self.subhalos = []		
 		self.n_mergers = []	
+		self.acc_time = []
+		self.acc_step = []
 
 	def x_t_host_center(self):
 		pos_t = np.zeros((3, self.n_steps))
@@ -308,6 +310,14 @@ class SubHaloThroughZ(HaloThroughZ):
 
 		return pos_t
 
+
+	def assign_halo_z(self, halo_z):
+		self.t_step = halo_z.t_step		
+		self.z_step = halo_z.z_step
+
+		for ih in range(0, self.n_steps):
+			this_halo = halo_z.halo[ih]
+			self.halo.append(this_halo)
 
 	def accretion_time(self):
 		d_old = 0.0
@@ -385,6 +395,9 @@ class SubHalos():
 	host_coords = []
 	n_select_subs = 0
 	
+	# Base of eigenvectors
+	change_basis = False
+
 	moi_evals = np.zeros((3))
 	moi_evecs = np.zeros((3, 3))
 	moi_red_evals = np.zeros((3))
@@ -455,6 +468,8 @@ class SubHalos():
 			these_subs = self.sub_over_m(value_cut)
 		elif type_cut == "part":
 			these_subs = self.sub_over_n(value_cut)
+	#	elif type_cut == "acc_time":	TODO
+
 		else:
 			do_tensor = False
 			print('Wrong kind of cutoff. Only "mass" and "part" tags are possible.')
@@ -502,17 +517,21 @@ class SubHalos():
 
 			#return (self.moi_red_evals, self.moi_red_evecs, self.moi_evals, self.moi_evecs)
 			#return (self.moi_evals, self.moi_red_evals, evals)
-			return (self.moi_evals, self.moi_red_evals)
+			return (self.moi_evals, self.moi_red_evals, self.moi_evecs, self.moi_red_evecs)
 			#return (self.moi_red_evals, self.moi_evals)
 			#return (self.moi_red_evals) #, self.moi_evals)
 
-
+	#def recursive_anisotropy(self, plane, frac):
+			# Given a plane rank the haloes by distance to it and thake only frac % of the closest ones
+			
+			# Re-compute the PoS using this new system of coordinates
 
 			#return (evals, evecs, triax, ratio)
 
 
 	def basis_eigenvectors(self, evec_type):
-		change_basis = True
+
+		self.change_basis = True
 
 		if evec_type == "inertia":
 			use_evec = self.moi_evecs
@@ -529,9 +548,9 @@ class SubHalos():
 			new_coords = np.zeros((self.n_select_subs, 3))
 
 			for i_s in range(0, self.n_select_subs):
-				for i_x in range(0, 3):
-					prod = dot_prod(use_evec[i_x], self.host_coords[i_s])
-					new_coords[i_s][i_x] = prod 
+				this_coord = self.select_subs[i_s]
+				new_coords[i_s, :] = change_basis(this_coord, use_evec)
+
 		return new_coords
 
 	def header(self):

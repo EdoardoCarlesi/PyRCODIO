@@ -120,10 +120,10 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 				if token_halo == True:
 					this_part = old_main_part[i_main]
 					this_ids = old_main_ids[i_main]
-				else:
+				else:	# FIXME!!!!
 					# Find the particle ID list of the main progenitor
 					#print i_main, this_index, this_id, len(this_all_parts)
-					this_part = this_all_parts[this_index[0]]
+					this_part = this_all_parts[0] #FIXME
 					this_ids = this_id
 					
 				# Now save the particles and halo for the next step
@@ -195,6 +195,8 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 		
 		this_common = compare_particles(part_z, this_part)
 	
+		return_halo = Halo()
+
 		if this_common > min_common:
 			this_progenitor = halos_zp1[i_prog]
 			this_npart = this_progenitor.npart

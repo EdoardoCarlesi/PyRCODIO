@@ -505,6 +505,25 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	plt.savefig(f_out)
 	plt.clf()
 
+def plot_mass_accretion(time, mah, f_out):
+	size_x = 20
+	size_y = 20
+	lnw = 1.0
+	col = 'b'
+	
+	x_min = np.min(time); x_max = np.max(time)
+	y_min = np.min(mah); 	y_max = np.max(mah)
+
+	print 'Plotting massfunctions to file: ', f_out, y_max
+
+	plt.yscale('log')
+	plt.axis([x_min, x_max, y_min, y_max])
+	
+	plt.plot(time, mah, linewidth=lnw, color=col)
+
+	plt.savefig(f_out)
+	plt.clf()
+
 
 
 def plot_trajectory(all_x, all_y, label_x, label_y, f_out):

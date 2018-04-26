@@ -14,8 +14,9 @@ from config import *
 import time
 import pickle
 
-#fname='/home/eduardo/CLUES/PyRCODIO/saved/mains_test.pkl'
+fname='/home/eduardo/CLUES/PyRCODIO/saved/00_06_00_sats.pkl'
 
+'''
 substart = 0
 subend = 10
 
@@ -48,7 +49,6 @@ for i in range(0, 40):
 #print mains[0].halo[0].info()
 
 
-'''
 ids = [0] * 6
 #ids = np.zeros((6))
 ids[0] = 10283893

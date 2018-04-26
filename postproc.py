@@ -25,6 +25,8 @@ save_path = 'saved/'
 
 n_part = 50
 
+stepMyr = 0.25
+
 simurun = '00_06'
 #simurun = '01_12'
 
@@ -35,6 +37,13 @@ n_main = 2
 
 mass_histories = np.zeros((n_main, sub_end - sub_init, snap_end-snap_init))
 anisotropies = np.zeros((n_main, sub_end - sub_init, snap_end-snap_init, 3))
+
+time = np.zeros((snap_end-snap_init))
+
+for i_time in range(0, snap_end-snap_init):
+	time[i_time] = (snap_end - i_time) * stepMyr
+
+print time
 
 for i_sub in range(sub_init, sub_end):
 
@@ -54,9 +63,9 @@ for i_sub in range(sub_init, sub_end):
 	'''
 
 	n_main = len(main)
-	m31_main = 0
-	mw_main = 1
-	r_sub = 2.5
+	m31_main = 1
+	mw_main = 0
+	r_sub = 1.5
 
 	mw_subs = []
 	mw_subs_xt = []
@@ -78,17 +87,29 @@ for i_sub in range(sub_init, sub_end):
 
 	for i_main in range(0, n_main):
 		this_sub = main[i_main].halo[0]
+		this_run = '%02d' % i_main
 
 		if this_sub.distance(x_mw0) < r_mw0 * r_sub:
 			#this_xt = main[i_main].x_t()
 			this_xt = main[i_main].x_t_center(center)
 
+			this_mt = main[i_main].m_t()
+
+			out_mah = 'output/' + simurun + '_' + subrun + '_mah_' + this_run + '.png'
+			plot_mass_accretion(time, this_mt, out_mah)
+
+			this_sub_z = SubHaloThroughZ(snap_end-snap_init)
+
+			this_sub_z.host = main[mw_main]
+			this_sub_z.assign_halo_z(main[i_main])
+
+			print this_sub_z.accretion_time()
+
 	#		print i_main, this_xt
 			mw_subs_xt.append(this_xt[0, :])
 			mw_subs_yt.append(this_xt[1, :])
 
-	this_run = '%02d' % i_main
-	out_fname = 'output/' + simurun + '_' + subrun + 'trajectories_' + this_run + '.png'
+	out_fname = 'output/' + simurun + '_' + subrun + '_all_trajectories_' + this_run + '.png'
 	plot_trajectory(mw_subs_xt, mw_subs_yt, 'x', 'y', out_fname)
 
 	'''
