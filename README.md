@@ -28,9 +28,8 @@ Tools to analyze AREPO - GADGET simulations of the Local Group and the local env
     data/ contains tables of P(k) and z(t) to be used for interpolation
 
 TODO (ShortTerm):
-	Particle content comparison to be added to the merger tree routines (actually the progenitor finder is based on dynamical considerations only).
-	Maybe some kind of statistical comparison is enough? E.G. for large haloes ( > 10^5 particles) dynamical considerations and some random sampling
-	and comparison of the particle content might be enough
+	
+	
 
 
 TODO (LongTerm):
