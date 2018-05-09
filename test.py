@@ -13,6 +13,28 @@ from pygadgetreader import *
 from config import *
 import time
 import pickle
+from libcosmo.grid import *
+
+webfile='/home/eduardo/CLUES/DATA/2048/00_06/00/zoom_2048_054.000064.Vweb-ascii'
+
+grid = read_vweb(webfile, 64, 100)
+
+'''
+pos = [50, 50, 50]
+
+print grid.rhoPos(pos)
+print grid.velPos(pos)
+print grid.evalPos(pos)
+print grid.evecPos(pos)
+
+	
+grid = Grid(256, 100)
+
+
+ijk = grid.phys2grid(pos)
+
+print ijk
+print grid.grid2phys(ijk)
 
 
 substart = 0
@@ -47,7 +69,6 @@ for i in range(0, 40):
 #print mains[0].halo[0].info()
 
 
-'''
 ids = [0] * 6
 #ids = np.zeros((6))
 ids[0] = 10283893

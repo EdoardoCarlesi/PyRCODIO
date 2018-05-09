@@ -1,8 +1,48 @@
 import sys
 sys.path.append('../libcosmo/')
 from libcosmo.halo import *
+from libcosmo.grid import *
 import os
 import numpy
+
+
+def read_vweb(file_name, size, box):
+	file_web = open(file_name, 'r')
+	grid = VWeb(size, box)
+
+	# Read header
+	line = file_web.readline()
+	tot_n = size * size * size
+	index = 0
+
+	while line and index < tot_n:
+		line = file_web.readline()
+		line = line.strip()
+		column = line.split()
+	
+		# Determine corresponding x, y, z in grid units
+		(ix, jy, kz) = grid.reverse_index(index)
+
+		# Density
+		grid.rho[ix, jy, kz] = float(column[0])
+
+		# Velocities
+		grid.vel[:, ix, jy, kz] = [float(column[1]), float(column[2]), float(column[3])]
+
+		# Eigenvalues
+		grid.evals[0, ix, jy, kz] = float(column[4])
+		grid.evals[1, ix, jy, kz] = float(column[5])
+		grid.evals[2, ix, jy, kz] = float(column[6])
+	
+		# Eigenvectors
+		grid.evecs[0, :, ix, jy, kz] = [float(column[7]), float(column[8]), float(column[9])]
+		grid.evecs[1, :, ix, jy, kz] = [float(column[10]), float(column[11]), float(column[12])]
+		grid.evecs[2, :, ix, jy, kz] = [float(column[13]), float(column[14]), float(column[15])]
+
+		# Increase line index
+		index += 1
+
+	return grid
 
 
 def read_ahf(file_name):
