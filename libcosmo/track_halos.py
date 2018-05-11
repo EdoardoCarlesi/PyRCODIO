@@ -155,6 +155,8 @@ def find_halo_id(idnum, ahf_halos):
 	n_halo = len(ahf_halos)
 	i_halo = 0
 	h_found = False	
+	
+	id_str = str(idnum)
 
 	while (i_halo < n_halo) and (h_found == False):
 		if (ahf_halos[i_halo].ID == idnum):
@@ -167,7 +169,17 @@ def find_halo_id(idnum, ahf_halos):
 	else:
 		print 'Halo ID: %ld not found.' % idnum
 		return -1
+		
+'''
+	try:
+		this_id = ahf_halos.id_index[id_str]
+		print this_id
+		return this_id
+	except:
+		print 'Halo ID: %ld not found.' % idnum
+		return -1
 
+'''
 
 
 # This assumes that halos_zp1 already contains all the closest halos to halo_z, the candidate for which we are looking for a progenitor
