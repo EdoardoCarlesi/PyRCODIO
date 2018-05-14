@@ -16,8 +16,15 @@ import pickle
 from libcosmo.grid import *
 
 webfile='/home/eduardo/CLUES/DATA/2048/00_06/00/zoom_2048_054.000064.Vweb-ascii'
+ahffile='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 
-grid = read_vweb(webfile, 64, 100)
+halos = read_ahf(ahffile)
+
+index='5260986610347328281'
+
+print halos[0].id_index[index]
+
+#grid = read_vweb(webfile, 64, 100)
 
 '''
 pos = [50, 50, 50]

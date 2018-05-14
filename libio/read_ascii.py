@@ -75,7 +75,7 @@ def read_ahf(file_name):
 			halo = Halo()
 			halo.initialize(idn, mass, pos, vel, rvir, nsub, npart)
 			halo.update_id_index(idn, count)
-			halo.ID = idn
+			#halo.ID = idn
 			halo.l = angmom
 			halo.contam = contam
 			halos_ahf.append(halo)

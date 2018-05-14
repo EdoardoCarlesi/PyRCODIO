@@ -10,7 +10,7 @@ from units import *
 
 class Halo:
 	'Class containing a single DM halo'
-	ID = 1234567890123456789
+	ID = 123456789
 	m  = 0.0
 	x  = [0.0, 0.0, 0.0]
 	v  = [0.0, 0.0, 0.0]
@@ -26,7 +26,6 @@ class Halo:
 	id_index = dict()
 
 	def __init__(self):
-		self.ID = 1234567890123456789
 		self.m  = 0.0
 		self.x  = [0.0, 0.0, 0.0]
 		self.v  = [0.0, 0.0, 0.0]
@@ -50,6 +49,7 @@ class Halo:
 	def update_id_index(self, ID, index):
 		ID_str = str(ID)
 		Halo.id_index.update({ID_str:index})
+		self.ID = ID
 
 	def initialize(self, ind, mass, pos, vel, rad, n_sub, n_part):
 		self.ID = ind
@@ -624,8 +624,6 @@ class LocalGroup:
 			self.r = self.r_halos()
 			self.vrad = self.v_radial()
 			self.com = self.get_com()
-			
-
 
 	def rating(self):
 		self.rating = fh.rate_lg_pair(self.LG1, self.LG2, self.c_box)

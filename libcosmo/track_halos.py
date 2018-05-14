@@ -78,6 +78,8 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 				old_main_halo.append(this_halo)
 				old_main_part.append(this_part)
 				old_main_ids.append(this_ids)
+
+				#print i_main, this_halo.info()
 			
 				if track_subs == True:
 					(there_is, entries) = is_there(this_ids, ids_subs)
@@ -102,16 +104,17 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 
 			# Time step is deltaT, it might be a fixed quantity but we don't know in advance so we compute it every time
 			time_step = abs(old_t - this_t)	
-	
+
 			for i_main in range(0, n_halos):
-				#print i_main, old_main_part
-				#print i_main, old_main_ids
+				#print 'oldmain: ', i_main, old_main_halo[i_main].info()
+
 				(this_halo, token_halo) = find_progenitors(old_main_halo[i_main], old_main_part[i_main],\
 							this_all_halo, this_all_parts, min_common, this_a, time_step)
 
-				this_id = str(this_halo.ID)
+				this_id = this_halo.ID
+
 				try:
-					this_index = this_all_ids[this_id]
+					this_index = this_all_halo[0].id_index[str(this_id)]
 				except:
 					print 'Halo ID %s not found.' % this_id
 
@@ -120,10 +123,9 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 				if token_halo == True:
 					this_part = old_main_part[i_main]
 					this_ids = old_main_ids[i_main]
-				else:	# FIXME!!!!
+				else:	
 					# Find the particle ID list of the main progenitor
-					#print i_main, this_index, this_id, len(this_all_parts)
-					this_part = this_all_parts[0] #FIXME
+					this_part = this_all_parts[this_index] 
 					this_ids = this_id
 					
 				# Now save the particles and halo for the next step
@@ -158,6 +160,21 @@ def find_halo_id(idnum, ahf_halos):
 	
 	id_str = str(idnum)
 
+	try:
+		this_id = ahf_halos[0].id_index[id_str]
+		#print 'ID: ', this_id
+		return this_id
+	except:
+		#print 'No ID: %ld.' % idnum
+		return -1
+
+def find_halo_id_old(idnum, ahf_halos):
+	n_halo = len(ahf_halos)
+	i_halo = 0
+	h_found = False	
+	
+	id_str = str(idnum)
+
 	while (i_halo < n_halo) and (h_found == False):
 		if (ahf_halos[i_halo].ID == idnum):
 			h_found = True	
@@ -168,18 +185,9 @@ def find_halo_id(idnum, ahf_halos):
 		return i_halo
 	else:
 		print 'Halo ID: %ld not found.' % idnum
-		return -1
-		
-'''
-	try:
-		this_id = ahf_halos.id_index[id_str]
-		print this_id
-		return this_id
-	except:
-		print 'Halo ID: %ld not found.' % idnum
+		print ahf_halos[i_halo].info()
 		return -1
 
-'''
 
 
 # This assumes that halos_zp1 already contains all the closest halos to halo_z, the candidate for which we are looking for a progenitor
@@ -201,13 +209,12 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	
 	for i_prog in range(0, n_zp1):
 		this_id = halos_zp1[i_prog].ID
+		#this_index = find_halo_id_old(this_id, halos_all_zp1)
 		this_index = find_halo_id(this_id, halos_all_zp1)
 		this_npart = halos_all_zp1[this_index].npart
 		this_part = part_all_zp1[this_index]
-		
+
 		this_common = compare_particles(part_z, this_part)
-	
-		return_halo = Halo()
 
 		if this_common > min_common:
 			this_progenitor = halos_zp1[i_prog]
@@ -220,21 +227,22 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 			this_score = compare_dynamics(halo_z, this_progenitor, aFactor, timeStep)
 			this_score /= (share_son * share_dad)
 			scores.append(this_score)	
+			print i_prog, this_common, this_score, share_son, share_dad
 			
 			if this_score < score_zero:
+				#print 'Progenitor found'
 				return_halo = this_progenitor
 				#index_prog = i_prog
 				score_zero = this_score
+				n_progenitors += 1
 		
-			#print halo_z.info()
-			#print this_progenitor.info()
-			#print i_prog, this_common, this_score, share_son, share_dad
-			#print '...'
-					
-			n_progenitors += 1
-
+				#print halo_z.info()
+				#print this_progenitor.info()
+				#print '...'
+	
 	# If there is no likely progenitor then we place a token halo instead	FIXME	do a better modeling
 	if n_progenitors == 0:
+		print 'Progenitor not found, replacing with token halo.'
 		token_halo = True
 		dummy_halo = Halo()
 		dummy_halo.x = guess_x
