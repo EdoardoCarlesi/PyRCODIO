@@ -23,8 +23,8 @@ from libcosmo.lg_plot import *
 
 resolution='2048'
 
-run_init = 0
-run_end = 1
+run_init = 5
+run_end = 10
 
 subrun_init = 0
 subrun_end = 10
@@ -138,9 +138,6 @@ for run_j in range(run_init, run_end):
 
 				pickle.dump(mains, filehand_mains)
 				pickle.dump(sats, filehand_sats)
-
-				# TODO SALVARE gli oggetti CON pickle TODO
-
 
 '''
 	(file_lg_name, file_sub_name) = settings.get_zoom_output()

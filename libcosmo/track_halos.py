@@ -24,12 +24,8 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 	n_ids = len(ids_subs)
 
 	# These are simply all the haloes within a given radius at each step
-	#all_subs_z = [[] * n_ids] 
-
 	all_subs_z = [[] for i_sub in range(0, n_ids)]
 	track_sub_index = []
-
-	#print all_subs_z
 
 	# Append a list of subhalos to each main id halo being tracked
 	#for i_sub in range(0, n_ids):
@@ -168,6 +164,8 @@ def find_halo_id(idnum, ahf_halos):
 		#print 'No ID: %ld.' % idnum
 		return -1
 
+
+
 def find_halo_id_old(idnum, ahf_halos):
 	n_halo = len(ahf_halos)
 	i_halo = 0
@@ -203,11 +201,14 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	progenitors = []
 	scores = []
 	n_progenitors = 0	
-	score_zero = 10000.
+	score_zero = 25.
 	npart = halo_z.npart
 	n_zp1 = len(halos_zp1)
+	id_z = halo_z.ID
+	m_z = halo_z.m
 	
 	for i_prog in range(0, n_zp1):
+		this_m = halos_zp1[i_prog].m
 		this_id = halos_zp1[i_prog].ID
 		#this_index = find_halo_id_old(this_id, halos_all_zp1)
 		this_index = find_halo_id(this_id, halos_all_zp1)
@@ -227,27 +228,49 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 			this_score = compare_dynamics(halo_z, this_progenitor, aFactor, timeStep)
 			this_score /= (share_son * share_dad)
 			scores.append(this_score)	
-			print i_prog, this_common, this_score, share_son, share_dad
 			
 			if this_score < score_zero:
-				#print 'Progenitor found'
+			#	print 'Progenitor found'
+			#	print 'OriginalID:', this_id, ' step: ', i_prog, ' common: ', this_common, this_score, share_son, share_dad
 				return_halo = this_progenitor
 				#index_prog = i_prog
 				score_zero = this_score
+				this_share_son = share_son
+				this_share_dad = share_dad
+				return_common = this_common
 				n_progenitors += 1
-		
+			#else:
+				#print '(wrong)IDs: %ld, %ld | Ms: %3.3e, %3.3e | common: %d | %7.3f, %7.3f, %7.3f' % \
+				#	(id_z, this_id, m_z, this_m, this_common, this_score, share_son, share_dad)
+			#	print id_z, this_id, m_z, this_m, ' common: ', this_common, this_score, share_son, share_dad
 				#print halo_z.info()
 				#print this_progenitor.info()
 				#print '...'
+	#if n_progenitors > 0:
+		#print 'IDs: %ld, %ld | Ms: %3.3e, %3.3e | common: %d | %7.3f, %7.3f, %7.3f' % \
+		#	(id_z, return_halo.ID, m_z, return_halo.m, return_common, score_zero, this_share_son, this_share_dad)
 	
 	# If there is no likely progenitor then we place a token halo instead	FIXME	do a better modeling
 	if n_progenitors == 0:
-		print 'Progenitor not found, replacing with token halo.'
+		print 'Progenitor for %ld (npart=%d) not found, replacing with token halo.' % (id_z, halo_z.npart)
 		token_halo = True
 		dummy_halo = Halo()
 		dummy_halo.x = guess_x
+		dummy_halo.v = halo_z.v
 		dummy_halo.m = halo_z.m
-		dummy_id = -1
+		dummy_halo.npart = halo_z.npart
+		dummy_halo.ID = id_z
+		return_halo = dummy_halo
+
+	elif n_zp1 == 0:
+		print 'No likely progenitors for %ld.' 
+		token_halo = True
+		dummy_halo = Halo()
+		dummy_halo.x = guess_x
+		dummy_halo.v = halo_z.v
+		dummy_halo.m = halo_z.m
+		dummy_halo.npart = halo_z.npart
+		dummy_halo.ID = -1
 		return_halo = dummy_halo
 
 	#print halo_z.info()

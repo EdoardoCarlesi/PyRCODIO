@@ -512,9 +512,7 @@ def plot_mass_accretion(time, mah, f_out):
 	col = 'b'
 	
 	x_min = np.min(time); x_max = np.max(time)
-	y_min = np.min(mah); 	y_max = np.max(mah)
-
-	print 'Plotting massfunctions to file: ', f_out, y_max
+	y_min = np.min(mah); y_max = np.max(mah)
 
 	plt.yscale('log')
 	plt.axis([x_min, x_max, y_min, y_max])
@@ -523,6 +521,29 @@ def plot_mass_accretion(time, mah, f_out):
 
 	plt.savefig(f_out)
 	plt.clf()
+
+
+
+def plot_mass_accretions(time, mahs, f_out):
+	size_x = 20
+	size_y = 20
+	lnw = 1.0
+	col = 'b'
+	
+	n_plots = len(mahs[:,0])
+	x_min = np.min(time); x_max = np.max(time)
+	y_min = np.min(mahs); y_max = np.max(mahs)
+
+	plt.yscale('log')
+	plt.axis([x_min, x_max, y_min, y_max])
+
+	for iplot in range(0, n_plots):
+		mah = mahs[iplot]
+		plt.plot(time, mah, linewidth=lnw, color=col)
+
+	plt.savefig(f_out)
+	plt.clf()
+
 
 
 
