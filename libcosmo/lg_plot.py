@@ -363,7 +363,6 @@ def bin_lg_sub(lgs):
 
 
 def plot_lg_bins(x_bins, y_bins, f_out):
-	
 	size_p = 30
 	size_x = 40
 	size_y = 20
@@ -446,13 +445,16 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 
 	print 'Plotting anisotropies to file: ', f_out
 
-	plt.axis([x_min, x_max, y_min, y_max])
-	plt.axis([x_min, x_max, y_min, y_max])
+	(fig, axs) = plt.subplots(ncols=3, nrows=1, figsize=(12, 4))
+	
+	for iax in range(0, 3):
+		axs[iax].axis([x_min, x_max, y_min, y_max])
 
 	x_m = np.zeros((n_snap))
 	y_n = np.zeros((n_snap))
 	z_n = np.zeros((n_snap))
 	w_n = np.zeros((n_snap))
+
 	e1 = np.zeros((n_snap))
 	e2 = np.zeros((n_snap))
 	e3 = np.zeros((n_snap))
@@ -473,14 +475,22 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 			if math.isnan(y_n[i_y]):
 				y_n[i_y] = 0.0
 
-			if math.isnan(y_n[i_y]):
+			if math.isnan(z_n[i_y]):
 				z_n[i_y] = 0.0
 
-		plt.plot(x_m, w_n, linewidth=lnw, color=col)
+			if math.isnan(w_n[i_y]):
+				w_n[i_y] = 0.0
+
+		axs[0].set_title("e1 / e3")
+		axs[1].set_title("e2 / e3")
+		axs[2].set_title("(e2 - e3) / e1")
+
+		axs[0].plot(x_m, y_n, linewidth=lnw, color=col)
+		axs[1].plot(x_m, z_n, linewidth=lnw, color=col)
+		axs[2].plot(x_m, w_n, linewidth=lnw, color=col)
 
 	plt.savefig(f_out)
 	plt.clf()
-
 
 
 def plot_massfunctions(x_m, y_n, n_mf, f_out):
@@ -494,16 +504,22 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 
 	print 'Plotting massfunctions to file: ', f_out, y_max
 
-	plt.xscale('log')
-	plt.yscale('log')
-	plt.axis([x_min, x_max, y_min, y_max])
+	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
+
+	axs[0].xscale('log')
+	axs[0].yscale('log')
+	axs[0].axis([x_min, x_max, y_min, y_max])
 	
 	if n_mf > 1:
 		for im in range(0, n_mf):
-			plt.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+			axs[0].plot(x_m[im], y_n[im], linewidth=lnw, color=col)
 
 	plt.savefig(f_out)
 	plt.clf()
+	plt.cla()
+	plt.close()
+
+
 
 def plot_mass_accretion(time, mah, f_out):
 	size_x = 20
@@ -521,6 +537,8 @@ def plot_mass_accretion(time, mah, f_out):
 
 	plt.savefig(f_out)
 	plt.clf()
+	plt.cla()
+	plt.close()
 
 
 
@@ -534,17 +552,23 @@ def plot_mass_accretions(time, mahs, f_out):
 	x_min = np.min(time); x_max = np.max(time)
 	y_min = np.min(mahs); y_max = np.max(mahs)
 
+	if y_min < 1.e+5:
+		y_min = y_max / 200.
+
+	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
+
 	plt.yscale('log')
-	plt.axis([x_min, x_max, y_min, y_max])
+	axs.axis([x_min, x_max, y_min, y_max])
 
 	for iplot in range(0, n_plots):
 		mah = mahs[iplot]
-		plt.plot(time, mah, linewidth=lnw, color=col)
+		axs.plot(time, mah, linewidth=lnw, color=col)
 
 	plt.savefig(f_out)
 	plt.clf()
-
-
+	plt.cla()
+	plt.close(fig)
+	plt.gcf().show()
 
 
 def plot_trajectory(all_x, all_y, label_x, label_y, f_out):
@@ -579,4 +603,5 @@ def plot_trajectory(all_x, all_y, label_x, label_y, f_out):
 
 	plt.savefig(f_out)
 	plt.clf()
+	plt.gcf().show()
 
