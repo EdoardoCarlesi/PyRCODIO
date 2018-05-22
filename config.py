@@ -19,7 +19,7 @@ def simu_runs():
 	all_runs.append('55_02') 
 	all_runs.append('09_18')
 	all_runs.append('64_14')
-	#all_runs.append('62_14')
+	#all_runs.append('37_11')
 
 	return all_runs
 
@@ -52,6 +52,13 @@ def lg_models():
 
 	this_model = '17_13'
 	d_max = 8000.; r_iso = 1900.; r_max = 1700.; r_min = 200.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = -1.0	# 17_10
+	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+	lg_model.model_code = this_model
+	all_lg_models.append(lg_model)
+	model_index.update({this_model:model_count}) ; model_count += 1
+
+	this_model = '37_11'
+	d_max = 7000.; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 5.0e+11; m_max = 3.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 34_13
 	lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 	lg_model.model_code = this_model
 	all_lg_models.append(lg_model)

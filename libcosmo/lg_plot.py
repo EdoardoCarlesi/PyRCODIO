@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+from matplotlib import rc
 import time
 import numpy as np
 import math
@@ -344,7 +347,6 @@ def bin_lg_sub(lgs):
 	bin_n = np.zeros((2, 3))
 	
 	for ilg in range(0, n_tot):
-		print lgs[ilg].info()
 		m_lgs[0][ilg] = lgs[ilg].LG1.m
 		m_lgs[1][ilg] = lgs[ilg].LG2.m		
 		n_sub[0][ilg] = lgs[ilg].LG1.nsub
@@ -369,69 +371,96 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 	x_label = 'Nsub'
 	y_label = 'Msun/h'
+	title_size = 50
 	axis_size = 50
-	axis_margins = 1
+	axis_margins = 0.5
+	tickSize = 0.4
 
+	'''
 	x_min = np.amin(x_bins)
 	x_max = np.amax(x_bins)
 	y_min = np.amin(y_bins)
 	y_max = np.amax(y_bins)
+	'''
+
+	plt.rcParams['text.usetex'] = True
+	plt.rcParams['text.latex.unicode'] = True
+
+	normx = 1.e+12
+	normy = 1.0000
+
+	x_min = 0.5e+12 / normx
+	x_max = 2.2e+12 / normx
+	y_min = 1.0 / normy
+	y_max = 70. / normy
 
 	print 'X Axis min=%.3f  max=%.3f\n' % (x_min, x_max)
 	print 'Y Axis min=%.3f  max=%.3f\n' % (y_min, y_max)
 
 	n_bins = len(x_bins)
+	print 'Nbins = ', n_bins
 
 	xs = np.zeros(n_bins)
 	ys = np.zeros(n_bins)
 	x_err = np.zeros((2, n_bins))
 	y_err = np.zeros((2, n_bins))
 
-	plt.figure(figsize=(size_x,size_y))
+	#(fig, axs) = plt.subplots(ncols=3, nrows=1, figsize=(12, 4))
+#	plt.rc(labelsize=axis_size)    
+#	plt.rc('xtick', labelsize=axis_size)    
+#	plt.rc('ytick', labelsize=axis_size)    
 
-	plt.rc('xtick', labelsize=axis_size)    
-	plt.rc('ytick', labelsize=axis_size)    
-	plt.rc('axes',  labelsize=axis_size)    
+	(fig, axs) = plt.subplots(ncols=2, nrows=1, figsize=(size_x, size_y), sharey = True)
+	#plt.xlabel(r'M_{sun}')# / 10^{12}')
+	#plt.ylabel(r'N_{sub}') # M > 3 \times 10^{8} M_{\odot}')
+
+	axs[0].axis([x_min, x_max, y_min, y_max])
+	axs[1].axis([x_min, x_max, y_min, y_max])
+#	axs[0].set_xscale('log'); 	axs[0].set_yscale('log')	
+#	axs[1].set_xscale('log'); 	axs[1].set_yscale('log')	
+
+	#axs[0].xaxis.set_major_locator(plt.MaxNLocator(4))
+	#axs[1].xaxis.set_major_locator(plt.MaxNLocator(4))
+
 	plt.margins(axis_margins)		
-	plt.xscale('log', basex=10)	
-	plt.yscale('log', basex=10)	
+	#plt.setp(axs[0].get_xticklabels(), visible = True)
+	#plt.setp(axs[0].get_yticklabels(), visible = True)
+	#plt.setp(axs[1].get_xticklabels(), visible = True)
 
 	# Do two loops - M31 and MW
 	for ilg in range(0, 2):
-		plt.subplot(1, 2, ilg+1)		
+		#plt.subplot(1, 2, ilg+1)		
 
 		# Now loop for each halo on a 
 		for ibin in range(0, n_bins):
 	
-			xs[ibin] = x_bins[ibin][ilg][1]
-			x_err[0][ibin] = xs[ibin] - x_bins[ibin][ilg][0] 
-			x_err[1][ibin] = x_bins[ibin][ilg][2] - xs[ibin]
-			ys[ibin] = y_bins[ibin][ilg][1]
-			y_err[0][ibin] = ys[ibin] - y_bins[ibin][ilg][0]
-			y_err[1][ibin] = y_bins[ibin][ilg][2] - ys[ibin]
-		'''	
-			xs[ibin] = np.log10(x_bins[ibin][ilg][1])
-			x_err[0][ibin] = np.log10(xs[ibin] - x_bins[ibin][ilg][0])
-			x_err[1][ibin] = np.log10(x_bins[ibin][ilg][2] - xs[ibin])
-			xs[ibin] = np.log10(y_bins[ibin][ilg][1])
-			y_err[0][ibin] = np.log10(ys[ibin] - y_bins[ibin][ilg][0])
-			y_err[1][ibin] = np.log10(y_bins[ibin][ilg][2] - ys[ibin])
+			xs[ibin] = float(x_bins[ibin, ilg, 1])
+			x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][0]) / normx
+			x_err[1][ibin] = float(x_bins[ibin][ilg][2] - xs[ibin]) / normx
+			xs[ibin] /= normx
+			ys[ibin] = float(y_bins[ibin][ilg][1])
+			y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][0]) / normy
+			y_err[1][ibin] = float(y_bins[ibin][ilg][2] - ys[ibin]) / normy
+			ys[ibin] /= normy
 
-		x_min = 0.9 * np.amin(xs)
-		x_min = 1.1 * np.amax(xs)
-		y_min = 0.9 * np.amin(ys)
-		y_max = 1.1 * np.amax(ys)
-		#print x_err
-		#print y_err
-		#print xs, ys
+		#	print xs[ibin], ys[ibin]
 
-		plt.axis([x_min, x_max, y_min, y_max])
-		'''
-		plt.errorbar(xs, ys, yerr=[y_err[0], y_err[1]], xerr=[x_err[0], x_err[1]], markersize=size_p, fmt='o')
-		#plt.scatter(xs, ys, s=size_p)#, fmt='o')
-		
+		axs[ilg].errorbar(xs, ys, yerr=[y_err[0], y_err[1]], xerr=[x_err[0], x_err[1]], markersize=size_p, fmt='o')
+	
+	#axs[0].xaxis.set_major_locator(ticker.MultipleLocator(tickSize))
+	#axs[1].xaxis.set_major_locator(ticker.MultipleLocator(tickSize))
+	#axs[0].xaxis.set_major_formatter(ticker.FormatStrFormatter("%7.2f"))
+	#axs[1].xaxis.set_major_formatter(ticker.FormatStrFormatter("%7.2f"))
+	#axs[0].yaxis.set_major_formatter(ticker.FormatStrFormatter("%d"))
+
+	#axs[0].set_title(r'MW')#, size=title_size)
+	#axs[1].set_title(r'M31')#, size=title_size)
+	
 	print 'Saving png to file: ', f_out
 	plt.savefig(f_out)
+	plt.close()
+	plt.clf()
+	plt.cla()
 
 
 def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
