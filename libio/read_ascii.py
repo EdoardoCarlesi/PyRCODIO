@@ -70,6 +70,8 @@ def read_ahf(file_name):
 			npart = int(column[4])
 			angmom = [float(column[21]), float(column[22]), float(column[23])]
 			contam = float(column[38])
+				
+			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000.
 
 			# Initialize and append halo to the list
 			halo = Halo()

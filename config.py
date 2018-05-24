@@ -132,7 +132,7 @@ class Settings:
 	n_z0 = None
 	n_ahf = 1	
 	file_z0 = None
-	box_center = []
+	box_center = [50, 50, 50]
 	
 	# Redshift values and snapshot numbers for the simulation
 	redshifts = []
@@ -262,10 +262,10 @@ class Settings:
 			self.n_z0 = 8
 			self.file_ahf_in = self.base_path + '/'+ self.sub_path + self.base_run + '/' + self.sub_path_ahf + self.ahf_file
 			self.file_z0_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_snap + self.file_z0
-			self.file_ic_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_ics + self.file_ic
+			#self.file_ic_in = self.base_path + '/' + self.sub_path + self.base_run + '/' + self.sub_path_ics + self.file_ic
 
 		elif self.env_type == "512box100" :
-			self.ahf_file = 'snapshot_054.z0.000.AHF_halos'
+			self.ahf_file = self.snapshot_str 
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out
@@ -276,7 +276,8 @@ class Settings:
 			self.file_ic_in = self.base_path +  self.sub_path_ics  + self.base_run + '/' + self.file_ic
 
 		elif self.env_type == "zoom" :
-			self.ahf_file = 'snapshot_054.0000.z0.000.AHF_halos'
+			#self.ahf_file = 'snapshot_054.0000.z0.000.AHF_halos'
+			self.ahf_file = self.snapshot_str 
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out
@@ -292,7 +293,8 @@ class Settings:
 			self.snapshots = ahf_snapshots(self.ahf_path)
 
 		else:
-			self.ahf_file = 'snapshot_054.0000.z0.000.AHF_halos'
+			self.ahf_file = self.snapshot_str 
+			#self.ahf_file = 'snapshot_054.z0.000.AHF_halos'
 			self.file_z0 = 'snapshot_054'
 			self.base_out = 'lare_z0_' + self.base_run + '.dat'
 			self.lare_out = self.base_path + self.resolution + '/' + self.base_run + '/' + self.base_out

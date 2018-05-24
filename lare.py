@@ -15,24 +15,32 @@ home_dir = '/z/carlesi/CLUES/'
 ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
 
+#'snapshot_054.z0.000.AHF_halos'
 #snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
 #snapshot = 'snapshot_054.AHF_halos'
-snapshot = 'merged_054.AHF_halos'
-#snapshot = 'snapshot_054.z0.000.AHF_halos'
+#snapshot = 'merged_054.AHF_halos'
+snapshot = 'snapshot_054.z0.000.AHF_halos'
 
 #home_dir = '/home/eduardo/'
 hubble = 0.671		
 h0 = hubble 
-facMpc = 1000.
+
+#unitMpc = True
+unitMpc = False
+
+if unitMpc == True:
+	facMpc = 1.0
+else:
+	facMpc = 1000.
 
 generate_lare='false'
 #generate_lare='true'
 do_plots='false'
 #do_plots='true'
 
-env_type="std"
+#env_type="std"
 #env_type="512box100"
-#env_type="HESTIA"
+env_type="HESTIA"
 
 resolution='512'
 #resolution='1024'
@@ -51,8 +59,12 @@ rescale = 10
 find_virgo='true'
 
 # Max/min distance from Virgo in Mpc/h
-d_virgo_max = 20000. / h0
-d_virgo_min = 7000. / h0
+if unitMpc == True:
+	d_virgo_max = 20. / h0
+	d_virgo_min = 7. / h0
+else:
+	d_virgo_max = 20000. / h0
+	d_virgo_min = 7000. / h0
 
 # This one specifies the number and the types of LSS modes to be analyzed
 lss_init = 0
@@ -63,24 +75,30 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
-ice_init = 5
-ice_end = 6
+ice_init= 50
+ice_end = 62
 
-gin_init = 14
-gin_end = 15
+gin_init = 0
+gin_end = 20
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
-radius = 8000. 
-iso_radius = 1000.
-r_max = 1500.
-r_min = 300. 
+radius = 7000. 
+iso_radius = 2000.
+r_max = 1300.
+r_min = 250. 
+
+if unitMpc == True:
+	center = [50., 50., 50.]
+	iso_radius /= 1000.
+	radius /= 1000.
+	r_max /= 1000.
+	r_min /= 1000.
+
 m_min = 5.e+11  
-m_max = 8.e+12 
+m_max = 5.e+12 
 ratio_max = 3.
-vrad_max = 10.0
-
-
+vrad_max = 0.0
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
@@ -90,6 +108,9 @@ part_min = 30
 
 # Define more units and stuff
 extra_r = 500.0	# in kpc/h units - this is the size of the additional shell to be placed around the 
+
+if unitMpc == True:
+	extra_r /= 1000.
 
 lg_dummy = LocalGroup('00')
 
@@ -173,8 +194,8 @@ for irun in range(lss_init, lss_end):
 	
 			halo_centers = find_halos_point(point, ahf_all, rad)
 			
-			for ih in (halo_centers):
-				print ih.info()
+			#for ih in (halo_centers):
+			#	print ih.info()
 
 			if find_virgo == "true":
 				(x0, m0, mtotVirgo) = locate_virgo(ahf_all)
@@ -207,9 +228,9 @@ for irun in range(lss_init, lss_end):
 						dVirgo = vec_distance(lg.com, x0) / h0
 						file_lg_line += "  %5.2f  %5.2e  %5.2e" % (dVirgo/facMpc, m0/h0, mtotVirgo/h0)
 						
-					if dVirgo > d_virgo_min and dVirgo < d_virgo_max:
-						virgo_condition = True
-					else:
+						if dVirgo > d_virgo_min and dVirgo < d_virgo_max:
+							virgo_condition = True
+						else:
 							print 'Distance from Virgo is: %f, too large or too small' % dVirgo
 							virgo_condition = False
 		
