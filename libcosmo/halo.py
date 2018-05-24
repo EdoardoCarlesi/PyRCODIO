@@ -137,6 +137,10 @@ class HaloThroughZ:
 
 		return mass_t
 
+	def m_max(self):
+		m_max = np.max(self.m_t())
+		return m_max
+
 
 	def v_t(self):
 		vel_t = np.zeros((3, self.n_steps))

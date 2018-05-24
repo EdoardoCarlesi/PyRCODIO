@@ -193,8 +193,6 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	r_prog = 0.0
 	guess_x = backward_x(halo_z.x, halo_z.v, aFactor, timeStep)
 	r_prog = module(halo_z.v) * timeStep * s2Myr() / km2kpc() / aFactor	# In comoving units
-	#print 'r_prog ', halo_z.r, distance(halo_z.x, guess_x), guess_x
-	#print 'Looking for halos aroud a R=%.3f (Rphys=%.3f) at %s ' % (r_prog, r_prog * aFactor, guess_x)
 	halos_zp1 = find_halos_point(guess_x, halos_all_zp1, r_prog)
 	
 	token_halo = False
@@ -254,30 +252,58 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	if n_progenitors == 0:
 		print 'Progenitor for %ld (npart=%d) not found, replacing with token halo.' % (id_z, halo_z.npart)
 		token_halo = True
-		dummy_halo = Halo()
-		dummy_halo.x = guess_x
-		dummy_halo.v = halo_z.v
-		dummy_halo.m = halo_z.m
-		dummy_halo.npart = halo_z.npart
-		dummy_halo.ID = id_z
-		return_halo = dummy_halo
+		return_halo = compute_token_halo(aFactor, timeStep, guess_x, halo_z)
 
 	elif n_zp1 == 0:
 		print 'No likely progenitors for %ld.' 
 		token_halo = True
-		dummy_halo = Halo()
-		dummy_halo.x = guess_x
-		dummy_halo.v = halo_z.v
-		dummy_halo.m = halo_z.m
-		dummy_halo.npart = halo_z.npart
-		dummy_halo.ID = -1
-		return_halo = dummy_halo
-
-	#print halo_z.info()
-	#print return_halo.info()
-	#print '(--)'
+		return_halo = compute_token_halo(aFactor, timeStep, guess_x, halo_z)
 
 	return (return_halo, token_halo)
+
+
+def compute_token_halo(a0, tStep, guess_x, halo):
+	dummy_halo = Halo()
+	dummy_halo.ID = -1	
+
+	if tStep < 100.:
+		tStep *= 1000.
+
+	print 'Compute token halo ', a0, tStep, guess_x
+	t1 = a2Myr(a0) - tStep
+	a1 = Myr2a(t1)
+	z1 = 1.0/ a0 - 1.0
+	z2 = 1.0/ a1 - 1.0
+
+#	print a0, a1
+
+	m0 = halo.m / halo_mass_z(z1)
+	m_z2 = m0 * halo_mass_z(z2)
+
+	dummy_halo.m = m_z2	
+	dummy_halo.x = halo.x	#FIXME write a meaningful guess_x function
+	
+	frac_m = m_z2 / halo.m
+	npart_new = int(halo.npart * frac_m)
+	dummy_halo.npart = npart_new
+	dummy_halo.v[0] = 0.0
+	dummy_halo.v[1] = 0.0
+	dummy_halo.v[2] = 0.0
+
+	#print 'Zold: ', z1, '         Znew: ', z2
+	#print 'Mold: ', halo.m, '     Mnew: ', m_z2 
+	#print 'Nold: ', halo.npart, ' Nnew: ', npart_new
+
+	return dummy_halo
+
+def halo_mass_z(z):
+	alpha = 6.1
+	beta = 2.7
+	
+	fac0 = np.power((1 + z), beta)
+	fac1 = np.exp(-alpha * (np.sqrt(1 + z) - 1))
+
+	return fac0 * fac1
 
 
 # Old_a is the expansion factor at the time where the halo is in old_x position - FIXME improve expansion implementation 
@@ -298,12 +324,9 @@ def backward_x(this_x, this_vel, this_a, d_myrs):
 
 	for ix in range(0, 3):	
 		new_x[ix] = this_x[ix] * facMpc - (this_vel[ix] * tot_t) / km2kpc() * 0.677
-		#new_x[ix] = - (delta_a / this_a) * (old_x[ix] - new_x[ix])
-		#new_x[ix] = old_x[ix] * facMpc - totT * vel[ix] / km2kpc()
-		#new_x[ix] = old_x[ix] * facMpc - vel[ix] / km2kpc() * totT * (1 + deltaA)
-		# Correct for the Hubble expansion
-		#new_x[ix] += (old_x[ix] - new_x[ix]) * deltaA / newA
-		#new_x[ix] *= deltaA (old_x[ix] - new_x[ix]) * deltaA / newA
+		#new_x[ix] = this_x[ix] * facMpc - (this_vel[ix] * tot_t) / km2kpc() * 0.677
+		# TODO correct for the hubble expansion
+		# TODO correct for Newton acceleration
 
 	return new_x
 
