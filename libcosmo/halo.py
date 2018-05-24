@@ -586,7 +586,6 @@ class SubHalos():
 
 class LocalGroup:
 	code = '00_00_00'
-	c_box = [50000.0] * 3
 	ahf_file = 'this_file.AHF_halos'
 	vrad = -100.
 	r = 770.
@@ -600,13 +599,8 @@ class LocalGroup:
 	LG1 = Halo()
 	LG2 = Halo()
 
-	def __new__(cls, *args, **kwargs):
-		instance = super(LocalGroup, cls).__new__(cls, *args, **kwargs)
-		return instance
-
 	def __init__(self, code):
 		self.code = code
-		self.c_box = []
 		self.com = []
 		self.LG1 = Halo()
 		self.LG2 = Halo()
@@ -626,7 +620,7 @@ class LocalGroup:
 			self.com = self.get_com()
 
 	def rating(self):
-		self.rating = fh.rate_lg_pair(self.LG1, self.LG2, self.c_box)
+		self.rating = fh.rate_lg_pair(self.LG1, self.LG2)
 
 	def get_com(self):
 		self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
@@ -666,14 +660,15 @@ class LocalGroup:
 		header += ' X_com('+ str(n_head) +')' ; n_head = +1
 		header += ' Y_com('+ str(n_head) +')' ; n_head = +1
 		header += ' Z_com('+ str(n_head) +')' ; n_head = +1
-		header += '\n'
+		#header += '\n'
 
 		return header
 
 	def info(self):
 		h0 = self.hubble 
 		kpc = 1000.
-		file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f\n' % \
+		#file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f\n' % \
+		file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f' % \
 			(self.code, self.LG1.ID, self.LG2.ID, self.LG1.m/h0, self.LG2.m/h0, self.r/h0, self.vrad, \
 				self.LG1.nsub, self.LG2.nsub, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc)
 

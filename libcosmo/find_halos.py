@@ -167,20 +167,17 @@ def find_lg(halos, lgmod):
 	return lgs
 
 
-def rate_lg_pair(lg1, lg2, box_center):
+def rate_lg_pair(lg1, lg2):
 	# Benchmark (obs.) quantities
-	dcbox0 = 5000.	# kpc/h
 	rhalo0 = 500.	# kpc/h
 	vrad0 = -100.
 	mass0 = 3.0e+12
 	ratio0 = 1.1
 	hubble0 = 67.0
 
-	box = 100.0
 	npart = 512
 
 	com = center_of_mass([lg1.m, lg2.m], [lg1.x, lg2.x])
-	c12 = vec_subt(box_center, com)
 	m12 = lg1.m + lg2.m
 
 	if lg1.m > lg2.m:
@@ -188,7 +185,6 @@ def rate_lg_pair(lg1, lg2, box_center):
 	else:
 		rm12 = lg2.m / lg1.m
 
-	dcenter = vec_module(c12)
 	rhalos = lg1.distance(lg2.x)
 	vrad = vel_radial(lg1.x, lg2.x, lg1.v, lg2.v)
 	vrad += hubble0 * rhalos/1000.
@@ -201,20 +197,20 @@ def rate_lg_pair(lg1, lg2, box_center):
 	fac_ra = 1.5
 
 	# How to compute the LG-likeliness factors
-	diff_c = abs(dcenter) / dcbox0
 	diff_rh = abs(rhalos - rhalo0) / rhalo0
 	diff_m = np.log10(m12 / mass0)
 	diff_v = abs(vrad0 - vrad) / abs(vrad0)
 	diff_ra = abs(rm12 - ratio0) / abs(ratio0)
 
-	lg_rate = diff_rh * fac_rh + fac_c * diff_c + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
+	lg_rate = diff_rh * fac_rh + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
 	
 	# Get a penalty for positive vrad
 	if vrad > 0.0:
 		lg_rate += 10.
 
-	contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
-	print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
+	#contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
+	#print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
+	print 'LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart)
 
 	return lg_rate
 
