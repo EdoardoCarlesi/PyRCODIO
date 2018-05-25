@@ -63,7 +63,7 @@ settings.box_center = center
 fac_r = 1.2	# This is used for the global R around the LG as well as for Rvir around each halo
 min_common = 15
 part_min = 2000.
-mmin = 1.e+9	# Track haloes above this threshold at z=0
+mmin = 5.e+8	# Track haloes above this threshold at z=0
 
 # Loop on the different base - realisations, i.e. different LGs
 for run_j in range(run_init, run_end):
@@ -130,14 +130,14 @@ for run_j in range(run_init, run_end):
 	
 				# NOW DO THE FULL BLOWN IDENTIFICATION OF THE LGs and their satellites at all steps!
 				(mains, sats) = merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids, halos, settings, track_subs, ids_sub, fac_r)
-				file_mains = save_path + base_run + '_' + run_num + '_mains' + save_ext
-				file_sats = save_path + base_run + '_' + run_num + '_sats' + save_ext
+				file_mains = save_path + base_run + '_' + run_num + '_mains_all' + save_ext
+				#file_sats = save_path + base_run + '_' + run_num + '_sats' + save_ext
 
 				filehand_mains = open(file_mains, 'w')
-				filehand_sats = open(file_sats, 'w')
+				#filehand_sats = open(file_sats, 'w')
 
 				pickle.dump(mains, filehand_mains)
-				pickle.dump(sats, filehand_sats)
+				#pickle.dump(sats, filehand_sats)
 
 '''
 	(file_lg_name, file_sub_name) = settings.get_zoom_output()

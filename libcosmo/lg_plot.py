@@ -391,8 +391,8 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	normx = 1.0000
 	normy = 1.0000
 
-	x_min0 = 0.9e+12 / normx; x_max0 = 4.0e+12 / normx
-	y_min0 = 1.0 / normy; 	y_max0 = 130. / normy
+	x_min0 = 0.6e+12 / normx; x_max0 = 4.2e+12 / normx
+	y_min0 = 1.0 / normy; 	y_max0 = 140. / normy
 	x_min1 = 0.5e+12 / normx; x_max1 = 2.1e+12 / normx
 	y_min1 = 1.0 / normy; 	y_max1 = 60. / normy
 
@@ -533,20 +533,20 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	lnw = 1.0
 	col = 'b'
 	
-	x_min = 1.e+8; 	x_max = 1.e+12
-	y_min = 1; 	y_max = max_list(y_n)
+	x_min = 1.e+9; 	x_max = 5.e+11
+	y_min = 1; 	y_max = 50 #max_list(y_n)
 
 	print 'Plotting massfunctions to file: ', f_out, y_max
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
-	axs[0].xscale('log')
-	axs[0].yscale('log')
-	axs[0].axis([x_min, x_max, y_min, y_max])
+	axs.set_xscale('log')
+	axs.set_yscale('log')
+	axs.axis([x_min, x_max, y_min, y_max])
 	
 	if n_mf > 1:
 		for im in range(0, n_mf):
-			axs[0].plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+			axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
 
 	plt.savefig(f_out)
 	plt.clf()

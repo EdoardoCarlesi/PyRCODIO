@@ -364,6 +364,8 @@ def compare_dynamics(halo_z, halo_zp1, aFactor, timeStep):
 	vel = halo_z.v
 	mass = halo_z.m
 
+	#TODO add some check if ID = -1 OR velocity is 0 then do not care about the dynamics just look at the particles
+
 	# FIXME
 	guess_x = backward_x(pos, vel, aFactor, timeStep)
 
