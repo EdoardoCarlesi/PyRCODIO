@@ -9,10 +9,12 @@ from libcosmo.utils import *
 from pygadgetreader import *
 from particles import *
 
+
+
 def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	facMpc = 1000.
 	buffPlot = 4000.	# Extra buffer on the edges
-	thickn = 2000.
+	thickn = 2500.
 	r_virgo = 1500.
 
 	# This samples 8 times less particles in the high - res region
@@ -336,7 +338,9 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 
 
 
-# One LG type only either MW or M31, per ONE realisation and N sub-realisations
+	##################################################################################
+	# One LG type only either MW or M31, per ONE realisation and N sub-realisations	 #				
+	##################################################################################
 def bin_lg_sub(lgs):
 	n_tot = len(lgs)
 

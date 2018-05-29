@@ -11,14 +11,15 @@ from libcosmo.utils import *
 from libio.lare import *
 from config import *
 
-home_dir = '/z/carlesi/CLUES/'
+#home_dir = '/z/carlesi/CLUES/'
+home_dir = '/home/eduardo/CLUES/'
 #ginn_dir = '/ginnunagap/'
 ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
 
 #'snapshot_054.z0.000.AHF_halos'
-snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
-#snapshot = 'snapshot_054.AHF_halos'
+#snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
+snapshot = 'snapshot_054.AHF_halos'
 #snapshot = 'merged_054.AHF_halos'
 #snapshot = 'snapshot_054.z0.000.AHF_halos'
 
@@ -36,8 +37,12 @@ else:
 
 generate_lare='false'
 #generate_lare='true'
+
 #do_plots='false'
 do_plots='true'
+
+#find_virgo='false'
+find_virgo='true'
 
 env_type="std"
 #env_type="512box100"
@@ -54,10 +59,7 @@ else:
 settings = Settings(home_dir, outp_dir, env_type, resolution, snapshot)
 
 # Factor rescaling the particle distribution in plots
-rescale = 10
-
-find_virgo='false'
-#find_virgo='true'
+rescale = 5
 
 # Max/min distance from Virgo in Mpc/h
 if unitMpc == True:
@@ -76,9 +78,8 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
-ice_init= 0
+ice_init = 0
 ice_end = 70
-
 gin_init = 0
 gin_end = 20
 
@@ -146,14 +147,8 @@ base_lss = []
 # This is generating all the possible folders and subfolders with the main seed and small scale seed
 for iice in range(ice_init, ice_end): 
 	for igin in range(gin_init, gin_end):
-		if iice < 10:
-			nice='0'+str(iice)
-		else:
-			nice=str(iice)
-		if igin < 10:
-			ngin='0'+str(igin)
-		else:
-			ngin=str(igin)
+		nice = '%02' % iice
+		ngin = '%02d' % igin
 
 		lss_init = 0
 		lss_end = (ice_end - ice_init) * (gin_end - gin_init)
@@ -265,7 +260,7 @@ for irun in range(lss_init, lss_end):
 					# Plot the particle distributions in 3D slices around the LG and in the LV
 					if do_plots == "true" and lg.LG1.npart > npart_min and lg.LG2.npart > npart_min:
 						print 'Plotting particle distributions to file ', settings.plot_out
-						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg1, best_lg2, x0, rescale)
+						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, 2)
 			
 					# Only add the LaRe if for the likeliest pair 
 					if generate_lare == "true":
