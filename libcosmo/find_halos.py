@@ -73,9 +73,11 @@ def find_lg(halos, lgmod):
 	radius = lgmod.d_max
 	iso_radius = lgmod.d_iso
 	m_min = lgmod.m_min
+	m_max = lgmod.m_max
 	r_min = lgmod.r_min
 	r_max = lgmod.r_max
 	model_code = lgmod.model_code	
+	vrad_max = lgmod.vrad_max
 
 	print lgmod.info()
 
@@ -105,6 +107,9 @@ def find_lg(halos, lgmod):
 		halo_lg0 = halos_center[h]
 		count_lg = 0
 		count_wrong = 0
+		
+		if halo_lg0.m > m_max:
+			count_wrong = 1
 
 		# We need to run the loop on ALL halos, in case there is a third halo lying close
 		for i in range(h+1, n_candidates):
@@ -117,12 +122,17 @@ def find_lg(halos, lgmod):
 				#count_wrong += 1
 			elif dis_this > r_min and dis_this < r_max:
 				halo_lg2 = halo_lg1	# This is a possible candidate
+				#vrad = vel_radial(lg1.x, lg2.x, lg1.v, lg2.v)
+				vrad = vel_radial(halo_lg2.x, halo_lg0.x, halo_lg2.v, halo_lg0.v) 
 				count_lg += 1
 				
 				# There are too many close-by haloes
 				if count_lg > 1:
 					count_wrong += 1
-		
+
+				if vrad + (0.67 * dis_this * 0.1) > vrad_max:
+					count_wrong += 1
+
 		# A new first & second LG halos have been found:
 		if count_wrong == 0 and count_lg == 1:
 			already_there = 0
@@ -137,17 +147,11 @@ def find_lg(halos, lgmod):
 			# We have a candidate! 
 			if already_there == 0:
 				n_iso_radius = 0
-				#print halo_lg0.info()
+
 				# Check also for third haloes within the isolation radius before adding the pair
 				com = center_of_mass([halo_lg0.m, halo_lg2.m], [halo_lg0.x, halo_lg2.x])		
 				halos_iso = find_halos_point(com, halos, iso_radius)
 				nh_iso = len(halos_iso)
-				#print com
-				#print iso_radius
-
-				#print 'NH iso: %d' % nh_iso
-				#print halos[0].info()
-				#print halos_iso[0].info()
 
 				for k in range(0, nh_iso):
 					#print halos_iso[k].info()
@@ -205,7 +209,7 @@ def rate_lg_pair(lg1, lg2):
 	lg_rate = diff_rh * fac_rh + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
 	
 	# Get a penalty for positive vrad
-	if vrad > 0.0:
+	if vrad > 5.0:
 		lg_rate += 10.
 
 	#contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)

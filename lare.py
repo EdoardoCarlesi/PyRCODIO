@@ -4,6 +4,7 @@ import numpy as np
 import os
 
 from libio.read_ascii import * 
+from libcosmo.lg_plot import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.utils import *
@@ -16,10 +17,10 @@ ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
 
 #'snapshot_054.z0.000.AHF_halos'
-#snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
+snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
 #snapshot = 'snapshot_054.AHF_halos'
 #snapshot = 'merged_054.AHF_halos'
-snapshot = 'snapshot_054.z0.000.AHF_halos'
+#snapshot = 'snapshot_054.z0.000.AHF_halos'
 
 #home_dir = '/home/eduardo/'
 hubble = 0.671		
@@ -35,12 +36,12 @@ else:
 
 generate_lare='false'
 #generate_lare='true'
-do_plots='false'
-#do_plots='true'
+#do_plots='false'
+do_plots='true'
 
-#env_type="std"
+env_type="std"
 #env_type="512box100"
-env_type="HESTIA"
+#env_type="HESTIA"
 
 resolution='512'
 #resolution='1024'
@@ -55,8 +56,8 @@ settings = Settings(home_dir, outp_dir, env_type, resolution, snapshot)
 # Factor rescaling the particle distribution in plots
 rescale = 10
 
-#find_virgo='false'
-find_virgo='true'
+find_virgo='false'
+#find_virgo='true'
 
 # Max/min distance from Virgo in Mpc/h
 if unitMpc == True:
@@ -75,8 +76,8 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
-ice_init= 50
-ice_end = 62
+ice_init= 0
+ice_end = 70
 
 gin_init = 0
 gin_end = 20
@@ -85,7 +86,7 @@ gin_end = 20
 center = [50000., 50000., 50000.]
 radius = 7000. 
 iso_radius = 2000.
-r_max = 1300.
+r_max = 1000.
 r_min = 250. 
 
 if unitMpc == True:
@@ -96,9 +97,10 @@ if unitMpc == True:
 	r_min /= 1000.
 
 m_min = 5.e+11  
-m_max = 5.e+12 
+m_max = 3.0e+12 
 ratio_max = 3.
-vrad_max = 0.0
+vrad_max = -1.0
+npart_min = 500.
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
@@ -107,7 +109,7 @@ fac_r = 1.5
 part_min = 30
 
 # Define more units and stuff
-extra_r = 500.0	# in kpc/h units - this is the size of the additional shell to be placed around the 
+extra_r = 500.0	# in kpc/h units - this is the size of the additional shell to be placed around the LG
 
 if unitMpc == True:
 	extra_r /= 1000.
@@ -262,7 +264,7 @@ for irun in range(lss_init, lss_end):
 		
 					# Plot the particle distributions in 3D slices around the LG and in the LV
 					if do_plots == "true" and lg.LG1.npart > npart_min and lg.LG2.npart > npart_min:
-						print 'Plotting particle distributions to file ', settings.get_plot_out
+						print 'Plotting particle distributions to file ', settings.plot_out
 						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg1, best_lg2, x0, rescale)
 			
 					# Only add the LaRe if for the likeliest pair 
