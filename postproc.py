@@ -34,34 +34,37 @@ save_path = 'saved/'
 all_m_bins = save_path + 'm_bins.pkl'
 all_n_bins = save_path + 'n_bins.pkl'
 
-m_sub_min = 1.e+9
+m_sub_min = 3.e+8
 min_part = 30
 stepMyr = 0.25
 
 '''
 	SELECT WHAT KIND OF ANALYSIS NEEDS TO BE DONE
 '''
-
-#do_evolution = True
-do_evolution = False
+# Plot mass accretion histories and evolution of satellite anisotropy
+do_evolution = True
+#do_evolution = False
 
 # General combined statistics of all LG realisations
-#do_all_lgs = False
-do_all_lgs = True
+do_all_lgs = False
+#do_all_lgs = True
 
-#do_plots_only = False
-do_plots_only = True
+# Only do some post-post processing plots
+do_plots_only = False
+#do_plots_only = True
 
+# Subhalo trajectories
 #do_trajectories = True
 do_trajectories = False
 
-#do_plot_mfs = True
-do_plot_mfs = False
+# Plot mass accretion functions
+do_plot_mfs = True
+#do_plot_mfs = False
 
 do_subs = True
 #do_subs = False
 
-simurun = simuruns[this_simu]
+#simurun = simuruns[this_simu]
 
 lg_names = ['MW', 'M31']
 n_lg = len(lg_names)
@@ -94,8 +97,14 @@ if do_evolution == False:
 	sub_init = 0
 	sub_end = 0
 
-for i_sub in range(sub_init, sub_end):
+all_init =  simu_init * sub_init
+all_end  = (simu_end - simu_init) * (sub_end - sub_init)
 
+for i_all in range(all_init, all_end):
+
+	this_simu = simu_init + int(i_all/sub_end)
+	simurun = simuruns[this_simu]
+	i_sub = sub_init + (i_all % sub_end)
 	sub_skip = 0
 	subrun = '%02d' % i_sub
 
@@ -126,7 +135,7 @@ for i_sub in range(sub_init, sub_end):
 
 		# Plot mass accretion history of the main halo
 		out_mah = outp_path + lg_names[i_lg] + '_main_' + simurun + '_' + subrun + '_mah.png'
-		#plot_mass_accretion(time, this_mt, out_mah)
+
 		try:
 			mass_histories[i_lg, i_sub] = this_mt
 		except:		
@@ -191,25 +200,16 @@ for i_sub in range(sub_init, sub_end):
 		(this_mfmax_x, this_mfmax_y) = mass_function(masses_max)
 	
 		if i_lg == 0:
-			#print i_lg, n_subs
 			mfmw_z0_x.append(this_mfz0_x); 		mfmw_z0_y.append(this_mfz0_y) 
 			mfmw_max_x.append(this_mfmax_x); 	mfmw_max_y.append(this_mfmax_y) 
+
 		elif i_lg == 1:
-			#print i_lg, n_subs
 			mfm31_z0_x.append(this_mfz0_x); 	mfm31_z0_y.append(this_mfz0_y) 
 			mfm31_max_x.append(this_mfmax_x); 	mfm31_max_y.append(this_mfmax_y) 
 
 		if do_trajectories == True:
 			file_trajectory = outp_path + 'trajectories_lg' + this_run + '_' + simurun + '_' + subrun + '.png'
 			plot_trajectory(subs_xt, subs_yt, 'x', 'y', file_trajectory)
-
-		if do_subs == True:
-			n_sat = len(subs)
-			for i_sat in range(0, n_sat):	
-				m0 = subs[i_sat].halo[0].m
-				m1 = subs[i_sat].m_max()
-				print '%d) Subhalo %d has m(z=0): %e and m_max: %e ' % (i_sub, i_sat, m0, m1)
-				#print m1 #m1
 
 		#Planes of satellites in substructure
 		for i_snap in range(0, snap_end-snap_init):
@@ -231,39 +231,52 @@ for i_sub in range(sub_init, sub_end):
 		sub_fname='saved/sub_stats_'+lg_names[i_lg]+'_'+simurun+'_'+subrun+'_mains.pkl'
 		print 'Saving subhalo stats: ', sub_fname
 		f_subs = open(sub_fname, 'w')
-		#pickle.dump(sub_fname, subs_stats)
 		pickle.dump(subs_stats, f_subs)
 
-if do_plot_mfs == True:
+	# Plot all the subhalo mass function for a given LG run
+	if do_plot_mfs == True and i_sub == sub_end-1:
 
-	out_mwz0 = 'output/mf_' + simurun + '_' + lg_names[0] + '_mz0_subs.png'
-	out_m31z0 = 'output/mf_' + simurun + '_' + lg_names[1] + '_mz0_subs.png'
-	out_mwmax = 'output/mf_' + simurun + '_' + lg_names[0] + '_mmax_subs.png'
-	out_m31max = 'output/mf_' + simurun + '_' + lg_names[1] + '_mmax_subs.png'
-
-	plot_massfunctions(mfmw_z0_x, mfmw_z0_y, n_simu, out_mwz0)
-	plot_massfunctions(mfm31_z0_x, mfm31_z0_y, n_simu, out_m31z0)
-	plot_massfunctions(mfmw_max_x, mfmw_max_y, n_simu, out_mwmax)
-	plot_massfunctions(mfm31_max_x, mfm31_max_y, n_simu, out_m31max)
+		out_mwz0 = 'output/mf_' + simurun + '_' + lg_names[0] + '_mz0_subs.png'
+		out_m31z0 = 'output/mf_' + simurun + '_' + lg_names[1] + '_mz0_subs.png'
+		out_mwmax = 'output/mf_' + simurun + '_' + lg_names[0] + '_mmax_subs.png'
+		out_m31max = 'output/mf_' + simurun + '_' + lg_names[1] + '_mmax_subs.png'
 	
-	fout_mwz0 = 'saved/stats_' + simurun + '_' + lg_names[0] + '_mz0_subs.pkl'
-	fout_m31z0 = 'saved/stats_' + simurun + '_' + lg_names[1] + '_mz0_subs.pkl'
-	fout_mwmax = 'saved/stats_' + simurun + '_' + lg_names[0] + '_mmax_subs.pkl'
-	fout_m31max = 'saved/stats_' + simurun + '_' + lg_names[1] + '_mmax_subs.pkl'
+		plot_massfunctions(mfmw_z0_x, mfmw_z0_y, n_simu, out_mwz0)
+		plot_massfunctions(mfm31_z0_x, mfm31_z0_y, n_simu, out_m31z0)
+		plot_massfunctions(mfmw_max_x, mfmw_max_y, n_simu, out_mwmax)
+		plot_massfunctions(mfm31_max_x, mfm31_max_y, n_simu, out_m31max)
+	
+		fout_mwz0 = 'saved/stats_' + simurun + '_' + lg_names[0] + '_mz0_subs.pkl'
+		fout_m31z0 = 'saved/stats_' + simurun + '_' + lg_names[1] + '_mz0_subs.pkl'
+		fout_mwmax = 'saved/stats_' + simurun + '_' + lg_names[0] + '_mmax_subs.pkl'
+		fout_m31max = 'saved/stats_' + simurun + '_' + lg_names[1] + '_mmax_subs.pkl'
 
-	sub_skip = int(sub_skip)
+		sub_skip = int(sub_skip)
 
+	# Plot mass accretion histories and evolution of satellite anisotropy
+	if do_evolution == True and i_sub == sub_end-1:
 
-if do_evolution == True:
-	for i_lg in range(0, 2):
-		out_fname = 'output/anisotropy_' + simurun + '_' + lg_names[i_lg] + '_' + subrun + '_' + this_run + '.png'
-		plot_anisotropies(anisotropies, i_lg, sub_end-sub_skip, snap_end, out_fname)
+		for i_lg in range(0, 2):
+			out_fname = 'output/anisotropy_' + simurun + '_' + lg_names[i_lg] + '_' + subrun + '_' + this_run + '.png'
+			plot_anisotropies(anisotropies, i_lg, sub_end-sub_skip, snap_end, out_fname)
 
-	print 'Plotting mass accretions...'
-	out_fname = 'output/mah_' + simurun + '_' + lg_names[0] + '.png'
-	plot_mass_accretions(time, mass_histories[0, :, :], out_fname)
-	out_fname = 'output/mah_' + simurun + '_' + lg_names[1] + '.png'
-	plot_mass_accretions(time, mass_histories[1, :, :], out_fname)
+		print 'Plotting mass accretions...'
+		out_fname = 'output/mah_' + simurun + '_' + lg_names[0] + '.png'
+		plot_mass_accretions(time, mass_histories[0, :, :], out_fname)
+		out_fname = 'output/mah_' + simurun + '_' + lg_names[1] + '.png'
+		plot_mass_accretions(time, mass_histories[1, :, :], out_fname)
+
+	# We reset the lists
+	if i_sub == sub_end - 1:
+		mfmw_z0_x = []; 		mfmw_z0_y = []
+		mfmw_max_x = []; 		mfmw_max_y = []
+		mfm31_z0_x = []; 		mfm31_z0_y = []
+		mfm31_max_x = []; 		mfm31_max_y = []
+		subs = []; 		subs_stats = [];	n_subs = 0
+		subs_xt = []; 		subs_yt = []; 		subs_zt = []
+		masses_max = []; 	masses_z0 = []
+		n_simu = 0
+		print 'Cleaning loop...'
 
 '''
 	This section computes some GLOBAL statistics, i.e. taking into account all of the LG simulations
@@ -283,7 +296,7 @@ if do_all_lgs == True:
 			this_lg = LocalGroup(simurun)
 			subrun = '%02d' % i_sub
 
-		#	s_fname='/home/eduardo/CLUES/PyRCODIO/saved/'+simurun+'_'+subrun+'_sats.pkl'
+			s_fname='/home/eduardo/CLUES/PyRCODIO/saved/'+simurun+'_'+subrun+'_sats.pkl'
 			m_fname='/home/eduardo/CLUES/PyRCODIO/saved/'+simurun+'_'+subrun+'_mains.pkl'
 	
 			if do_subs == True:

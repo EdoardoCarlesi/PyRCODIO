@@ -536,7 +536,7 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	x_min = 1.e+9; 	x_max = 5.e+11
 	y_min = 1; 	y_max = 50 #max_list(y_n)
 
-	print 'Plotting massfunctions to file: ', f_out, y_max
+	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
@@ -584,7 +584,7 @@ def plot_mass_accretions(time, mahs, f_out):
 	
 	n_plots = len(mahs[:,0])
 	x_min = np.min(time); x_max = np.max(time)
-	y_min = np.min(mahs); y_max = np.max(mahs)
+	y_min = np.min(mahs); y_max = np.max(mahs) * 1.85
 
 	if y_min < 1.e+5:
 		y_min = y_max / 200.

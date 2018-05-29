@@ -15,6 +15,25 @@ import time
 import pickle
 from libcosmo.grid import *
 
+s_ini = 0
+s_end = 10
+
+z_ini = 0
+z_end = 10
+
+
+sz_ini = s_ini * z_ini
+sz_end = s_end * z_end
+
+for isz in range(sz_ini, sz_end):
+		
+	irun = isz % z_end
+	isimu = int(isz/z_end)
+
+	print irun, isimu
+
+
+'''
 webfile='/home/eduardo/CLUES/DATA/2048/00_06/00/zoom_2048_054.000064.Vweb-ascii'
 ahffile='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 
@@ -26,7 +45,6 @@ print halos[0].id_index[index]
 
 #grid = read_vweb(webfile, 64, 100)
 
-'''
 pos = [50, 50, 50]
 
 print grid.rhoPos(pos)
