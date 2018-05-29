@@ -137,6 +137,27 @@ class HaloThroughZ:
 
 		return mass_t
 
+	def m_max(self):
+		m_max = np.max(self.m_t())
+		return m_max
+
+	def r_min(self, x_c):
+		x_t_c = self.x_t_center(x_c)
+		n_xt = len(x_t_c[0, :])
+		min_r = 10000.		
+		istep = 0
+
+		for ixt in range(0, n_xt):
+			this_r = module(x_t_c[:, ixt])	
+
+			if this_r < min_r:
+				#print this_r
+				min_r = this_r
+				istep = ixt
+
+		m_min_r = self.halo[istep].m
+
+		return (min_r, m_min_r, istep)
 
 	def v_t(self):
 		vel_t = np.zeros((3, self.n_steps))

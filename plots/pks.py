@@ -1,4 +1,7 @@
 #!/usr/bin/python
+
+#from matplotlib import rc
+#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,6 +36,10 @@ y_max = 30000.0
 plt.axis([k_min, k_max, y_min, y_max])
 plt.xscale('log')#, basex=10)	
 plt.yscale('log')#, basex=10)	
+
+plt.rc({'text.usetex': True})
+plt.xlabel('$k \\quad [$Mpc$^{-1} h]$')
+plt.ylabel('$P(k) \\quad [h^{-3}$ Mpc$^3$]')
 
 while line1:
 	try:

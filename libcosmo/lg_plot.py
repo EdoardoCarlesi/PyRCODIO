@@ -346,6 +346,9 @@ def bin_lg_sub(lgs):
 	bin_m = np.zeros((2, 3))
 	bin_n = np.zeros((2, 3))
 	
+	perc_min = 10.
+	perc_max = 100. - perc_min 
+
 	for ilg in range(0, n_tot):
 		m_lgs[0][ilg] = lgs[ilg].LG1.m
 		m_lgs[1][ilg] = lgs[ilg].LG2.m		
@@ -353,49 +356,48 @@ def bin_lg_sub(lgs):
 		n_sub[1][ilg] = lgs[ilg].LG2.nsub
 
 	for ilg in range(0, 2):
-		bin_m[ilg][0] = np.amin(m_lgs[ilg][:])
+		#bin_m[ilg][0] = np.amin(m_lgs[ilg][:])
+		bin_m[ilg][0] = np.percentile(m_lgs[ilg][:], perc_min)
 		bin_m[ilg][1] = np.median(m_lgs[ilg][:])
-		bin_m[ilg][2] = np.amax(m_lgs[ilg][:])
-		bin_n[ilg][0] = np.amin(n_sub[ilg][:])
+		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max)
+		#bin_m[ilg][2] = np.amax(m_lgs[ilg][:])
+		#bin_n[ilg][0] = np.amin(n_sub[ilg][:])
+		bin_n[ilg][0] = np.percentile(n_sub[ilg][:], perc_min)
 		bin_n[ilg][1] = np.median(n_sub[ilg][:])
-		bin_n[ilg][2] = np.amax(n_sub[ilg][:])
+		bin_n[ilg][2] = np.percentile(n_sub[ilg][:], perc_max)
+		#bin_n[ilg][2] = np.amax(n_sub[ilg][:])
 
 	return [bin_m, bin_n]
 
 
 
 def plot_lg_bins(x_bins, y_bins, f_out):
-	size_p = 30
-	size_x = 40
-	size_y = 20
+	size_p = 5
+	size_x = 10
+	size_y = 5
 
 	x_label = 'Nsub'
 	y_label = 'Msun/h'
-	title_size = 50
-	axis_size = 50
+	title_size = 10
+	axis_size = 10
 	axis_margins = 0.5
 	tickSize = 0.4
 
-	'''
-	x_min = np.amin(x_bins)
-	x_max = np.amax(x_bins)
-	y_min = np.amin(y_bins)
-	y_max = np.amax(y_bins)
-	'''
+	plt.rc({'text.usetex': True})
+	#plt.rcParams['text.usetex'] = True
+	#plt.rcParams['text.latex.unicode'] = True
 
-	plt.rcParams['text.usetex'] = True
-	plt.rcParams['text.latex.unicode'] = True
-
-	normx = 1.e+12
+	#normx = 1.e+12
+	normx = 1.0000
 	normy = 1.0000
 
-	x_min = 0.5e+12 / normx
-	x_max = 2.2e+12 / normx
-	y_min = 1.0 / normy
-	y_max = 70. / normy
+	x_min0 = 0.6e+12 / normx; x_max0 = 4.2e+12 / normx
+	y_min0 = 1.0 / normy; 	y_max0 = 140. / normy
+	x_min1 = 0.5e+12 / normx; x_max1 = 2.1e+12 / normx
+	y_min1 = 1.0 / normy; 	y_max1 = 60. / normy
 
-	print 'X Axis min=%.3f  max=%.3f\n' % (x_min, x_max)
-	print 'Y Axis min=%.3f  max=%.3f\n' % (y_min, y_max)
+	#print 'X Axis min=%.3f  max=%.3f\n' % (x_min, x_max)
+	#print 'Y Axis min=%.3f  max=%.3f\n' % (y_min, y_max)
 
 	n_bins = len(x_bins)
 	print 'Nbins = ', n_bins
@@ -406,23 +408,26 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	y_err = np.zeros((2, n_bins))
 
 	#(fig, axs) = plt.subplots(ncols=3, nrows=1, figsize=(12, 4))
-#	plt.rc(labelsize=axis_size)    
-#	plt.rc('xtick', labelsize=axis_size)    
-#	plt.rc('ytick', labelsize=axis_size)    
+	#plt.rc(labelsize=axis_size)    
+	plt.rc('xtick', labelsize=axis_size)    
+	plt.rc('ytick', labelsize=axis_size)    
 
-	(fig, axs) = plt.subplots(ncols=2, nrows=1, figsize=(size_x, size_y), sharey = True)
-	#plt.xlabel(r'M_{sun}')# / 10^{12}')
-	#plt.ylabel(r'N_{sub}') # M > 3 \times 10^{8} M_{\odot}')
+	(fig, axs) = plt.subplots(ncols=2, nrows=1, figsize=(size_x, size_y)) #, sharey = True)
 
-	axs[0].axis([x_min, x_max, y_min, y_max])
-	axs[1].axis([x_min, x_max, y_min, y_max])
-#	axs[0].set_xscale('log'); 	axs[0].set_yscale('log')	
-#	axs[1].set_xscale('log'); 	axs[1].set_yscale('log')	
+	#axs[0].yaxis.set_ticks_position('left')
+	#axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	#axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	axs[0].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
+	axs[1].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
+	axs[0].axis([x_min0, x_max0, y_min0, y_max0])
+	axs[1].axis([x_min1, x_max1, y_min1, y_max1])
+	axs[0].set_title('M31'); 	axs[1].set_title('MW')
+	#axs[0].set_xscale('log'); 	axs[1].set_xscale('log')	
+	#axs[0].set_yscale('log'); 	axs[1].set_yscale('log')	
 
 	#axs[0].xaxis.set_major_locator(plt.MaxNLocator(4))
 	#axs[1].xaxis.set_major_locator(plt.MaxNLocator(4))
-
-	plt.margins(axis_margins)		
+	#plt.margins(axis_margins)		
 	#plt.setp(axs[0].get_xticklabels(), visible = True)
 	#plt.setp(axs[0].get_yticklabels(), visible = True)
 	#plt.setp(axs[1].get_xticklabels(), visible = True)
@@ -433,7 +438,6 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 		# Now loop for each halo on a 
 		for ibin in range(0, n_bins):
-	
 			xs[ibin] = float(x_bins[ibin, ilg, 1])
 			x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][0]) / normx
 			x_err[1][ibin] = float(x_bins[ibin][ilg][2] - xs[ibin]) / normx
@@ -447,6 +451,7 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 		axs[ilg].errorbar(xs, ys, yerr=[y_err[0], y_err[1]], xerr=[x_err[0], x_err[1]], markersize=size_p, fmt='o')
 	
+	#plt.xticks
 	#axs[0].xaxis.set_major_locator(ticker.MultipleLocator(tickSize))
 	#axs[1].xaxis.set_major_locator(ticker.MultipleLocator(tickSize))
 	#axs[0].xaxis.set_major_formatter(ticker.FormatStrFormatter("%7.2f"))
@@ -528,20 +533,20 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	lnw = 1.0
 	col = 'b'
 	
-	x_min = 1.e+8; 	x_max = 1.e+12
-	y_min = 1; 	y_max = max_list(y_n)
+	x_min = 1.e+9; 	x_max = 5.e+11
+	y_min = 1; 	y_max = 50 #max_list(y_n)
 
 	print 'Plotting massfunctions to file: ', f_out, y_max
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
-	axs[0].xscale('log')
-	axs[0].yscale('log')
-	axs[0].axis([x_min, x_max, y_min, y_max])
+	axs.set_xscale('log')
+	axs.set_yscale('log')
+	axs.axis([x_min, x_max, y_min, y_max])
 	
 	if n_mf > 1:
 		for im in range(0, n_mf):
-			axs[0].plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+			axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
 
 	plt.savefig(f_out)
 	plt.clf()
