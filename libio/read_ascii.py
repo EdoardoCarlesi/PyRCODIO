@@ -183,6 +183,70 @@ def read_ahf(file_name):
 
 	return halos_ahf
 
+
+
+# Reading AHF particle file
+def read_particles_chunks(file_root, file_suff, n_files):
+	ids = dict()	# List containing all halo IDs & Particle number per halo ID - each list member is a 2 elements array
+	parts = []	# Each list member contains an array with all the particle ids
+	count_p = 0	# Total number of particles per halo
+	count_h = 0	# Total number of haloes in file
+	count_l = 0	# Simply count the lines
+
+	this_np = 0
+	tot_h = 0	# Double check that the total number of haloes is matched with the counter
+
+	for i_chunk in range(0, n_files):
+		this_chunk = '%04d' % i_chunk
+		file_name = file_root + this_chunk + file_suff
+		file_part = open(file_name, 'r')
+
+		# First read the header, containing the total number of haloes
+		line = file_part.readline()
+		line = line.strip()
+		column = line.split()
+		tot_h = int(column[0])
+	
+		lines_command = 'wc -l ' + file_name
+		out_os = os.popen(lines_command).read()
+		(tot_l, fname) = out_os.split()
+		tot_l = long(tot_l)
+		print 'Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, tot_h)
+
+		while line:
+			line = file_part.readline()
+			line = line.strip()
+			column = line.split()
+	
+			if count_l > 0 and count_p < this_np:
+				this_pid = long(column[0])	# Particle ID
+				this_parts.append(this_pid)
+				count_p += 1			
+				count_l += 1
+			else:	
+				# All particles have been read in
+				if count_p == this_np and count_h > 0:
+					this_parts.sort()	# Automatically sort them by ascending order!
+					parts.append(this_parts)
+				
+				# Still reading particle files
+				if count_l < tot_l-1:
+					this_parts = []
+					this_hid = str(column[1])	# Halo ID
+					this_np = int(column[0])
+					this_index = count_h
+					#print 'Line %ld found halo %ld with %d particles' % (count_l, this_hid, this_np)	
+					ids.update({this_hid:[this_index, this_np]})
+
+					count_l += 1
+					count_h += 1
+					count_p = 0			# Reset the particle number
+		
+	return (ids, parts)
+
+
+
+
 # Reading AHF particle file
 def read_particles(file_name):
 	ids = dict()	# List containing all halo IDs & Particle number per halo ID - each list member is a 2 elements array
