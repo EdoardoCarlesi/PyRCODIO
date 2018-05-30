@@ -79,7 +79,7 @@ def find_lg(halos, lgmod):
 	model_code = lgmod.model_code	
 	vrad_max = lgmod.vrad_max
 
-	print lgmod.info()
+	#print lgmod.info()
 
 	# Center is a three-D variable
 	# These are initialized empty
@@ -94,7 +94,8 @@ def find_lg(halos, lgmod):
 		halo_this = halos[h]
 
 		# print halo_this.distance(center)
-		if halo_this.m > m_min and halo_this.distance(center) < radius+r_max :
+		#if halo_this.m > m_min and halo_this.distance(center) < radius+r_max :
+		if halo_this.m > m_min:
 			halos_center.append(halo_this)
 			
 	n_candidates = len(halos_center)

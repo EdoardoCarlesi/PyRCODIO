@@ -6,7 +6,7 @@ from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
-#from libcosmo.lg_plot import *
+from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
 from pygadgetreader import *
@@ -15,22 +15,34 @@ import time
 import pickle
 from libcosmo.grid import *
 
-s_ini = 0
-s_end = 10
+basedir='/home/eduardo/CLUES/DATA/512/'
+#snapfile=basedir+'60_00/snapshot_054'; ahffile=basedir+'60_00/snapshot_054.AHF_halos'; rho_out='rho_60_00_EC.png'
+snapfile=basedir+'/NOAM/60_00/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_00/snapshot_127.0000.z0.000.AHF_halos'; rho_out='rho_60_00_NIL.png'
+ 
+halo_all = read_ahf(ahffile)
 
-z_ini = 0
-z_end = 10
+rad = 7000.
+rescale = 2
+
+virgo_x = [47000.0, 61000.0, 49500.0]
+center = [50000.0, 50000.0, 50000.0]
+#find_halos_point(x_c, halo_all, radius):
+halos_c = find_halos_point(center, halo_all, rad)
+
+lg1 = halos_c[0]
+lg2 = halos_c[1]
+
+n_lgs = len(halos_c)
+
+for i_lg in range(0, n_lgs):
+	print halos_c[i_lg].info()
 
 
-sz_ini = s_ini * z_ini
-sz_end = s_end * z_end
+#print lg1.info()
+#print lg2.info()
 
-for isz in range(sz_ini, sz_end):
-		
-	irun = isz % z_end
-	isimu = int(isz/z_end)
-
-	print irun, isimu
+#plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, 2)
+#plot_lglv(snapfile, halo_all, rho_out, lg1, lg2, virgo_x, rescale, 2)
 
 
 '''

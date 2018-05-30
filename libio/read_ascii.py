@@ -45,6 +45,52 @@ def read_vweb(file_name, size, box):
 	return grid
 
 
+def read_ahf_mass_range(file_name, m_max, m_min):
+	# Open file
+	file_ahf = open(file_name, 'r')
+
+	line = file_ahf.readline()
+	halos_ahf = []
+	count = 0
+	
+	while line:
+    		line = file_ahf.readline()
+		line = line.strip()
+		column = line.split()
+		n_col = len(column)
+		
+		if n_col > 1:
+			# Read halo properties
+			idn = long(column[0])
+			mass = float(column[3])
+			pos = [float(column[5]), float(column[6]), float(column[7])]
+			vel = [float(column[8]), float(column[9]), float(column[10])]
+			rvir = float(column[11])
+			nsub = int(column[2])
+			npart = int(column[4])
+			angmom = [float(column[21]), float(column[22]), float(column[23])]
+			contam = float(column[38])
+				
+			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000.
+			
+			if mass > m_min and mass < m_max:
+				# Initialize and append halo to the list
+				halo = Halo()
+				halo.initialize(idn, mass, pos, vel, rvir, nsub, npart)
+				halo.update_id_index(idn, count)
+				#halo.ID = idn
+				halo.l = angmom
+				halo.contam = contam
+				halos_ahf.append(halo)
+				count += 1
+
+	n_lines = count
+	print "Found a total of %d halos in mass range (%e, %e)" % (n_lines, m_min, m_max)
+
+	return halos_ahf
+
+
+
 def read_ahf(file_name):
 	# Open file
 	file_ahf = open(file_name, 'r')
