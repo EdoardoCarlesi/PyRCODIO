@@ -16,6 +16,7 @@ import pickle
 from libcosmo.grid import *
 
 file_single='snapshot_054.z0.000.AHF_halos'
+#file_single='snapshot_054.0000.z0.000.AHF_halos'
 
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
@@ -23,7 +24,7 @@ sub_path = '00'
 root_file = 'snapshot_054.'
 suff_file = '.z0.000.AHF_halos'
 
-tot_files = 120
+tot_files = 24
 
 m_max = 2.e+15
 m_min = 1.e+11
@@ -39,15 +40,16 @@ ratio_max = 4.
 vrad_max = 10.0
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-this_file = base_path + sub_path + '/' + file_single
+this_root = base_path + sub_path + '/' + root_file
 
-all_halos = read_ahf_mass_range(this_file, m_max, m_min)
+all_halos = read_ahf_chunks_mass_range(this_root, suff_file, tot_files, m_max, m_min)
+#all_halos = read_ahf_mass_range(this_file, m_max, m_min)
 all_lgs = find_lg(all_halos, lg_model)
 
 out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
 f_out_lgs = open(out_lgs, 'w')
 
-pickle.dump(f_out_lgs, all_lgs)
+#pickle.dump(all_lgs, f_out_lgs)
 
 
 '''

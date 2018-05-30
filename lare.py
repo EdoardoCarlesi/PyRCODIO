@@ -24,7 +24,7 @@ snapshot = 'snapshot_054.AHF_halos'
 #snapshot = 'snapshot_054.z0.000.AHF_halos'
 
 #home_dir = '/home/eduardo/'
-hubble = 0.671		
+hubble = 0.677
 h0 = hubble 
 
 #unitMpc = True
