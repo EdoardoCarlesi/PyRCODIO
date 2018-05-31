@@ -20,11 +20,13 @@ file_single='snapshot_054.z0.000.AHF_halos'
 
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
-sub_path = '00'
-root_file = 'snapshot_054.'
-suff_file = '.z0.000.AHF_halos'
+sub_path = '01'
+root_file = 'snapshot_'
+suff_halo = '.z0.000.AHF_halos'
+suff_part = '.z0.000.AHF_particles'
 
-tot_files = 24
+tot_files = 4
+use_files = 4
 
 m_max = 2.e+15
 m_min = 1.e+11
@@ -39,20 +41,59 @@ m_max = 4.0e+12
 ratio_max = 4.
 vrad_max = 10.0
 
-lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-this_root = base_path + sub_path + '/' + root_file
+resolution = '1024'
+env_type = 'std'
+out_dir = 'output/'
 
-all_halos = read_ahf_chunks_mass_range(this_root, suff_file, tot_files, m_max, m_min)
-#all_halos = read_ahf_mass_range(this_file, m_max, m_min)
+min_common = 15
+
+end_snap = 54
+ini_snap = 50
+
+settings = Settings(base_path, out_dir, env_type, resolution, root_file)
+settings.base_file_chunk = base_path + sub_path + '/' + root_file
+#settings.ahf_path = base_path + sub_path + '/snapshot_' + '*.0000.*' 
+settings.ahf_path = base_path + sub_path #+ '/snapshot_'
+
+lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+this_root = base_path + sub_path + '/' + root_file + '054.'
+
+#all_halos = read_ahf_chunks_mass_range(this_root, suff_halo, tot_files, m_max, m_min)
+all_halos = read_ahf_chunks(this_root, suff_halo, use_files)
+n_halos = len(all_halos)
+
+(all_ids, all_parts) = read_particles_chunks(this_root, suff_part, use_files, n_halos)
 all_lgs = find_lg(all_halos, lg_model)
+
+#print all_ids
+
+n_lgs = len(all_lgs)
+	
+print 'Found ', n_lgs
+
+main_halos = []
+
+if n_lgs > 0:
+	for ilg in range(0, n_lgs):
+		print all_lgs[ilg].info()
+		main_halos.append(all_lgs[ilg].LG1)
+		main_halos.append(all_lgs[ilg].LG2)
+
+
+(main_ids, main_parts) = find_ids(main_halos, all_ids, all_parts)
+
+lg_halos_z = merger_tree_chunks(end_snap, ini_snap, tot_files, use_files, min_common, main_halos, main_parts, main_ids, settings)
+
+
+#n_halos = 15171
+#(parts, ids) = read_particles_chunks(this_root, suff_part, tot_files, n_halos)
+
+'''
 
 out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
 f_out_lgs = open(out_lgs, 'w')
-
 #pickle.dump(all_lgs, f_out_lgs)
 
-
-'''
 all_lgs = []
 all_halos = []
 for i_cpu in range(0, tot_files):

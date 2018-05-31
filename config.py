@@ -218,6 +218,18 @@ class Settings:
 			self.sub_path_ics = ''
 			self.sub_path_snap = ''
 
+	def get_chunk_files(self, isnap, n_files):
+		snap_str = '%03d' % isnap
+		self.redshifts = ahf_redshifts(self.ahf_path)
+		self.snapshots = ahf_snapshots(self.ahf_path)
+
+		this_snap = self.base_file_chunk + snap_str + '.'
+		this_suff_halo = '.z' + self.redshifts[isnap * n_files] + self.ahf_halos_str
+		this_suff_part = '.z' + self.redshifts[isnap * n_files] + self.ahf_parts_str
+
+		return (this_snap, this_suff_halo, this_suff_part)
+
+
 	# Global files storing all the output information in txt format
 	def init_ascii(self):
 		if self.env_type == "HESTIA" :
@@ -308,10 +320,8 @@ class Settings:
 		self.plot_out =	self.base_path + self.outp_dir + self.base_run + '_particles_LG_LV.png'
 
 	def get_ahf_files(self, i_snap, mpi_task):
-		this_z = str(self.redshifts[i_snap])
-		this_s = str(self.snapshots[i_snap])
 		mpi_str = '%04d' % mpi_task
-	
+
 		if self.env_type == "HESTIA" :	# FIXME this needs to be set straight
 			this_part_file = self.ahf_path+self.snapshot_str+self.snapshots[i_snap]+'.'+mpi_str+'.z'+self.redshifts[i_snap]+self.ahf_parts_str
 			this_halo_file = self.ahf_path+self.snapshot_str+self.snapshots[i_snap]+'.'+mpi_str+'.z'+self.redshifts[i_snap]+self.ahf_halos_str

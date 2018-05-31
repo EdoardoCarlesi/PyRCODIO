@@ -46,8 +46,54 @@ def read_vweb(file_name, size, box):
 
 
 # This function reads haloes within a given mass range from a AHF catalog split into several chunks
-def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
+def read_ahf_chunks(file_root, file_suffix, n_chunks):
+	halos_ahf = []
+	count = 0
 
+	for i_chunk in range(0, n_chunks):
+		this_chunk = '%04d' % i_chunk
+		this_name = file_root + this_chunk + file_suffix
+		file_ahf = open(this_name, 'r')
+
+		line = file_ahf.readline()
+	
+		while line:
+    			line = file_ahf.readline()
+			line = line.strip()
+			column = line.split()
+			n_col = len(column)
+		
+			if n_col > 1:
+				# Read halo properties
+				idn = long(column[0])
+				mass = float(column[3])
+				pos = [float(column[5]), float(column[6]), float(column[7])]
+				vel = [float(column[8]), float(column[9]), float(column[10])]
+				rvir = float(column[11])
+				nsub = int(column[2])
+				npart = int(column[4])
+				angmom = [float(column[21]), float(column[22]), float(column[23])]
+				contam = float(column[38])
+			
+				# Initialize and append halo to the list
+				halo = Halo()
+				halo.initialize(idn, mass, pos, vel, rvir, nsub, npart)
+				halo.update_id_index(idn, count)
+				#halo.ID = idn
+				halo.l = angmom
+				halo.contam = contam
+				halos_ahf.append(halo)
+				count += 1
+
+	n_lines = count
+	print "Found a total of %d halos " % (n_lines)
+
+	return halos_ahf
+
+
+
+# This function reads haloes within a given mass range from a AHF catalog split into several chunks
+def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
 	halos_ahf = []
 	count = 0
 
@@ -186,12 +232,11 @@ def read_ahf(file_name):
 
 
 # Reading AHF particle file
-def read_particles_chunks(file_root, file_suff, n_files):
+def read_particles_chunks(file_root, file_suff, n_files, n_halos):
 	ids = dict()	# List containing all halo IDs & Particle number per halo ID - each list member is a 2 elements array
 	parts = []	# Each list member contains an array with all the particle ids
 	count_p = 0	# Total number of particles per halo
 	count_h = 0	# Total number of haloes in file
-	count_l = 0	# Simply count the lines
 
 	this_np = 0
 	tot_h = 0	# Double check that the total number of haloes is matched with the counter
@@ -200,24 +245,25 @@ def read_particles_chunks(file_root, file_suff, n_files):
 		this_chunk = '%04d' % i_chunk
 		file_name = file_root + this_chunk + file_suff
 		file_part = open(file_name, 'r')
+		count_l = 0	# Reset the lines to zero for each file
 
 		# First read the header, containing the total number of haloes
 		line = file_part.readline()
 		line = line.strip()
 		column = line.split()
-		tot_h = int(column[0])
-	
+
 		lines_command = 'wc -l ' + file_name
 		out_os = os.popen(lines_command).read()
 		(tot_l, fname) = out_os.split()
 		tot_l = long(tot_l)
-		print 'Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, tot_h)
+
+		print 'Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, n_halos)
 
 		while line:
 			line = file_part.readline()
 			line = line.strip()
 			column = line.split()
-	
+
 			if count_l > 0 and count_p < this_np:
 				this_pid = long(column[0])	# Particle ID
 				this_parts.append(this_pid)
@@ -242,6 +288,8 @@ def read_particles_chunks(file_root, file_suff, n_files):
 					count_h += 1
 					count_p = 0			# Reset the particle number
 		
+	print 'Expected %d halos, found %d ' % (count_h, n_halos)
+
 	return (ids, parts)
 
 
