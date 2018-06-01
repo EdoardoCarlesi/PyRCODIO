@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import matplotlib.pyplot as plt
+import numpy as np
+#import plotly.plotly as py
 import numpy as np
 import os
 
@@ -31,8 +34,10 @@ base_path = '/home/eduardo/CLUES/PyRCODIO/'
 outp_path = 'output/'
 save_path = 'saved/'
 
-all_m_bins = save_path + 'm_bins.pkl'
-all_n_bins = save_path + 'n_bins.pkl'
+file_m_bins = save_path + 'm_bins.pkl'
+file_n_bins = save_path + 'n_bins.pkl'
+file_masses = save_path + 'masses.pkl'
+file_n_subs = save_path + 'n_subs.pkl'
 
 m_sub_min = 3.e+8
 min_part = 30
@@ -42,24 +47,24 @@ stepMyr = 0.25
 	SELECT WHAT KIND OF ANALYSIS NEEDS TO BE DONE
 '''
 # Plot mass accretion histories and evolution of satellite anisotropy
-do_evolution = True
-#do_evolution = False
+#do_evolution = True
+do_evolution = False
 
-# General combined statistics of all LG realisations
+# General combined statistics of all LG realisations - needed to gather the data
 do_all_lgs = False
 #do_all_lgs = True
 
 # Only do some post-post processing plots
-do_plots_only = False
-#do_plots_only = True
+#do_plots_only = False
+do_plots_only = True
 
 # Subhalo trajectories
 #do_trajectories = True
 do_trajectories = False
 
 # Plot mass accretion functions
-do_plot_mfs = True
-#do_plot_mfs = False
+#do_plot_mfs = True
+do_plot_mfs = False
 
 do_subs = True
 #do_subs = False
@@ -284,13 +289,20 @@ for i_all in range(all_init, all_end):
 
 if do_all_lgs == True:
 
+	print 'Do all lgs only.'
 	n_bins = np.zeros((simu_end-simu_init, 2, 3))
 	m_bins = np.zeros((simu_end-simu_init, 2, 3))
+	all_masses = [[] for ijk in range(0, 2)] 
+	all_n_subs = [[] for ijk in range(0, 2)] 
 
 	#for simurun in simuruns: 
 	for i_simu in range(simu_init, simu_end): 
 		simurun = simuruns[i_simu]
 		these_lgs = []
+		these_masses = [[] for ijk in range(0, 2)] 
+		these_n_subs = [[] for ijk in range(0, 2)] 
+
+		print 'Loading .pkl files for ', simurun
 
 		for i_sub in range(next_sub_init, next_sub_end):
 			this_lg = LocalGroup(simurun)
@@ -319,34 +331,43 @@ if do_all_lgs == True:
 				main = pickle.load(hand_main)
 				this_lg.init_halos(main[0].halo[0], main[1].halo[0])
 				these_lgs.append(this_lg)
-			#	print this_lg.info()
-			#	hand_sats = open(s_fname, 'r')
-			#	sats = pickle.load(hand_sats)
+
+				for ijk in range(0, 2):
+					these_masses[ijk].append(main[ijk].halo[0].m)
+					these_n_subs[ijk].append(main[ijk].halo[0].nsub)
+
 				n_main = len(main)
 				r_sub = 1.35
 				n_lg = 2
 			except:	
 				n_lg = 0
 
+		for ijk in range(0, 2):
+			all_masses[ijk].append(these_masses[ijk])
+			all_n_subs[ijk].append(these_n_subs[ijk])
+
 		(m_bin, n_bin) = bin_lg_sub(these_lgs)
 		
 		n_bins[i_simu, :, :] = n_bin
 		m_bins[i_simu, :, :] = m_bin
 
-	file_m = open(all_m_bins, 'w')
-	file_n = open(all_n_bins, 'w')
+	file_m = open(file_m_bins, 'w')
+	file_n = open(file_n_bins, 'w')
+	file_ms = open(file_masses, 'w')
+	file_ns = open(file_n_subs, 'w')
 
 	pickle.dump(m_bins, file_m)
 	pickle.dump(n_bins, file_n)
-
-	print n_bins
-	print m_bins
+	pickle.dump(all_masses, file_ms)
+	pickle.dump(all_n_subs, file_ns)
 
 
 if do_plots_only == True:
-
-	file_m = open(all_m_bins, 'r')
-	file_n = open(all_n_bins, 'r')
+	'''
+		PLOT THE THE MASS vs. SATELLITE FLUCTUATIONS 
+	'''
+	file_m = open(file_m_bins, 'r')
+	file_n = open(file_n_bins, 'r')
 	m_bins = pickle.load(file_m)
 	n_bins = pickle.load(file_n)
 
@@ -374,5 +395,68 @@ if do_plots_only == True:
 	f_out = 'output/sat_n_bins.png'
 	plot_lg_bins(m_bins, n_bins, f_out)
 
+	'''
+		NOW PLOT THE HISTOGRAMS OF THE MASS & SATELLITE FLUCTUATIONS WRT THE MEDIAN
+	'''
+	file_ms = open(file_masses, 'r')
+	file_ns = open(file_n_subs, 'r')
+	masses = pickle.load(file_ms)
+	n_subs = pickle.load(file_ns)
+
+	delta_m = [[] for ijk in range(0, 2)] 
+	delta_n = [[] for ijk in range(0, 2)] 
+
+	n_runs = len(n_subs[0])
+
+#	print n_runs
+
+	for ijk in range(0, 2):
+		for i_run in range(0, n_runs):
+			#this_m_med = np.mean(masses[ijk][i_run])
+			this_m_med = np.median(masses[ijk][i_run])
+			#this_n_med = np.mean((n_subs[ijk][i_run]))
+			this_n_med = np.median((n_subs[ijk][i_run]))
+			n_lgs = len(masses[ijk][i_run])
+
+			for ilg in range(0, n_lgs):
+				#print i_run, n_lgs, this_m_med
+				this_ms = abs(masses[ijk][i_run][ilg] - this_m_med) / this_m_med
+				this_ns = abs(float(n_subs[ijk][i_run][ilg]) - float(this_n_med)) / this_n_med
+			
+				#print masses[ijk][0][ilg]
+				#print ilg, this_ms
+
+				delta_m[ijk].append(this_ms)
+				delta_n[ijk].append(this_ns)
+
+	for ijk in range(0, 2):
+		print np.median(delta_m[ijk]), np.mean(delta_m[ijk])
+		print np.median(delta_n[ijk]), np.mean(delta_n[ijk])
+
+		n_bins = 30
+
+		# Plot Msub difference histograms
+		(mny, mbins, mpat) = plt.hist(delta_m[ijk], n_bins)
+		fout_m = 'output/hist_' + lg_names[ijk] + '_delta_m.png'
+	        plt.rc({'text.usetex': True})
+		plt.xlabel('$\Delta M$')
+		plt.ylabel('N')
+		plt.title(lg_names[ijk])
+		plt.savefig(fout_m)
+	        plt.clf()
+        	plt.cla()
+		plt.close()
+	
+		# Plot Nsub differences histograms
+		(nny, nbins, npat) = plt.hist(delta_n[ijk], n_bins)
+		fout_n = 'output/hist_' + lg_names[ijk] + '_delta_n.png'	
+	        plt.rc({'text.usetex': True})
+		plt.xlabel('$\Delta N_{sub}$')
+		plt.ylabel('N')
+		plt.title(lg_names[ijk])
+		plt.savefig(fout_n)
+	        plt.clf()
+        	plt.cla()
+	        
 
 

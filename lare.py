@@ -18,8 +18,8 @@ ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
 
 #'snapshot_054.z0.000.AHF_halos'
-#snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
-snapshot = 'snapshot_054.AHF_halos'
+snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
+#snapshot = 'snapshot_054.AHF_halos'
 #snapshot = 'merged_054.AHF_halos'
 #snapshot = 'snapshot_054.z0.000.AHF_halos'
 
@@ -48,8 +48,9 @@ env_type="std"
 #env_type="512box100"
 #env_type="HESTIA"
 
-resolution='512'
-#resolution='1024'
+#resolution='512'; ptypes=2
+#resolution='1024'; ptypes=3
+resolution='2048'; ptypes=4
 
 if do_plots == "true":
 	outp_dir = 'output_analysis/'
@@ -75,13 +76,13 @@ lss_end = 1
 
 # How many sub-runs per LS realisation
 run_init = 0
-run_end = 1
+run_end = 10
 
 # If running on all seeds
-ice_init = 0
+ice_init = 1
 ice_end = 70
 gin_init = 0
-gin_end = 20
+gin_end = 40
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
@@ -102,6 +103,7 @@ m_max = 3.0e+12
 ratio_max = 3.
 vrad_max = -1.0
 npart_min = 500.
+
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
@@ -147,7 +149,7 @@ base_lss = []
 # This is generating all the possible folders and subfolders with the main seed and small scale seed
 for iice in range(ice_init, ice_end): 
 	for igin in range(gin_init, gin_end):
-		nice = '%02' % iice
+		nice = '%02d' % iice
 		ngin = '%02d' % igin
 
 		lss_init = 0
@@ -193,6 +195,11 @@ for irun in range(lss_init, lss_end):
 			
 			#for ih in (halo_centers):
 			#	print ih.info()
+
+			if resolution == '2048':
+				(all_lg_models, hash_run) = lg_models()
+				this_run = hash_run[base_run]
+				lg_model = all_lg_models[this_run]
 
 			if find_virgo == "true":
 				(x0, m0, mtotVirgo) = locate_virgo(ahf_all)
@@ -260,7 +267,7 @@ for irun in range(lss_init, lss_end):
 					# Plot the particle distributions in 3D slices around the LG and in the LV
 					if do_plots == "true" and lg.LG1.npart > npart_min and lg.LG2.npart > npart_min:
 						print 'Plotting particle distributions to file ', settings.plot_out
-						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, 2)
+						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, ptypes)
 			
 					# Only add the LaRe if for the likeliest pair 
 					if generate_lare == "true":

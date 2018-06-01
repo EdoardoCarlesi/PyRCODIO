@@ -15,9 +15,10 @@ import time
 import pickle
 from libcosmo.grid import *
 
-basedir='/home/eduardo/CLUES/DATA/512/'
+#basedir='/home/eduardo/CLUES/DATA/512/'
 #snapfile=basedir+'60_00/snapshot_054'; ahffile=basedir+'60_00/snapshot_054.AHF_halos'; rho_out='rho_60_00_EC.png'
-snapfile=basedir+'/NOAM/60_00/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_00/snapshot_127.0000.z0.000.AHF_halos'; rho_out='rho_60_00_NIL.png'
+#snapfile=basedir+'/NOAM/60_00/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_00/snapshot_127.0000.z0.000.AHF_halos'; rho_out='rho_60_00_NIL.png'
+basedir='/home/eduardo/CLUES/DATA/2048/'
  
 halo_all = read_ahf(ahffile)
 
@@ -42,7 +43,7 @@ for i_lg in range(0, n_lgs):
 #print lg2.info()
 
 #plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, 2)
-#plot_lglv(snapfile, halo_all, rho_out, lg1, lg2, virgo_x, rescale, 2)
+plot_lglv(snapfile, halo_all, rho_out, lg1, lg2, virgo_x, rescale, 4)
 
 
 '''
