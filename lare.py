@@ -38,8 +38,8 @@ else:
 generate_lare='false'
 #generate_lare='true'
 
-#do_plots='false'
-do_plots='true'
+do_plots='false'
+#do_plots='true'
 
 #find_virgo='false'
 find_virgo='true'
@@ -79,7 +79,7 @@ run_init = 0
 run_end = 10
 
 # If running on all seeds
-ice_init = 1
+ice_init = 0
 ice_end = 70
 gin_init = 0
 gin_end = 40
@@ -174,6 +174,7 @@ for irun in range(lss_init, lss_end):
 	# when several LG-like pairs are found, get the first pair (0) second pair (2) etc.
 	ind_lg = 0
 
+	# Loop on the sub runs, third layer of WN
 	for run_i in range(run_init, run_end):
 		run_num = '%02d' % run_i
                 print_run = base_run + '_' + run_num
@@ -199,7 +200,8 @@ for irun in range(lss_init, lss_end):
 			if resolution == '2048':
 				(all_lg_models, hash_run) = lg_models()
 				this_run = hash_run[base_run]
-				lg_model = all_lg_models[this_run]
+				lg_model = all_lg_models[this_run]	
+				#settings.plot_out = '/home/eduardo/CLUES/DATA/output_analysis/'
 
 			if find_virgo == "true":
 				(x0, m0, mtotVirgo) = locate_virgo(ahf_all)
@@ -216,7 +218,7 @@ for irun in range(lss_init, lss_end):
 				rating = 1000
 				file_lg_line = ''
 				best_lg_line = 'None.'
-				save_lg = "false"
+				save_lg = False
 
 				for ilg in range(0, n_lgs):
 					mw = these_lg[ilg].LG2			
@@ -225,7 +227,6 @@ for irun in range(lss_init, lss_end):
 					lg = LocalGroup(print_run)
 					lg.init_halos(m31, mw)				
 					file_lg_line = lg.info()
-
 
 					if find_virgo == "true":
 						file_lg_line.rstrip()
@@ -264,6 +265,10 @@ for irun in range(lss_init, lss_end):
 					file_codes_txt.write(settings.base_run+"   ")
 					#print best_lg1.npart, best_lg2.npart, best_lg2.m, best_lg1.m
 		
+					lg_fname = 'saved/lg_' + print_run + '.pkl'
+					lg_file = open(lg_fname, 'w')
+					pickle.dump(best_lg, lg_file)
+
 					# Plot the particle distributions in 3D slices around the LG and in the LV
 					if do_plots == "true" and lg.LG1.npart > npart_min and lg.LG2.npart > npart_min:
 						print 'Plotting particle distributions to file ', settings.plot_out

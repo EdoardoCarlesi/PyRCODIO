@@ -34,6 +34,8 @@ base_path = '/home/eduardo/CLUES/PyRCODIO/'
 outp_path = 'output/'
 save_path = 'saved/'
 
+file_web = 'zoom_2048_054.000064.Vweb-ascii'; grid_web = 64.0; box_web = 100.0
+
 file_m_bins = save_path + 'm_bins.pkl'
 file_n_bins = save_path + 'n_bins.pkl'
 file_masses = save_path + 'masses.pkl'
@@ -68,6 +70,9 @@ do_plot_mfs = False
 
 do_subs = True
 #do_subs = False
+
+#do_vweb = False
+do_vweb = True
 
 #simurun = simuruns[this_simu]
 
@@ -226,15 +231,12 @@ for i_all in range(all_init, all_end):
 					anisotropies[i_lg, i_sub, i_snap] = evals
 				except:
 					evals = (0, 0, 0)
-					#anisotropies[i_lg, i_sub, i_snap] = (0.0, 0.0, 0.0)
-					#print 'No anisotropy at step: ', i_snap
-				#anisotropies[i_lg, i_sub, i_snap] = red_evals
 		'''
 			Save some informations on most massive subhalo statistics
 		'''
-		
 		sub_fname='saved/sub_stats_'+lg_names[i_lg]+'_'+simurun+'_'+subrun+'_mains.pkl'
-		print 'Saving subhalo stats: ', sub_fname
+
+		print 'Saving subhalo statistics to file: ', sub_fname
 		f_subs = open(sub_fname, 'w')
 		pickle.dump(subs_stats, f_subs)
 
@@ -286,7 +288,6 @@ for i_all in range(all_init, all_end):
 '''
 	This section computes some GLOBAL statistics, i.e. taking into account all of the LG simulations
 '''
-
 if do_all_lgs == True:
 
 	print 'Do all lgs only.'
@@ -361,11 +362,10 @@ if do_all_lgs == True:
 	pickle.dump(all_masses, file_ms)
 	pickle.dump(all_n_subs, file_ns)
 
-
+'''
+	PLOT THE THE MASS vs. SATELLITE FLUCTUATIONS 
+'''
 if do_plots_only == True:
-	'''
-		PLOT THE THE MASS vs. SATELLITE FLUCTUATIONS 
-	'''
 	file_m = open(file_m_bins, 'r')
 	file_n = open(file_n_bins, 'r')
 	m_bins = pickle.load(file_m)
@@ -408,13 +408,12 @@ if do_plots_only == True:
 
 	n_runs = len(n_subs[0])
 
-#	print n_runs
 
 	for ijk in range(0, 2):
 		for i_run in range(0, n_runs):
 			#this_m_med = np.mean(masses[ijk][i_run])
-			this_m_med = np.median(masses[ijk][i_run])
 			#this_n_med = np.mean((n_subs[ijk][i_run]))
+			this_m_med = np.median(masses[ijk][i_run])
 			this_n_med = np.median((n_subs[ijk][i_run]))
 			n_lgs = len(masses[ijk][i_run])
 
@@ -422,9 +421,6 @@ if do_plots_only == True:
 				#print i_run, n_lgs, this_m_med
 				this_ms = abs(masses[ijk][i_run][ilg] - this_m_med) / this_m_med
 				this_ns = abs(float(n_subs[ijk][i_run][ilg]) - float(this_n_med)) / this_n_med
-			
-				#print masses[ijk][0][ilg]
-				#print ilg, this_ms
 
 				delta_m[ijk].append(this_ms)
 				delta_n[ijk].append(this_ns)
@@ -458,5 +454,27 @@ if do_plots_only == True:
 	        plt.clf()
         	plt.cla()
 	        
+'''
+	Analysis of the cosmic web
+'''
+if do_vweb == True:
+		
+	#TODO look for the XX_XX modes
+
+	for i_sub in range(0, 10):
+		this_sub = '%02d' % i_sub
+		lg_fname = 'saved/lg_' + main_run + this_sub + '.pkl'
+
+		try:
+			this_lg = pickle.load(lg_fname)
+			search_web = True
+		else:
+			print 'LG data not available at this step.'
+			search_web = False
+		
+		if search_web == True:
+			this_com = this_lg 
+
+
 
 

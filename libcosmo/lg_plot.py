@@ -23,7 +23,8 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	for i_red in range(0, n_types):
 		reduce_factors[i_red] = pow(i_red+1,3) * reduce_fac
 
-	print reduce_factors
+	print 'Plotting LG & LV slices for snapshot: ', f_snap
+#	print reduce_factors
 
 	# Plot properties
 	ptsize_lg = 150.0
