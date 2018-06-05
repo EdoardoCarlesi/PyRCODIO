@@ -20,7 +20,7 @@ simuruns = simu_runs()
 # Which realisation
 this_simu = 0
 simu_init = 0
-simu_end = 10
+simu_end = 1
 
 # Number of subrun
 sub_init = 0
@@ -49,8 +49,8 @@ stepMyr = 0.25
 	SELECT WHAT KIND OF ANALYSIS NEEDS TO BE DONE
 '''
 # Plot mass accretion histories and evolution of satellite anisotropy
-do_evolution = True
-#do_evolution = False
+#do_evolution = True
+do_evolution = False
 
 # General combined statistics of all LG realisations - needed to gather the data
 #do_all_lgs = True
@@ -72,11 +72,15 @@ do_sub_plots = False
 #do_plot_mfs = True
 do_plot_mfs = False
 
-#do_subs = True
-do_subs = False
+# Save informations about subhalos at different steps
+do_subs = True
+#do_subs = False
 
 #do_vweb = True
 do_vweb = False
+
+do_subs_web = True
+#do_subs_web = False
 
 #simurun = simuruns[this_simu]
 
@@ -201,6 +205,8 @@ for this_simu in range(simu_init, simu_end):
 
 						# Check for the number of particle
 						if m_max > m_sub_min:
+			
+						# Stat: (0 = mz0), (1=mmax), (2=n cross), (3=first cross), (4=dist rvir), (5=r_min/rvir), (6=m_rmin), (7=rvir)
 							sub_stat = np.zeros((n_sub_stat))
 							sub_stat[0] = m_z0
 							sub_stat[1] = m_max
@@ -251,7 +257,6 @@ for this_simu in range(simu_init, simu_end):
 						anisotropies[i_lg, i_sub, i_snap] = evals
 					except:
 						evals = (0, 0, 0)
-
 		
 			'''
 				Save some informations on most massive subhalo statistics
@@ -284,7 +289,7 @@ for this_simu in range(simu_init, simu_end):
 		sub_skip = int(sub_skip)
 
 	# Plot mass accretion histories and evolution of satellite anisotropy
-	if do_evolution == True and i_sub == sub_end-1 and do_sub_plots = True:
+	if do_evolution == True and i_sub == sub_end-1 and do_sub_plots == True:
 
 		for i_lg in range(0, 2):
 			out_fname = 'output/anisotropy_' + simurun + '_' + lg_names[i_lg] + '_' + subrun + '_' + this_run + '.png'
@@ -470,42 +475,76 @@ if do_plots_only == True:
 		ANALYSIS OF THE COSMIC WEB
 '''
 if do_vweb == True:
-	
+	read_web_ascii = True
+#	read_web_ascii = False
+
 	all_e3_angles = np.zeros((2, simu_end))
+	all_evals = np.zeros((3, 3, simu_end))
+	evals_evecs = np.zeros((4, 3))
+
+	# Save the above arrays
+	evals_fname = 'saved/all_evals.pkl'
+	evecs_fname = 'saved/all_evecs.pkl'
+	angles_fname = 'saved/all_angles.pkl'
 
 	for i_simu in range(simu_init, simu_end):	
 		main_run = simuruns[i_simu]
 		this_e3_angle = []
+		this_evals = []
 
 		#TODO look for the XX_XX modes
 		for i_sub in range(0, 10):
 			
 			this_sub = '%02d' % i_sub
 			lg_fname = 'saved/lg_' + main_run + '_' + this_sub + '.pkl'
+			web_fname = 'saved/web_' + main_run + '_' + this_sub + '.pkl'
 
 			print main_run, i_sub, lg_fname
 
-			try:
-				lg_file = open(lg_fname, 'r')
-				this_lg = pickle.load(lg_file)
-				search_web = True
-			except:
-				print 'LG data not available at this step.'
-				search_web = False
+			# Read the v-web from the original file
+			if read_web_ascii == True:
+
+				try:
+					lg_file = open(lg_fname, 'r')
+					this_lg = pickle.load(lg_file)
+					search_web = True
+				except:
+					print 'LG data not available at this step.'
+					search_web = False
 		
-			# This is triggered only if the v-web file is found
-			if search_web == True:
-				this_com = this_lg.get_com()
-				file_web='/home/eduardo/CLUES/DATA/2048/' + main_run + '/' + this_sub + '/zoom_2048_054.000064.Vweb-ascii'; 
-				this_grid = read_vweb(file_web, grid_web, box_web)
+				# This is triggered only if the v-web file is found
+				if search_web == True:
+					this_com = this_lg.get_com()
+					file_web='/home/eduardo/CLUES/DATA/2048/' + main_run + '/' + this_sub + '/zoom_2048_054.000064.Vweb-ascii'; 
+					this_grid = read_vweb(file_web, grid_web, box_web)
+					vel = this_grid.velPos(this_com)
+					evals = this_grid.evalPos(this_com)
+					evecs = this_grid.evecPos(this_com)
+					
+					evals_evecs[0, :] = evals
+					evals_evecs[1:4, :] = evecs
+
+					print 'Saving evals/evecs at LG position to: ', web_fname
+					web_file = open(web_fname, 'w')
+					pickle.dump(evals_evecs, web_file)
+
+			# Not reading from an ascii file, loading pkl format 
+			else:
 				
+				try:
+					web_file = open(web_fname, 'r')
+					search_web = True
+				except:	
+					print 'Webfile not found.'	
+					search_web = False
+	
+			
+			if search_web == True:
 				virgo_x = [48000.0, 61000.0, 49000.0]
 				to_virgo = vec_subt(virgo_x, this_com)
 				virgo_n = vec_norm(to_virgo)
-
-				vel = this_grid.velPos(this_com)
-				evecs = this_grid.evecPos(this_com)
-
+				
+				this_evals.append(evals)
 				e3 = evecs[2, :]; ang3 = angle(virgo_n, e3)
 				this_e3_angle.append(ang3)
 
@@ -513,10 +552,104 @@ if do_vweb == True:
 		ang_std = np.std(this_e3_angle)
 		all_e3_angles[0, i_simu] = ang_med
 		all_e3_angles[1, i_simu] = ang_std
+		#all_evals[:, i_simu] = 
 
+		#print this_evals
 		print 'Median: %.3f, Stddev: %.3f' % (ang_med, ang_std)
 
-	print all_e3_angles
+	f_evals = open(evals_fname, 'w')
+	f_evecs = open(evals_fname, 'w')
+	f_angles = open(angles_fname, 'w')
 
-                        sub_fname='saved/sub_stats_'+lg_names[i_lg]+'_'+simurun+'_'+subrun+'_mains.pkl'
+'''
+	Analyze subhalo properties in the LSS environment
+'''		
+if do_subs_web == True:
+	
+	m_min = 1.e+8
+	t_max = 11.0
 
+	select_mass = True
+#	select_mass = False
+#	select_accr = True
+	select_accr = False
+
+	for i_simu in range(simu_init, simu_end):	
+		main_run = simuruns[i_simu]
+
+		for i_sub in range(0, 10):
+
+			for i_lg in range(0, 2):		
+
+				subrun = '%02d' % i_sub
+				lg_fname = 'saved/lg_' + main_run + '_' + subrun + '.pkl'
+				web_fname = 'saved/web_' + main_run + '_' + subrun + '.pkl'
+	
+				sub_fname='saved/sub_stats_'+lg_names[i_lg]+'_'+simurun+'_'+subrun+'_mains.pkl'
+				dyn_fname='saved/dyn_stats_'+lg_names[i_lg]+'_'+simurun+'_'+subrun+'.pkl'
+
+				try:
+					print 'Loading pkl files at ', i_lg, i_sub, main_run
+					f_lg = open(lg_fname, 'r')
+					f_web = open(web_fname, 'r')
+					f_sub = open(sub_fname, 'r')
+					f_dyn = open(dyn_fname, 'r')
+
+					# Stat: (0 = mz0), (1=mmax), (2=n cross), (3=first cross), (4=dist rvir), (5=r_min/rvir), (6=m_rmin), (7=rvir)
+					sats = pickle.load(f_sub)
+					dyns = pickle.load(f_dyn)
+					vweb = pickle.load(f_web)
+					nsats = len(sats)
+					nselect = 0	
+					positions = np.zeros((1,3))			
+					masses = np.zeros((1))
+					all_mass = np.zeros((nsats))
+					all_pos	= np.zeros((nsats, 3))
+
+					for isat in range(0, nsats):
+						selected = False
+						this_sat =  sats[isat]
+						this_pos = dyns[isat]
+						this_mz0 = this_sat[0]
+						this_mmax = this_sat[1]
+						this_tacc = this_sat[3]
+
+						print this_mz0/m_min
+					
+						all_mass[isat] = 1.0
+						all_pos[isat, :] = this_pos[:, 0]
+
+						if select_mass and this_mmax > m_min:
+							nselect += 1
+							selected = True
+
+						elif select_accr and this_tacc < t_max:
+					#		print 'selected ', this_tacc
+							nselect += 1
+							selected = True
+
+						if selected == True:
+							if nselect == 1:	
+								positions[nselect-1, :] = this_pos[:, 0]
+								masses[nselect-1] = 1.0
+							else:
+								positions.resize((nselect, 3))
+								positions[nselect-1, :] = this_pos[:, 0]
+								masses.resize((nselect))
+								masses[nselect-1] = 1.0
+	
+					(sel_evals, sel_evecs) = moment_inertia(positions, masses)
+					(all_evals, all_evecs) = moment_inertia(all_pos, all_mass)
+		
+					print nsats, all_evals/all_evals[2]
+					print nselect, sel_evals/sel_evals[2]
+
+				except:
+					print 'Skipping step ', i_sub, ' / ', main_run	
+
+	'''
+	# Select subhalos 
+	# Collect all the satellites above this mass
+		this_sats = []		# Save 3d positions of selected satellites
+
+	'''

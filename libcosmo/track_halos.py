@@ -311,7 +311,7 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	id_z = halo_z.ID
 	m_z = halo_z.m
 
-	print '----> Find progenitors: ', guess_x, halo_z.x, r_prog, ' possible progenitors: ', n_zp1
+	#print '----> Find progenitors: ', guess_x, halo_z.x, r_prog, ' possible progenitors: ', n_zp1
 
 	for i_prog in range(0, n_zp1):
 		this_m = halos_zp1[i_prog].m

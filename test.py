@@ -15,12 +15,13 @@ import time
 import pickle
 from libcosmo.grid import *
 
-fname = 'saved/dyn_stats_MW_00_06_01.pkl'
+#fname = 'saved/dyn_stats_MW_00_06_01.pkl'
+fname='saved/web_00_06_01.pkl'
 filesub = open(fname, 'r')
 
 sats = pickle.load(filesub)
 
-#print sats
+print sats
 
 
 '''
