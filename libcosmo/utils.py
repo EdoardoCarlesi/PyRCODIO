@@ -138,7 +138,7 @@ def vec_norm(x):
 
 	for ix in range(0, n):
 		norm += x[ix] * x[ix]
-	norm = sqrt(norm)	
+	norm = math.sqrt(norm)	
 
 	for ix in range(0, n):
 		vn.append(x[ix] / norm)

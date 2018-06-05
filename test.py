@@ -15,6 +15,15 @@ import time
 import pickle
 from libcosmo.grid import *
 
+fname = 'saved/dyn_stats_MW_00_06_01.pkl'
+filesub = open(fname, 'r')
+
+sats = pickle.load(filesub)
+
+#print sats
+
+
+'''
 basedir='/home/eduardo/CLUES/DATA/512/'
 #snapfile=basedir+'60_00/snapshot_054'; ahffile=basedir+'60_00/snapshot_054.AHF_halos'; rho_out='rho_60_00_EC.png'
 #snapfile=basedir+'NewParams/60_01/snapshot_054'; ahffile=basedir+'NewParams/60_01/snapshot_054.0000.z0.000.AHF_halos'; rho_out='rho_60_01_EC_new.png'
@@ -48,7 +57,6 @@ n_lgs = len(halos_c)
 plot_lglv(snapfile, halo_all, rho_out, lg1, lg2, virgo_x, rescale, 2)
 
 
-'''
 webfile='/home/eduardo/CLUES/DATA/2048/00_06/00/zoom_2048_054.000064.Vweb-ascii'
 ahffile='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 

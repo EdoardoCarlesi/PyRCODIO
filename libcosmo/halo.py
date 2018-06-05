@@ -521,34 +521,19 @@ class SubHalos():
 					subs_x.resize((ih+1, 3))
 					subs_x[ih] = this_x
 
-			#print len(subs_x)
 			self.host_coords = subs_x
-			#x = subs_x[:, 0]
-			#y = subs_x[:, 1]
-			#z = subs_x[:, 2]
 
 			# Automatically compute all types of tensors
-			#print 'Inertia tensor computed using %d subhalos.' % subs_n
 			(self.moi_evals, self.moi_evecs) = moment_inertia(subs_x, subs_m)
-			
-			#print 'Reduced inertia tensor computed using %d subhalos.' % subs_n
 			(self.moi_red_evals, self.moi_red_evecs) = moment_inertia_reduced(subs_x, subs_m)
 
-			#(evals, evecs, triax, ratio) = inertiaTensor(x, y, z)			
-
-			#return (self.moi_red_evals, self.moi_red_evecs, self.moi_evals, self.moi_evecs)
-			#return (self.moi_evals, self.moi_red_evals, evals)
 			return (self.moi_evals, self.moi_red_evals, self.moi_evecs, self.moi_red_evecs)
-			#return (self.moi_red_evals, self.moi_evals)
-			#return (self.moi_red_evals) #, self.moi_evals)
 
+	# TODO
 	#def recursive_anisotropy(self, plane, frac):
 			# Given a plane rank the haloes by distance to it and thake only frac % of the closest ones
-			
 			# Re-compute the PoS using this new system of coordinates
-
-			#return (evals, evecs, triax, ratio)
-
+			# return (evals, evecs, triax, ratio)
 
 	def basis_eigenvectors(self, evec_type):
 
