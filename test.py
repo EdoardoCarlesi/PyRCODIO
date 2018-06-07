@@ -23,15 +23,18 @@ from libcosmo.grid import *
 
 #print rand_points_sphere(16)
 
-#random_triaxialities(60, 1000)
+#(evs, disps, perc) = random_triaxialities(10, 1000, 0.25)
 
+#print evs, perc
+
+
+'''
 vec = [0.0, 1.0, 0.0]
 
 (e, d, c) = random_triaxialities_and_angles(20, 1000, vec)
 
 print c
 
-'''
 basedir='/home/eduardo/CLUES/DATA/512/'
 snapfile=basedir+'70_00/snapshot_054'; ahffile=basedir+'70_00/snapshot_054.AHF_halos'; rho_out='rho_70_00_EC.png'
 #snapfile=basedir+'60_00/snapshot_054'; ahffile=basedir+'60_00/snapshot_054.AHF_halos'; rho_out='rho_60_00_EC.png'

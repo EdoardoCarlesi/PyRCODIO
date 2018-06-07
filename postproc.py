@@ -20,7 +20,7 @@ simuruns = simu_runs()
 # Which realisation
 this_simu = 0
 simu_init = 0
-simu_end = 1
+simu_end = 10
 
 # Number of subrun
 sub_init = 0
@@ -52,13 +52,13 @@ stepMyr = 0.25
 #do_evolution = True
 do_evolution = False
 
-# General combined statistics of all LG realisations - needed to gather the data
+# General combined statistics of all LG realisations (gathers data on mass/nsub bins etc.)
 #do_all_lgs = True
 do_all_lgs = False
 
-# Only do some post-post processing plots
-#do_plots_only = True
-do_plots_only = False
+# Do plots of the mass - subhalo scatter for MW and M31
+#do_plots_mass_sub = True
+do_plots_mass_sub = False
 
 # Subhalo trajectories
 #do_trajectories = True
@@ -76,9 +76,11 @@ do_plot_mfs = False
 #do_subs = True
 do_subs = False
 
+# Compute the cosmic web at each LG position
 #do_vweb = True
 do_vweb = False
 
+# Use the pre-computed cosmic web to 
 do_subs_web = True
 #do_subs_web = False
 
@@ -101,13 +103,10 @@ for i_time in range(0, snap_end-snap_init):
 
 # This skips the following loop on the halo evolution
 if do_evolution == False:
-	next_sub_init = sub_init
-	next_sub_end = sub_end
+	true_sub_init = sub_init
+	true_sub_end = sub_end
 	sub_init = 0
 	sub_end = 0
-
-all_init =  simu_init * sub_init
-all_end  = (simu_end - simu_init) * (sub_end - sub_init)
 
 for this_simu in range(simu_init, simu_end):
 	simurun = simuruns[this_simu]
@@ -121,7 +120,7 @@ for this_simu in range(simu_init, simu_end):
 	sub_skip = 0
 	
 	for i_sub in range(sub_init, sub_end):
-		subs_stats_m31 = []; subs_stats_mw = []
+		subs_stats_m31 = []; true_subs_stats_mw = []
 
 		sub_skip = 0
 		subrun = '%02d' % i_sub
@@ -307,10 +306,9 @@ for this_simu in range(simu_init, simu_end):
 	This section computes some GLOBAL statistics, i.e. taking into account all of the LG simulations
 '''
 if do_all_lgs == True:
-
 	print 'Do all lgs only.'
-	n_bins = np.zeros((simu_end-simu_init, 2, 3))
-	m_bins = np.zeros((simu_end-simu_init, 2, 3))
+	n_bins = np.zeros((simu_end-simu_init, 2, 5))
+	m_bins = np.zeros((simu_end-simu_init, 2, 5))
 	all_masses = [[] for ijk in range(0, 2)] 
 	all_n_subs = [[] for ijk in range(0, 2)] 
 
@@ -323,7 +321,7 @@ if do_all_lgs == True:
 
 		print 'Loading .pkl files for ', simurun
 
-		for i_sub in range(next_sub_init, next_sub_end):
+		for i_sub in range(true_sub_init, true_sub_end):
 			this_lg = LocalGroup(simurun)
 			subrun = '%02d' % i_sub
 
@@ -383,7 +381,7 @@ if do_all_lgs == True:
 '''
 	PLOT THE THE MASS vs. SATELLITE FLUCTUATIONS 
 '''
-if do_plots_only == True:
+if do_plots_mass_sub == True:
 	file_m = open(file_m_bins, 'r')
 	file_n = open(file_n_bins, 'r')
 	m_bins = pickle.load(file_m)
@@ -396,16 +394,16 @@ if do_plots_only == True:
 	
 	for ibin in range(0, tot_bin):
 		for ilg in range(0, 2):
-			med_m = m_bins[ibin, ilg, 1]
+			med_m = m_bins[ibin, ilg, 3]
 			min_m = m_bins[ibin, ilg, 0]
-			max_m = m_bins[ibin, ilg, 2]
+			max_m = m_bins[ibin, ilg, 4]
 
 			var_m[ibin, ilg, 0] = abs(med_m - min_m)/med_m
 			var_m[ibin, ilg, 1] = abs(med_m - max_m)/med_m
 
-			med_n = n_bins[ibin, ilg, 1]
+			med_n = n_bins[ibin, ilg, 3]
 			min_n = n_bins[ibin, ilg, 0]
-			max_n = n_bins[ibin, ilg, 2]
+			max_n = n_bins[ibin, ilg, 4]
 
 			var_n[ibin, ilg, 0] = abs(med_n - min_n)/med_n
 			var_n[ibin, ilg, 1] = abs(med_n - max_n)/med_n
@@ -428,8 +426,6 @@ if do_plots_only == True:
 
 	for ijk in range(0, 2):
 		for i_run in range(0, n_runs):
-			#this_m_med = np.mean(masses[ijk][i_run])
-			#this_n_med = np.mean((n_subs[ijk][i_run]))
 			this_m_med = np.median(masses[ijk][i_run])
 			this_n_med = np.median((n_subs[ijk][i_run]))
 			n_lgs = len(masses[ijk][i_run])
@@ -445,7 +441,6 @@ if do_plots_only == True:
 	for ijk in range(0, 2):
 		print 'MedianDeltaM= %.3f, MeanDeltaM= %.3f' % (np.median(delta_m[ijk]), np.mean(delta_m[ijk]))
 		print 'MedianDeltaN= %.3f, MeanDeltaN= %.3f' % (np.median(delta_n[ijk]), np.mean(delta_n[ijk]))
-		#rint np.median(delta_n[ijk]), np.mean(delta_n[ijk])
 
 		n_bins = 30
 
@@ -475,22 +470,21 @@ if do_plots_only == True:
 '''
 		ANALYSIS OF THE COSMIC WEB
 '''
+# Output / input filenames for alignment angles et al.
+angles_fname = 'saved/all_angles.pkl'
+
 if do_vweb == True:
-	read_web_ascii = True
-#	read_web_ascii = False
+#	read_web_ascii = True
+	read_web_ascii = False
 
 	all_e3_angles = np.zeros((2, simu_end))
 	all_evals = np.zeros((3, 3, simu_end))
 	evals_evecs = np.zeros((4, 3))
 
-	# Save the above arrays
-	evals_fname = 'saved/all_evals.pkl'
-	evecs_fname = 'saved/all_evecs.pkl'
-	angles_fname = 'saved/all_angles.pkl'
-
 	for i_simu in range(simu_init, simu_end):	
 		main_run = simuruns[i_simu]
 		this_e3_angle = []
+		this_e3_deg = []
 		this_evals = []
 
 		#TODO look for the XX_XX modes
@@ -500,28 +494,25 @@ if do_vweb == True:
 			lg_fname = 'saved/lg_' + main_run + '_' + this_sub + '.pkl'
 			web_fname = 'saved/web_' + main_run + '_' + this_sub + '.pkl'
 
-			#print main_run, i_sub, lg_fname
-
-			# Read the v-web from the original file
-			if read_web_ascii == True:
-
-				try:
-					lg_file = open(lg_fname, 'r')
-					this_lg = pickle.load(lg_file)
-					search_web = True
-				except:
-					print 'LG data not available at this step.'
-					search_web = False
+			try:
+				lg_file = open(lg_fname, 'r')
+				this_lg = pickle.load(lg_file)
+				this_com = this_lg.get_com()
+				search_web = True
+			except:
+			#	print 'LG data not available at this step.'
+				search_web = False
 		
+			# Read the v-web from the original file
+			if read_web_ascii == True and search_web == True:
+
 				# This is triggered only if the v-web file is found
 				if search_web == True:
-					this_com = this_lg.get_com()
 					file_web='/home/eduardo/CLUES/DATA/2048/' + main_run + '/' + this_sub + '/zoom_2048_054.000064.Vweb-ascii'; 
 					this_grid = read_vweb(file_web, grid_web, box_web)
 					vel = this_grid.velPos(this_com)
 					evals = this_grid.evalPos(this_com)
 					evecs = this_grid.evecPos(this_com)
-					
 					evals_evecs[0, :] = evals
 					evals_evecs[1:4, :] = evecs
 
@@ -534,9 +525,12 @@ if do_vweb == True:
 				
 				try:
 					web_file = open(web_fname, 'r')
+					evals_evecs = pickle.load(web_file)
+					evals = evals_evecs[0, :]
+					evecs = evals_evecs[1:4, :]
 					search_web = True
 				except:	
-					print 'Webfile not found.'	
+				#	print 'Webfile not found.'	
 					search_web = False
 			
 			if search_web == True:
@@ -545,7 +539,7 @@ if do_vweb == True:
 				virgo_n = vec_norm(to_virgo)
 				
 				this_evals.append(evals)
-				e3 = evecs[2, :]; ang3 = angle(virgo_n, e3)
+				e3 = evecs[2, :]; ang3 = abs(angle(virgo_n, e3)); 
 				this_e3_angle.append(ang3)
 
 		ang_med = np.median(this_e3_angle)
@@ -553,32 +547,45 @@ if do_vweb == True:
 		all_e3_angles[0, i_simu] = ang_med
 		all_e3_angles[1, i_simu] = ang_std
 
+		print 'Median: %.3f, Stddev: %.3f, Degrees= %.3f' % (ang_med, ang_std, np.arccos(ang_med) * rad2deg())
 
-		#print this_evals
-		print 'Median: %.3f, Stddev: %.3f' % (ang_med, ang_std)
-
-	f_evals = open(evals_fname, 'w')
-	f_evecs = open(evals_fname, 'w')
 	f_angles = open(angles_fname, 'w')
+	pickle.dump(all_e3_angles, f_angles)
+
+	#print np.median(np.arccos(all_e3_angles[0, 0:6-8])) * rad2deg()
 
 '''
 	Analyze subhalo properties in the LSS environment
 '''		
 if do_subs_web == True:
-	
+
 	m_min = 1.e+8
-	t_max = 12.0
-	n_rand_runs = 5000
+	t_max = 10.0
+	n_rand_runs = 500
+
+	# Anisotropies above / below expectation
+	n_e3_rej = 0
+	n_e3_acc = 0
+
+	# Which snapshot to select 
+	step_num = 0
+	this_step = '%02d' % step_num
+
+	fout_anis_m31 = 'output/hist_percentiles_satellite_anisotropy_M31'+this_step+'.png'	
+	fout_anis_mw = 'output/hist_percentiles_satellite_anisotropy_MW'+this_step+'.png'	
+	anis_pkl = 'saved/percentiles_satellite_anisotropy_'+this_step+'_LG.pkl'	
 
 #	select_mass = True
 	select_mass = False
 	select_accr = True
 #	select_accr = False
 
+	lg_perc_anis = [[] for i in range(0, 2)]
+
 	for i_simu in range(simu_init, simu_end):	
 		main_run = simuruns[i_simu]
 
-		for i_sub in range(0, 10):
+		for i_sub in range(true_sub_init, true_sub_end):
 
 			for i_lg in range(0, 2):		
 
@@ -617,11 +624,9 @@ if do_subs_web == True:
 						this_mmax = this_sat[1]
 						this_tacc = this_sat[3]
 						this_rvir = this_sat[7]
-
-						#print this_mz0/m_min
 					
 						all_mass[isat] = 1.0
-						all_pos[isat, :] = this_pos[:, 0]
+						all_pos[isat, :] = this_pos[:, step_num]
 
 						if select_mass and this_mmax > m_min:
 							nselect += 1
@@ -634,11 +639,11 @@ if do_subs_web == True:
 
 						if selected == True:
 							if nselect == 1:	
-								positions[nselect-1, :] = this_pos[:, 0]
+								positions[nselect-1, :] = this_pos[:, step_num]
 								masses[nselect-1] = 1.0
 							else:
 								positions.resize((nselect, 3))
-								positions[nselect-1, :] = this_pos[:, 0]
+								positions[nselect-1, :] = this_pos[:, step_num]
 								masses.resize((nselect))
 								masses[nselect-1] = 1.0
 
@@ -648,7 +653,10 @@ if do_subs_web == True:
 
 					ev3 = vweb[3, :]
 					#(sel_rand_eval, sel_rand_disp, sel_rand_ang) = random_triaxialities_and_angles(nselect, n_rand_runs, ev3)
-					(sel_rand_eval, sel_rand_disp) = random_triaxialities(nselect, n_rand_runs)
+					(sel_rand_eval, sel_rand_disp, perc_eval) = random_triaxialities(nselect, n_rand_runs, sel_evals[0]/sel_evals[2])
+
+					#print perc_eval
+					lg_perc_anis[i_lg].append(perc_eval)
 
 					new_positions = np.zeros((nselect, 3))
 
@@ -657,17 +665,19 @@ if do_subs_web == True:
 						new_pos = change_basis(old_pos, all_evecs)
 						new_positions[isat, :] = new_pos
 
-					print 'Dispersions, satellites vs. Rand:'
-					for ix in range(0, 3):
-						print ix, np.std(abs(new_positions[:, ix])) / this_rvir, sel_rand_disp[ix, :]
+					#print 'Dispersions, satellites vs. Rand:'
+					#for ix in range(0, 3):
+					#	print ix, np.std(abs(new_positions[:, ix])) / this_rvir, sel_rand_disp[ix, :]
+					#print 'Main eigenvectors, satellites vs. Rand:'
+					#for ix in range(0, 3):
+					#print sel_evals[ix]/sel_evals[2], sel_rand_eval[ix, :]
+					#this_ang = abs(angle(ev3, sel_evecs[2, :]))
+					#rand_ang = abs(angle(ev3, sel_rand_evecs[2, :]))
 
-					print 'Main eigenvectors, satellites vs. Rand:'
-					for ix in range(0, 3):
-						print nselect, sel_evals[ix]/sel_evals[2], sel_rand_eval[ix, :]
-
-					this_ang = abs(angle(ev3, sel_evecs[2, :]))
-
-					if ang_med < ang_std[0]:
+					#if sel_evals[0]/sel_evals[2] < sel_rand_eval[0, 0]:
+					#	n_e3_acc += 1
+					#else:
+					#	n_e3_rej += 1
 
 					#print 'Vweb ev3 -smaller IM eigenvalues align: '
 					#print this_ang, sel_rand_ang
@@ -680,23 +690,34 @@ if do_subs_web == True:
 						#for iweb in range(3, 4):	
 							#ev = vweb[iweb, :]
 							#print imh, iweb, angle(ev, mi_all), angle(ev, mi_sel)
-					'''
-					#print all_evecs
-					#print nsats, all_evals/all_evals[2]
-					'''			
-					'''
-		# Plot Nsub differences histograms
-		(nny, nbins, npat) = plt.hist(delta_n[ijk], n_bins)
-		fout_n = 'output/hist_' + lg_names[ijk] + '_delta_n.png'	
-	        plt.rc({'text.usetex': True})
-		plt.xlabel('$\Delta N_{sub}$')
-		plt.ylabel('N')
-		plt.title(lg_names[ijk])
-		plt.savefig(fout_n)
-	        plt.clf()
-        	plt.cla()
-	        
-					'''
+
+
 				except:
 					print 'Skipping step ', i_sub, ' / ', main_run	
 
+# Plot Nsub differences histograms
+#print 'Saving anisotropies to file ', anis_pkl
+#f_anis_pkl = open(anis_pkl, 'w')
+#pickle.dump(lg_perc_anis, f_anis_pkl)
+
+n_bins = 20
+plt.rc({'text.usetex': True})
+plt.xlabel('$Percentile$')
+plt.ylabel('N')
+plt.title('MW')
+plt.hist(lg_perc_anis[0], n_bins)
+plt.savefig(fout_anis_mw)
+plt.clf()
+plt.cla()
+
+plt.rc({'text.usetex': True})
+plt.xlabel('$Percentile$')
+plt.ylabel('N')
+plt.title('M31')
+plt.hist(lg_perc_anis[1], n_bins)
+plt.savefig(fout_anis_m31)
+plt.clf()
+plt.cla()
+
+
+#print lg_perc_anis[1]

@@ -1,11 +1,16 @@
 import random
 import math
 import numpy as np
+import scipy.stats as sp
 from numpy import linalg as la
 
 def distance(vec1, vec2):
 	dist = math.sqrt(pow((vec1[0] - vec2[0]), 2) + pow((vec1[1] - vec2[1]), 2) + pow((vec1[2] - vec2[2]), 2))
 	return dist
+
+def rad2deg():
+	coeff = 180.0 / math.pi
+	return coeff
 
 def module(vec):
 	n_v = len(vec)	
@@ -356,7 +361,7 @@ def random_triaxialities_and_angles(n_pts, n_trials, vector):
 
 
 
-def random_triaxialities(n_pts, n_trials):
+def random_triaxialities(n_pts, n_trials, compare_value):
 	
 	med_e = np.zeros((3, 3))
 	med_d = np.zeros((3, 3))
@@ -365,7 +370,7 @@ def random_triaxialities(n_pts, n_trials):
 	rand_evals = np.zeros((3, n_trials))
 	rand_disp = np.zeros((3, n_trials))
 
-	percMin = 10
+	percMin = 1.0
 	percMax = 100.0 - percMin
 	new_positions = np.zeros((3, n_pts))
 
@@ -394,7 +399,10 @@ def random_triaxialities(n_pts, n_trials):
 		#print ie, med_e[ie, 0], med_e[ie, 1], med_e[ie, 2] 
 		#print ie, med_d[ie, 0], med_d[ie, 1], med_d[ie, 2] 
 	
-	return (med_e, med_d)
+	#print rand_evals[0, :]
+	score_value = sp.percentileofscore(rand_evals[0, :], compare_value)
+
+	return (med_e, med_d, score_value)
 
 
 

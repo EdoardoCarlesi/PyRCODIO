@@ -348,11 +348,13 @@ def bin_lg_sub(lgs):
 	m_lgs = np.zeros((2, n_tot))
 	n_sub = np.zeros((2, n_tot))
 
-	bin_m = np.zeros((2, 3))
-	bin_n = np.zeros((2, 3))
+	bin_m = np.zeros((2, 5))
+	bin_n = np.zeros((2, 5))
 	
-	perc_min = 10.
-	perc_max = 100. - perc_min 
+	perc_min0 = 5.
+	perc_max0 = 100. - perc_min0
+	perc_min1 = 25.
+	perc_max1 = 100. - perc_min1
 
 	for ilg in range(0, n_tot):
 		m_lgs[0][ilg] = lgs[ilg].LG1.m
@@ -362,15 +364,16 @@ def bin_lg_sub(lgs):
 
 	for ilg in range(0, 2):
 		#bin_m[ilg][0] = np.amin(m_lgs[ilg][:])
-		bin_m[ilg][0] = np.percentile(m_lgs[ilg][:], perc_min)
+		bin_m[ilg][0] = np.percentile(m_lgs[ilg][:], perc_min0)
 		bin_m[ilg][1] = np.median(m_lgs[ilg][:])
-		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max)
-		#bin_m[ilg][2] = np.amax(m_lgs[ilg][:])
-		#bin_n[ilg][0] = np.amin(n_sub[ilg][:])
-		bin_n[ilg][0] = np.percentile(n_sub[ilg][:], perc_min)
+		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max0)
+		bin_m[ilg][3] = np.percentile(m_lgs[ilg][:], perc_min1)
+		bin_m[ilg][4] = np.percentile(m_lgs[ilg][:], perc_max1)
+		bin_n[ilg][0] = np.percentile(n_sub[ilg][:], perc_min0)
 		bin_n[ilg][1] = np.median(n_sub[ilg][:])
-		bin_n[ilg][2] = np.percentile(n_sub[ilg][:], perc_max)
-		#bin_n[ilg][2] = np.amax(n_sub[ilg][:])
+		bin_n[ilg][2] = np.percentile(n_sub[ilg][:], perc_max0)
+		bin_n[ilg][3] = np.percentile(n_sub[ilg][:], perc_min1)
+		bin_n[ilg][4] = np.percentile(n_sub[ilg][:], perc_max1)
 
 	return [bin_m, bin_n]
 
@@ -420,8 +423,8 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	(fig, axs) = plt.subplots(ncols=2, nrows=1, figsize=(size_x, size_y)) #, sharey = True)
 
 	#axs[0].yaxis.set_ticks_position('left')
-	#axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
-	#axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
 	axs[0].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
 	axs[1].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
 	axs[0].axis([x_min0, x_max0, y_min0, y_max0])
