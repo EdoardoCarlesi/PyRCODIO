@@ -41,7 +41,7 @@ file_n_bins = save_path + 'n_bins.pkl'
 file_masses = save_path + 'masses.pkl'
 file_n_subs = save_path + 'n_subs.pkl'
 
-m_sub_min = 3.e+8
+m_sub_min = 1.e+8
 min_part = 30
 stepMyr = 0.25
 
@@ -73,16 +73,14 @@ do_sub_plots = False
 do_plot_mfs = False
 
 # Save informations about subhalos at different steps
-do_subs = True
-#do_subs = False
+#do_subs = True
+do_subs = False
 
 #do_vweb = True
 do_vweb = False
 
 do_subs_web = True
 #do_subs_web = False
-
-#simurun = simuruns[this_simu]
 
 lg_names = ['MW', 'M31']
 n_lg = len(lg_names)
@@ -129,7 +127,9 @@ for this_simu in range(simu_init, simu_end):
 		subrun = '%02d' % i_sub
 
 		s_fname='saved/'+simurun+'_'+subrun+'_sats.pkl'
-		m_fname='saved/'+simurun+'_'+subrun+'_mains.pkl'
+		#m_fname='saved/'+simurun+'_'+subrun+'_mains_all.pkl'
+		m_fname='saved/'+simurun+'_'+subrun+'_mains_all.pkl'
+		print 'Loading file... ', s_fname
 	
 		# Try to load the pre-saved pickle format binary output
 		try:
@@ -142,6 +142,7 @@ for this_simu in range(simu_init, simu_end):
 			r_sub = 1.5
 			n_lg = 2
 			n_simu += 1
+
 		except:	
 			n_lg = 0
 
@@ -187,6 +188,7 @@ for this_simu in range(simu_init, simu_end):
 					acc_time = this_sub_z.accretion_time()
 					m_z0 = this_sub_z.halo[0].m
 					n_cross = len(acc_time)
+					#print i_main, m_z0/m_sub_min
 	
 					# This halo actually crossed the main halo's virial radius at some point
 					if n_cross > 0:
@@ -424,7 +426,6 @@ if do_plots_only == True:
 
 	n_runs = len(n_subs[0])
 
-
 	for ijk in range(0, 2):
 		for i_run in range(0, n_runs):
 			#this_m_med = np.mean(masses[ijk][i_run])
@@ -499,7 +500,7 @@ if do_vweb == True:
 			lg_fname = 'saved/lg_' + main_run + '_' + this_sub + '.pkl'
 			web_fname = 'saved/web_' + main_run + '_' + this_sub + '.pkl'
 
-			print main_run, i_sub, lg_fname
+			#print main_run, i_sub, lg_fname
 
 			# Read the v-web from the original file
 			if read_web_ascii == True:
@@ -537,7 +538,6 @@ if do_vweb == True:
 				except:	
 					print 'Webfile not found.'	
 					search_web = False
-	
 			
 			if search_web == True:
 				virgo_x = [48000.0, 61000.0, 49000.0]
@@ -552,7 +552,7 @@ if do_vweb == True:
 		ang_std = np.std(this_e3_angle)
 		all_e3_angles[0, i_simu] = ang_med
 		all_e3_angles[1, i_simu] = ang_std
-		#all_evals[:, i_simu] = 
+
 
 		#print this_evals
 		print 'Median: %.3f, Stddev: %.3f' % (ang_med, ang_std)
@@ -567,12 +567,13 @@ if do_vweb == True:
 if do_subs_web == True:
 	
 	m_min = 1.e+8
-	t_max = 11.0
+	t_max = 12.0
+	n_rand_runs = 5000
 
-	select_mass = True
-#	select_mass = False
-#	select_accr = True
-	select_accr = False
+#	select_mass = True
+	select_mass = False
+	select_accr = True
+#	select_accr = False
 
 	for i_simu in range(simu_init, simu_end):	
 		main_run = simuruns[i_simu]
@@ -599,8 +600,10 @@ if do_subs_web == True:
 					sats = pickle.load(f_sub)
 					dyns = pickle.load(f_dyn)
 					vweb = pickle.load(f_web)
+
 					nsats = len(sats)
 					nselect = 0	
+
 					positions = np.zeros((1,3))			
 					masses = np.zeros((1))
 					all_mass = np.zeros((nsats))
@@ -613,8 +616,9 @@ if do_subs_web == True:
 						this_mz0 = this_sat[0]
 						this_mmax = this_sat[1]
 						this_tacc = this_sat[3]
+						this_rvir = this_sat[7]
 
-						print this_mz0/m_min
+						#print this_mz0/m_min
 					
 						all_mass[isat] = 1.0
 						all_pos[isat, :] = this_pos[:, 0]
@@ -624,7 +628,7 @@ if do_subs_web == True:
 							selected = True
 
 						elif select_accr and this_tacc < t_max:
-					#		print 'selected ', this_tacc
+							# print 'selected ', this_tacc
 							nselect += 1
 							selected = True
 
@@ -637,19 +641,62 @@ if do_subs_web == True:
 								positions[nselect-1, :] = this_pos[:, 0]
 								masses.resize((nselect))
 								masses[nselect-1] = 1.0
-	
+
+					# Compute the moment of inertia of all the satellites or only of those accreted before tmax
 					(sel_evals, sel_evecs) = moment_inertia(positions, masses)
 					(all_evals, all_evecs) = moment_inertia(all_pos, all_mass)
-		
-					print nsats, all_evals/all_evals[2]
-					print nselect, sel_evals/sel_evals[2]
 
+					ev3 = vweb[3, :]
+					#(sel_rand_eval, sel_rand_disp, sel_rand_ang) = random_triaxialities_and_angles(nselect, n_rand_runs, ev3)
+					(sel_rand_eval, sel_rand_disp) = random_triaxialities(nselect, n_rand_runs)
+
+					new_positions = np.zeros((nselect, 3))
+
+					for isat in range(0, nselect):
+						old_pos = positions[isat, :]
+						new_pos = change_basis(old_pos, all_evecs)
+						new_positions[isat, :] = new_pos
+
+					print 'Dispersions, satellites vs. Rand:'
+					for ix in range(0, 3):
+						print ix, np.std(abs(new_positions[:, ix])) / this_rvir, sel_rand_disp[ix, :]
+
+					print 'Main eigenvectors, satellites vs. Rand:'
+					for ix in range(0, 3):
+						print nselect, sel_evals[ix]/sel_evals[2], sel_rand_eval[ix, :]
+
+					this_ang = abs(angle(ev3, sel_evecs[2, :]))
+
+					if ang_med < ang_std[0]:
+
+					#print 'Vweb ev3 -smaller IM eigenvalues align: '
+					#print this_ang, sel_rand_ang
+					#	print np.arccos(this_ang) * 180.0 / math.pi, sel_rand_ang
+				
+					#for imh in range(0, 1):
+					#	mi_sel = sel_evecs[imh, :]
+					#	mi_all = all_evecs[imh, :]
+						#print imh, iweb, angle(ev, mi_all)
+						#for iweb in range(3, 4):	
+							#ev = vweb[iweb, :]
+							#print imh, iweb, angle(ev, mi_all), angle(ev, mi_sel)
+					'''
+					#print all_evecs
+					#print nsats, all_evals/all_evals[2]
+					'''			
+					'''
+		# Plot Nsub differences histograms
+		(nny, nbins, npat) = plt.hist(delta_n[ijk], n_bins)
+		fout_n = 'output/hist_' + lg_names[ijk] + '_delta_n.png'	
+	        plt.rc({'text.usetex': True})
+		plt.xlabel('$\Delta N_{sub}$')
+		plt.ylabel('N')
+		plt.title(lg_names[ijk])
+		plt.savefig(fout_n)
+	        plt.clf()
+        	plt.cla()
+	        
+					'''
 				except:
 					print 'Skipping step ', i_sub, ' / ', main_run	
 
-	'''
-	# Select subhalos 
-	# Collect all the satellites above this mass
-		this_sats = []		# Save 3d positions of selected satellites
-
-	'''

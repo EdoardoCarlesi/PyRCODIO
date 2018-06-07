@@ -155,7 +155,7 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 		this_t = z2Myr(this_z)
 		this_a = 1.0 / (1.0 + this_z)
 	
-		print this_t, this_z
+		#print this_t, this_z
 
 		# This index is reinitialized to 0 at every loop
 		i_subs = 0
@@ -216,8 +216,9 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 
 				try:
 					this_index = this_all_halo[0].id_index[str(this_id)]
-				except:
-					print 'Halo ID %s not found.' % this_id
+				except:	
+					this_ids = this_id
+					#print 'Halo ID %s not found.' % this_id
 
 				# If no likely progenitor has been found but only a token halo has been returned, then save the old particle list
 				# also for the next step
@@ -227,7 +228,6 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 				else:	
 					# Find the particle ID list of the main progenitor
 					this_part = this_all_parts[this_index] 
-					this_ids = this_id
 					
 				# Now save the particles and halo for the next step
 				old_main_halo[i_main] = this_halo
@@ -297,7 +297,7 @@ def find_halo_id_old(idnum, ahf_halos):
 def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aFactor, timeStep):
 	r_prog = 0.0
 	guess_x = backward_x(halo_z.x, halo_z.v, aFactor, timeStep)
-	r_prog = 5.0 * module(halo_z.v) * timeStep * s2Myr() / km2kpc() / aFactor	# In comoving units
+	r_prog = 3.0 * module(halo_z.v) * timeStep * s2Myr() / km2kpc() / aFactor	# In comoving units
 
 	halos_zp1 = find_halos_point(guess_x, halos_all_zp1, r_prog)
 	
@@ -359,12 +359,12 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	
 	# If there is no likely progenitor then we place a token halo instead	FIXME	do a better modeling
 	if n_progenitors == 0:
-		print 'Progenitor for %ld (npart=%d) not found, replacing with token halo.' % (id_z, halo_z.npart)
+		#print 'Progenitor for %ld (npart=%d) not found, replacing with token halo.' % (id_z, halo_z.npart)
 		token_halo = True
 		return_halo = compute_token_halo(aFactor, timeStep, guess_x, halo_z)
 
 	elif n_zp1 == 0:
-		print 'No likely progenitors for %ld.' 
+		#print 'No likely progenitors for %ld.' 
 		token_halo = True
 		return_halo = compute_token_halo(aFactor, timeStep, guess_x, halo_z)
 
@@ -378,7 +378,7 @@ def compute_token_halo(a0, tStep, guess_x, halo):
 	if tStep < 100.:
 		tStep *= 1000.
 
-	print 'Compute token halo ', a0, tStep, guess_x
+	#print 'Compute token halo ', a0, tStep, guess_x
 	t1 = a2Myr(a0) - tStep
 	a1 = Myr2a(t1)
 	z1 = 1.0/ a0 - 1.0

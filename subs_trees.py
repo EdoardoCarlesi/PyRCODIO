@@ -24,7 +24,7 @@ from libcosmo.lg_plot import *
 resolution='2048'
 
 run_init = 0
-run_end = 1
+run_end = 10
 
 subrun_init = 0
 subrun_end = 10
@@ -52,9 +52,6 @@ all_runs = simu_runs()
 lg_dummy = LocalGroup(all_runs[0])
 file_lg_header = lg_dummy.header()
 
-#sub_dummy = SubHalos(0, '00', '00', [0, 0])
-#file_sub_header = sub_dummy.header()
-
 # General halo settings
 settings = Settings(base_path, outp_path, env_type, resolution, snap_base)
 settings.box_center = center
@@ -62,7 +59,7 @@ settings.box_center = center
 # Subhalo identification criterion
 fac_r = 1.2	# This is used for the global R around the LG as well as for Rvir around each halo
 min_common = 15
-part_min = 2000.
+part_min = 1000.
 mmin = 1.e+8	# Track haloes above this threshold at z=0
 
 # Loop on the different base - realisations, i.e. different LGs
@@ -103,6 +100,7 @@ for run_j in range(run_init, run_end):
 		if n_lgs > 0:
 			# If there are more candidates we need to find the right one
 			rating = 1000
+
 			for ind in range(0, n_lgs):
 				lg = this_lg[ind]
 				lg.c_box = settings.box_center
@@ -129,7 +127,9 @@ for run_j in range(run_init, run_end):
 				track_subs = True
 	
 				# NOW DO THE FULL BLOWN IDENTIFICATION OF THE LGs and their satellites at all steps!
-				(mains, sats) = merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids, halos, settings, track_subs, ids_sub, fac_r)
+				(mains, sats) = merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, \
+							main_ids, halos, settings, track_subs, ids_sub, fac_r)
+
 				file_mains = save_path + base_run + '_' + run_num + '_mains_all' + save_ext
 				file_sats = save_path + base_run + '_' + run_num + '_sats' + save_ext
 

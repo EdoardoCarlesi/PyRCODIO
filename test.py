@@ -16,28 +16,38 @@ import pickle
 from libcosmo.grid import *
 
 #fname = 'saved/dyn_stats_MW_00_06_01.pkl'
-fname='saved/web_00_06_01.pkl'
-filesub = open(fname, 'r')
+#fname='saved/web_00_06_01.pkl'
+#filesub = open(fname, 'r')
+#sats = pickle.load(filesub)
+#print sats
 
-sats = pickle.load(filesub)
+#print rand_points_sphere(16)
 
-print sats
+#random_triaxialities(60, 1000)
 
+vec = [0.0, 1.0, 0.0]
+
+(e, d, c) = random_triaxialities_and_angles(20, 1000, vec)
+
+print c
 
 '''
 basedir='/home/eduardo/CLUES/DATA/512/'
+snapfile=basedir+'70_00/snapshot_054'; ahffile=basedir+'70_00/snapshot_054.AHF_halos'; rho_out='rho_70_00_EC.png'
 #snapfile=basedir+'60_00/snapshot_054'; ahffile=basedir+'60_00/snapshot_054.AHF_halos'; rho_out='rho_60_00_EC.png'
 #snapfile=basedir+'NewParams/60_01/snapshot_054'; ahffile=basedir+'NewParams/60_01/snapshot_054.0000.z0.000.AHF_halos'; rho_out='rho_60_01_EC_new.png'
 #snapfile=basedir+'/NOAM/60_00/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_00/snapshot_127.0000.z0.000.AHF_halos'; rho_out='rho_60_00_NIL.png'
-snapfile=basedir+'/NOAM/60_01/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_01/AHF_output/HESTIA_100Mpc_512_60_01.127.z0.000.AHF_halos'; rho_out='rho_60_01_NIL.png'
+#snapfile=basedir+'/NOAM/60_01/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_01/AHF_output/HESTIA_100Mpc_512_60_01.127.z0.000.AHF_halos'; rho_out='rho_60_01_NIL.png'
 #basedir='/home/eduardo/CLUES/DATA/2048/'
  
 halo_all = read_ahf(ahffile)
 
-rad = 7000.
+rad = 15000.
 rescale = 2
 
+#virgo_x = [61000.0, 49500.0, 47000]
 virgo_x = [47000.0, 61000.0, 49500.0]
+#virgo_x = [49000.0, 47000.0, 61500.0]
 center = [50000.0, 50000.0, 50000.0]
 #find_halos_point(x_c, halo_all, radius):
 halos_c = find_halos_point(center, halo_all, rad)

@@ -184,7 +184,11 @@ def inertiaTensor(x, y, z):
 
 
 def moment_inertia(coord, masses):
-	n_parts = masses.size
+	try:
+		n_parts = masses.size
+	except:
+		n_parts = len(masses)
+
 	m_in = np.zeros((3,3))
 
 	x = coord[:, 0]
@@ -255,7 +259,7 @@ def mass_function(masses):
 	return (x_m, y_n)
 
 
-def rand_points_sphere(n_pts, center, radius):
+def rand_points_sphere(n_pts):
 	xyz_pts = np.zeros((n_pts, 3))
 	x_rand = [0.0] * 3	
 	x_min = [0.0] * 3	
@@ -264,31 +268,133 @@ def rand_points_sphere(n_pts, center, radius):
 	i_rej = 0
 	i_tot = 0
 
-#	for ix in range(0, 3):
-#		x_min[ix] = center[ix] - radius
-#		x_max[ix] = center[ix] + radius
+	# Set the default center 
+	radius = 1.0
+	center = [1.0] * 3
+
+	diameter = 2 * radius
 
 	while (i_pts < n_pts):
 		i_tot += 1
-		nx = random.uniform(0.0, 1.0)
-		ny = random.uniform(0.0, 1.0)
-		nz = random.uniform(0.0, 1.0)
-		#print nx, ny, nz
-		dx = radius * (2 * nx - 1.0)
-		dy = radius * (2 * ny - 1.0)
-		dz = radius * (2 * nz - 1.0)
-		#print dx, dy, dz
+		nx = random.uniform(0.0, diameter) - center[0]
+		ny = random.uniform(0.0, diameter) - center[1]
+		nz = random.uniform(0.0, diameter) - center[2]
+		x_rand = [nx, ny, nz]
 
-		x_rand = [dx, dy, dz]
 		d_xyz = distance(x_rand, center)	
 
-		if d_xyz < radius:
-			xyz_pts[i_pts][:] = x_rand
-			#print x_rand
-			i_pts += 1
-		else:
-			i_rej +=1
+		#if d_xyz < radius:
+		xyz_pts[i_pts, :] = x_rand
+		i_pts += 1
+		#else:
+		#	i_rej +=1
 
 	#print 'Rejected:%d, Accepted:%d, Total:%d ' % (i_rej, i_pts, i_tot)
 	return xyz_pts
+
+# The additional vector defines the e3 eigenvector of the VWeb
+def random_triaxialities_and_angles(n_pts, n_trials, vector):
+	
+	med_e = np.zeros((3, 3))
+	med_d = np.zeros((3, 3))
+	med_c = np.zeros((3, 3))
+	masses = [1.0] * n_pts
+
+	rand_evals = np.zeros((3, n_trials))
+	rand_disp = np.zeros((3, n_trials))
+	rand_cos = np.zeros((3, n_trials))
+
+	percMin = 5.0
+	percMax = 100.0 - percMin
+	new_positions = np.zeros((3, n_pts))
+
+	for i_trial in range(0, n_trials):
+		these_pts = rand_points_sphere(n_pts)
+		(evals, evecs) = moment_inertia(these_pts, masses)
+		rand_evals[:, i_trial] = evals / evals[2]
+
+		#print evecs
+		#print evecs
+		#print i_trial, rand_cos[:, i_trial]
+		
+		rand_cos[0, i_trial] = abs(angle(vector, evecs[0, :]))
+		rand_cos[1, i_trial] = abs(angle(vector, evecs[1, :]))
+		rand_cos[2, i_trial] = abs(angle(vector, evecs[2, :]))
+
+		#rad2deg = 180.0 / math.pi
+		#rand_cos[0, i_trial] = np.arccos(abs(angle(vector, evecs[0, :]))) * rad2deg
+		#rand_cos[1, i_trial] = np.arccos(abs(angle(vector, evecs[1, :]))) * rad2deg
+		#rand_cos[2, i_trial] = np.arccos(abs(angle(vector, evecs[2, :]))) * rad2deg
+
+		for i_sat in range(0, n_pts):
+        	        new_pos = change_basis(these_pts[i_sat, :], evecs)
+			new_positions[:, i_sat] = new_pos			
+
+		rand_disp[0, i_trial] = np.std(abs(new_positions[0, :]))
+		rand_disp[1, i_trial] = np.std(abs(new_positions[1, :]))
+		rand_disp[2, i_trial] = np.std(abs(new_positions[2, :]))
+	
+	for ie in range(0, 3):
+		med_e[ie, 1] = np.median(rand_evals[ie, :])
+		med_e[ie, 0] = np.percentile(rand_evals[ie, :], percMin)
+		med_e[ie, 2] = np.percentile(rand_evals[ie, :], percMax)
+
+		med_d[ie, 1] = np.median(rand_disp[ie, :])
+		med_d[ie, 0] = np.percentile(rand_disp[ie, :], percMin)
+		med_d[ie, 2] = np.percentile(rand_disp[ie, :], percMax)
+
+		med_c[ie, 1] = np.median(rand_cos[ie, :])
+		med_c[ie, 0] = np.percentile(rand_cos[ie, :], percMin)
+		med_c[ie, 2] = np.percentile(rand_cos[ie, :], percMax)
+
+		#print ie, med_e[ie, 0], med_e[ie, 1], med_e[ie, 2] 
+		#print ie, med_d[ie, 0], med_d[ie, 1], med_d[ie, 2] 
+		#print ie, med_c[ie, :]
+
+	return (med_e, med_d, med_c)
+
+
+
+
+def random_triaxialities(n_pts, n_trials):
+	
+	med_e = np.zeros((3, 3))
+	med_d = np.zeros((3, 3))
+	masses = [1.0] * n_pts
+
+	rand_evals = np.zeros((3, n_trials))
+	rand_disp = np.zeros((3, n_trials))
+
+	percMin = 10
+	percMax = 100.0 - percMin
+	new_positions = np.zeros((3, n_pts))
+
+	for i_trial in range(0, n_trials):
+		these_pts = rand_points_sphere(n_pts)
+		(evals, evecs) = moment_inertia(these_pts, masses)
+		rand_evals[:, i_trial] = evals / evals[2]
+
+		for i_sat in range(0, n_pts):
+        	        new_pos = change_basis(these_pts[i_sat, :], evecs)
+			new_positions[:, i_sat] = new_pos			
+
+		rand_disp[0, i_trial] = np.std(abs(new_positions[0, :]))
+		rand_disp[1, i_trial] = np.std(abs(new_positions[1, :]))
+		rand_disp[2, i_trial] = np.std(abs(new_positions[2, :]))
+	
+	for ie in range(0, 3):
+		med_e[ie, 1] = np.median(rand_evals[ie, :])
+		med_e[ie, 0] = np.percentile(rand_evals[ie, :], percMin)
+		med_e[ie, 2] = np.percentile(rand_evals[ie, :], percMax)
+
+		med_d[ie, 1] = np.median(rand_disp[ie, :])
+		med_d[ie, 0] = np.percentile(rand_disp[ie, :], percMin)
+		med_d[ie, 2] = np.percentile(rand_disp[ie, :], percMax)
+
+		#print ie, med_e[ie, 0], med_e[ie, 1], med_e[ie, 2] 
+		#print ie, med_d[ie, 0], med_d[ie, 1], med_d[ie, 2] 
+	
+	return (med_e, med_d)
+
+
 
