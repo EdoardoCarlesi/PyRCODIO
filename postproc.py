@@ -49,28 +49,28 @@ stepMyr = 0.25
 	SELECT WHAT KIND OF ANALYSIS NEEDS TO BE DONE
 '''
 # Plot mass accretion histories and evolution of satellite anisotropy
-#do_evolution = True
-do_evolution = False
+do_evolution = True
+#do_evolution = False
 
 # General combined statistics of all LG realisations (gathers data on mass/nsub bins etc.)
-#do_all_lgs = True
-do_all_lgs = False
+do_all_lgs = True
+#do_all_lgs = False
 
 # Do plots of the mass - subhalo scatter for MW and M31
-#do_plots_mass_sub = True
-do_plots_mass_sub = False
+do_plots_mass_sub = True
+#do_plots_mass_sub = False
 
 # Subhalo trajectories
 #do_trajectories = True
 do_trajectories = False
 
 # Plot sub halo mass functions and anisotropies
-#do_sub_plots = True
-do_sub_plots = False
+do_sub_plots = True
+#do_sub_plots = False
 
 # Plot mass accretion functions
-#do_plot_mfs = True
-do_plot_mfs = False
+do_plot_mfs = True
+#do_plot_mfs = False
 
 # Save informations about subhalos at different steps
 #do_subs = True
@@ -81,8 +81,8 @@ do_subs = False
 do_vweb = False
 
 # Use the pre-computed cosmic web to 
-do_subs_web = True
-#do_subs_web = False
+#do_subs_web = True
+do_subs_web = False
 
 lg_names = ['MW', 'M31']
 n_lg = len(lg_names)
@@ -102,9 +102,10 @@ for i_time in range(0, snap_end-snap_init):
 	time[i_time] = (snap_end - i_time) * stepMyr
 
 # This skips the following loop on the halo evolution
+true_sub_init = sub_init
+true_sub_end = sub_end
+
 if do_evolution == False:
-	true_sub_init = sub_init
-	true_sub_end = sub_end
 	sub_init = 0
 	sub_end = 0
 
@@ -290,7 +291,7 @@ for this_simu in range(simu_init, simu_end):
 		sub_skip = int(sub_skip)
 
 	# Plot mass accretion histories and evolution of satellite anisotropy
-	if do_evolution == True and i_sub == sub_end-1 and do_sub_plots == True:
+	if i_sub == sub_end-1 and do_sub_plots == True:
 
 		for i_lg in range(0, 2):
 			out_fname = 'output/anisotropy_' + simurun + '_' + lg_names[i_lg] + '_' + subrun + '_' + this_run + '.png'
@@ -574,6 +575,7 @@ if do_subs_web == True:
 	fout_anis_m31 = 'output/hist_percentiles_satellite_anisotropy_M31'+this_step+'.png'	
 	fout_anis_mw = 'output/hist_percentiles_satellite_anisotropy_MW'+this_step+'.png'	
 	anis_pkl = 'saved/percentiles_satellite_anisotropy_'+this_step+'_LG.pkl'	
+	angles_pkl = 'saved/angles_align_satellite_anisotropy_'+this_step+'_LG.pkl'	
 
 #	select_mass = True
 	select_mass = False
@@ -581,6 +583,7 @@ if do_subs_web == True:
 #	select_accr = False
 
 	lg_perc_anis = [[] for i in range(0, 2)]
+	lg_angles_anis = [[] for i in range(0, 3)]
 
 	for i_simu in range(simu_init, simu_end):	
 		main_run = simuruns[i_simu]
@@ -651,6 +654,7 @@ if do_subs_web == True:
 					(sel_evals, sel_evecs) = moment_inertia(positions, masses)
 					(all_evals, all_evecs) = moment_inertia(all_pos, all_mass)
 
+					ev1 = vweb[1, :]
 					ev3 = vweb[3, :]
 					#(sel_rand_eval, sel_rand_disp, sel_rand_ang) = random_triaxialities_and_angles(nselect, n_rand_runs, ev3)
 					(sel_rand_eval, sel_rand_disp, perc_eval) = random_triaxialities(nselect, n_rand_runs, sel_evals[0]/sel_evals[2])
@@ -660,14 +664,24 @@ if do_subs_web == True:
 
 					new_positions = np.zeros((nselect, 3))
 
+					#print sel_evecs
+
 					for isat in range(0, nselect):
 						old_pos = positions[isat, :]
 						new_pos = change_basis(old_pos, all_evecs)
 						new_positions[isat, :] = new_pos
 
 					#print 'Dispersions, satellites vs. Rand:'
-					#for ix in range(0, 3):
-					#	print ix, np.std(abs(new_positions[:, ix])) / this_rvir, sel_rand_disp[ix, :]
+					#print 'I_web  I_IT  ev * evec  vweb  IM evals'
+					for ix in range(1, 4):
+						ev = vweb[ix, :]
+						for iy in range(0, 1):
+							this_angle = abs(angle(ev, sel_evecs[iy, :]))
+							#print ix, iy, this_angle, vweb[0, ix-1], sel_evals[ix-1]/sel_evals[2]
+							lg_angles_anis[ix-1].append(this_angle)		
+					#print lg_angles_anis
+
+						#print ix, np.std(abs(new_positions[:, ix])) / this_rvir, sel_rand_disp[ix, :]
 					#print 'Main eigenvectors, satellites vs. Rand:'
 					#for ix in range(0, 3):
 					#print sel_evals[ix]/sel_evals[2], sel_rand_eval[ix, :]
@@ -700,24 +714,27 @@ if do_subs_web == True:
 #f_anis_pkl = open(anis_pkl, 'w')
 #pickle.dump(lg_perc_anis, f_anis_pkl)
 
-n_bins = 20
-plt.rc({'text.usetex': True})
-plt.xlabel('$Percentile$')
-plt.ylabel('N')
-plt.title('MW')
-plt.hist(lg_perc_anis[0], n_bins)
-plt.savefig(fout_anis_mw)
-plt.clf()
-plt.cla()
+	f_angles_pkl = open(angles_pkl, 'w')
+	pickle.dump(lg_angles_anis, f_angles_pkl)
 
-plt.rc({'text.usetex': True})
-plt.xlabel('$Percentile$')
-plt.ylabel('N')
-plt.title('M31')
-plt.hist(lg_perc_anis[1], n_bins)
-plt.savefig(fout_anis_m31)
-plt.clf()
-plt.cla()
+	n_bins = 20
+	plt.rc({'text.usetex': True})
+	plt.xlabel('$Percentile$')
+	plt.ylabel('N')
+	plt.title('MW')
+	plt.hist(lg_perc_anis[0], n_bins)
+	plt.savefig(fout_anis_mw)
+	plt.clf()
+	plt.cla()
+
+	plt.rc({'text.usetex': True})
+	plt.xlabel('$Percentile$')
+	plt.ylabel('N')
+	plt.title('M31')
+	plt.hist(lg_perc_anis[1], n_bins)
+	plt.savefig(fout_anis_m31)
+	plt.clf()
+	plt.cla()
 
 
 #print lg_perc_anis[1]

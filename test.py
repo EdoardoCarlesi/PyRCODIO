@@ -25,6 +25,10 @@ from libcosmo.grid import *
 
 #(evs, disps, perc) = random_triaxialities(10, 1000, 0.25)
 
+fopen = open('saved/angles_align_satellite_anisotropy_00_LG.pkl', 'r')
+angs = pickle.load(fopen)
+print angs
+
 #print evs, perc
 
 

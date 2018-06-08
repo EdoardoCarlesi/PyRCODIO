@@ -523,9 +523,10 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 			if math.isnan(w_n[i_y]):
 				w_n[i_y] = 0.0
 
-		axs[0].set_title("e1 / e3")
-		axs[1].set_title("e2 / e3")
-		axs[2].set_title("(e2 - e3) / e1")
+		# TODO plot median in shaded region!!!!!!
+		axs[0].set_title("a/c")
+		axs[1].set_title("b/c")
+		axs[2].set_title("(b - c) / a")
 
 		axs[0].plot(x_m, y_n, linewidth=lnw, color=col)
 		axs[1].plot(x_m, z_n, linewidth=lnw, color=col)
@@ -533,21 +534,28 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 
 	plt.savefig(f_out)
 	plt.clf()
+	plt.cla()
+	plt.close()
 
 
 def plot_massfunctions(x_m, y_n, n_mf, f_out):
-	size_x = 40
+	size_x = 20
 	size_y = 20
 	lnw = 1.0
 	col = 'b'
-	
-	x_min = 1.e+9; 	x_max = 5.e+11
+	axis_margins = 2	
+
+	x_min = 5.e+8; 	x_max = 5.e+11
 	y_min = 1; 	y_max = 50 #max_list(y_n)
 
 	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
+	plt.rc({'text.usetex': True})
+	plt.margins(axis_margins)		
+	plt.xlabel('$M_{\odot}$')
+	plt.ylabel('N')
 	axs.set_xscale('log')
 	axs.set_yscale('log')
 	axs.axis([x_min, x_max, y_min, y_max])
@@ -556,6 +564,7 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 		for im in range(0, n_mf):
 			axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
 
+	plt.tight_layout()
 	plt.savefig(f_out)
 	plt.clf()
 	plt.cla()
@@ -571,7 +580,6 @@ def plot_mass_accretion(time, mah, f_out):
 	
 	x_min = np.min(time); x_max = np.max(time)
 	y_min = np.min(mah); y_max = np.max(mah)
-
 	plt.yscale('log')
 	plt.axis([x_min, x_max, y_min, y_max])
 	
