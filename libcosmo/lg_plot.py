@@ -343,27 +343,28 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	# One LG type only either MW or M31, per ONE realisation and N sub-realisations	 #				
 	##################################################################################
 def bin_lg_sub(lgs):
+
 	n_tot = len(lgs)
 
-	m_lgs = np.zeros((2, n_tot))
-	n_sub = np.zeros((2, n_tot))
-
-	bin_m = np.zeros((2, 5))
-	bin_n = np.zeros((2, 5))
+	m_lgs = np.zeros((3, n_tot))
+	n_sub = np.zeros((3, n_tot))
+	bin_m = np.zeros((3, 5))
+	bin_n = np.zeros((3, 5))
 	
 	perc_min0 = 5.
 	perc_max0 = 100. - perc_min0
-	perc_min1 = 25.
+	perc_min1 = 32.
 	perc_max1 = 100. - perc_min1
 
 	for ilg in range(0, n_tot):
 		m_lgs[0][ilg] = lgs[ilg].LG1.m
 		m_lgs[1][ilg] = lgs[ilg].LG2.m		
+		m_lgs[2][ilg] = lgs[ilg].LG2.m	+ lgs[ilg].LG1.m
 		n_sub[0][ilg] = lgs[ilg].LG1.nsub
 		n_sub[1][ilg] = lgs[ilg].LG2.nsub
+		n_sub[2][ilg] = lgs[ilg].LG2.nsub + lgs[ilg].LG1.nsub
 
-	for ilg in range(0, 2):
-		#bin_m[ilg][0] = np.amin(m_lgs[ilg][:])
+	for ilg in range(0, 3):
 		bin_m[ilg][0] = np.percentile(m_lgs[ilg][:], perc_min0)
 		bin_m[ilg][1] = np.median(m_lgs[ilg][:])
 		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max0)
@@ -381,7 +382,7 @@ def bin_lg_sub(lgs):
 
 def plot_lg_bins(x_bins, y_bins, f_out):
 	size_p = 5
-	size_x = 10
+	size_x = 15
 	size_y = 5
 
 	x_label = 'Nsub'
@@ -399,51 +400,46 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	normx = 1.0000
 	normy = 1.0000
 
-	x_min0 = 0.6e+12 / normx; x_max0 = 4.2e+12 / normx
+	x_min0 = 0.6e+12 / normx; x_max0 = 4.5e+12 / normx
 	y_min0 = 1.0 / normy; 	y_max0 = 140. / normy
-	x_min1 = 0.5e+12 / normx; x_max1 = 2.1e+12 / normx
+	x_min1 = 0.5e+12 / normx; x_max1 = 2.5e+12 / normx
 	y_min1 = 1.0 / normy; 	y_max1 = 60. / normy
-
-	#print 'X Axis min=%.3f  max=%.3f\n' % (x_min, x_max)
-	#print 'Y Axis min=%.3f  max=%.3f\n' % (y_min, y_max)
+	x_min2 = 1.0e+12 / normx; x_max2 = 0.6e+13 / normx
+	y_min2 = 1.0 / normy; 	y_max2 = 180. / normy
 
 	n_bins = len(x_bins)
-	print 'Nbins = ', n_bins
+	#print 'Nbins = ', n_bins
 
 	xs = np.zeros(n_bins)
 	ys = np.zeros(n_bins)
-	x_err = np.zeros((2, n_bins))
-	y_err = np.zeros((2, n_bins))
+	x_err = np.zeros((3, n_bins))
+	y_err = np.zeros((3, n_bins))
 
-	#(fig, axs) = plt.subplots(ncols=3, nrows=1, figsize=(12, 4))
-	#plt.rc(labelsize=axis_size)    
 	plt.rc('xtick', labelsize=axis_size)    
 	plt.rc('ytick', labelsize=axis_size)    
 
-	(fig, axs) = plt.subplots(ncols=2, nrows=1, figsize=(size_x, size_y)) #, sharey = True)
+	(fig, axs) = plt.subplots(ncols=3, nrows=1, figsize=(size_x, size_y)) #, sharey = True)
 
 	#axs[0].yaxis.set_ticks_position('left')
-	axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
-	axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
-	axs[0].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
-	axs[1].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
+	axs[0].set_xlabel('$M_{\odot} $', fontsize=axis_size)
+	axs[1].set_xlabel('$M_{\odot} $', fontsize=axis_size)
+	axs[2].set_xlabel('$M_{\odot} $', fontsize=axis_size)
+	axs[0].set_ylabel('$N$', fontsize=axis_size) 
+	axs[1].set_ylabel('$N$', fontsize=axis_size) 
+	axs[2].set_ylabel('$N$', fontsize=axis_size) 
+	#axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	#axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	#axs[2].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	#axs[0].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
+	#axs[1].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
+	#axs[2].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
 	axs[0].axis([x_min0, x_max0, y_min0, y_max0])
 	axs[1].axis([x_min1, x_max1, y_min1, y_max1])
-	axs[0].set_title('M31'); 	axs[1].set_title('MW')
-	#axs[0].set_xscale('log'); 	axs[1].set_xscale('log')	
-	#axs[0].set_yscale('log'); 	axs[1].set_yscale('log')	
-
-	#axs[0].xaxis.set_major_locator(plt.MaxNLocator(4))
-	#axs[1].xaxis.set_major_locator(plt.MaxNLocator(4))
-	#plt.margins(axis_margins)		
-	#plt.setp(axs[0].get_xticklabels(), visible = True)
-	#plt.setp(axs[0].get_yticklabels(), visible = True)
-	#plt.setp(axs[1].get_xticklabels(), visible = True)
+	axs[2].axis([x_min2, x_max2, y_min2, y_max2])
+	axs[0].set_title('M31'); 	axs[1].set_title('MW'); 	axs[2].set_title('LG'); 	
 
 	# Do two loops - M31 and MW
-	for ilg in range(0, 2):
-		#plt.subplot(1, 2, ilg+1)		
-
+	for ilg in range(0, 3):
 		# Now loop for each halo on a 
 		for ibin in range(0, n_bins):
 			xs[ibin] = float(x_bins[ibin, ilg, 1])
@@ -455,21 +451,11 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 			y_err[1][ibin] = float(y_bins[ibin][ilg][2] - ys[ibin]) / normy
 			ys[ibin] /= normy
 
-		#	print xs[ibin], ys[ibin]
-
 		axs[ilg].errorbar(xs, ys, yerr=[y_err[0], y_err[1]], xerr=[x_err[0], x_err[1]], markersize=size_p, fmt='o')
 	
-	#plt.xticks
-	#axs[0].xaxis.set_major_locator(ticker.MultipleLocator(tickSize))
-	#axs[1].xaxis.set_major_locator(ticker.MultipleLocator(tickSize))
-	#axs[0].xaxis.set_major_formatter(ticker.FormatStrFormatter("%7.2f"))
-	#axs[1].xaxis.set_major_formatter(ticker.FormatStrFormatter("%7.2f"))
-	#axs[0].yaxis.set_major_formatter(ticker.FormatStrFormatter("%d"))
-
-	#axs[0].set_title(r'MW')#, size=title_size)
-	#axs[1].set_title(r'M31')#, size=title_size)
-	
 	print 'Saving png to file: ', f_out
+
+	plt.tight_layout()
 	plt.savefig(f_out)
 	plt.close()
 	plt.clf()
