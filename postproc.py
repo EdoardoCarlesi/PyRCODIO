@@ -56,8 +56,8 @@ do_evolution = False
 do_all_lgs = False
 
 # Do plots of the mass - subhalo scatter for MW and M31
-do_plots_mass_sub = True
-#do_plots_mass_sub = False
+#do_plots_mass_sub = True
+do_plots_mass_sub = False
 
 # Subhalo trajectories
 #do_trajectories = True
@@ -575,20 +575,20 @@ if do_vweb == True:
 '''
 	Analyze subhalo properties in the LSS environment
 '''		
-
 # These properties and file names are general regardless of the kind of analysis
 step_num = 0
 this_step = '%02d' % step_num
 anis_pkl = 'saved/percentiles_satellite_anisotropy_'+this_step+'_LG.pkl'	
 angles_pkl = 'saved/angles_align_satellite_anisotropy_'+this_step+'_LG.pkl'	
+medians_pkl = 'saved/medians_'+this_step+'_LG.pkl'	
 nsub_asph_pkl = 'saved/nsub_asph_eval_'+this_step+'_LG.pkl'	
 
 if do_subs_web == True:
 
 	# Selection criteria on subhalos
-	m_min = 3.e+8
-	t_max = 13.0
-	d_max = 1.1
+	m_min = 7.e+8
+	t_max = 10.0
+	d_max = 0.8
 
 	save_pkl = True
 	#save_pkl = False
@@ -602,7 +602,7 @@ if do_subs_web == True:
 	nsub_asph_eval = np.zeros((2, simu_end * true_sub_end, 12))	
 	i_sub_asph = np.zeros((2))
 
-	median_over_simu = np.zeros((simu_end, 2, 5))  # 10 simulations, 2 LGs, 5 mean values = mass, + angles
+	median_over_simu = np.zeros((simu_end, 2, 10))  # 10 simulations, 2 LGs, 5 mean values = mass, + angles, a_on_c
 
 	for i_simu in range(simu_init, simu_end):	
 		main_run = simuruns[i_simu]
@@ -696,22 +696,41 @@ if do_subs_web == True:
 					nsub_asph_eval[i_lg, i_sub_asph[i_lg], 5] = min_tacc
 					nsub_asph_eval[i_lg, i_sub_asph[i_lg], 6] = min_mmax
 					nsub_asph_eval[i_lg, i_sub_asph[i_lg], 7] = min_mz0
-					
-					if i_lg == 0:
-						nsub_asph_eval[i_lg, i_sub_asph[i_lg], 8] = this_lg.LG1.m
-					else:
-						nsub_asph_eval[i_lg, i_sub_asph[i_lg], 8] = this_lg.LG2.m
-
-					i_sub_asph[i_lg] += 1
-
+	
 					#print 'I_web  I_IT  ev * evec  vweb  IM evals'
 					for ix in range(1, 4):
 						ev = vweb[ix, :]
-						for iy in range(2, 3):
+						for iy in range(0, 1):
 							this_angle = abs(angle(ev, sel_evecs[iy, :]))
 							lg_angles_anis[ix-1].append(this_angle)		
 							nsub_asph_eval[i_lg, i_sub_asph[i_lg], 8+ix] = this_angle
+					
+					if i_lg == 0:
+						nsub_asph_eval[i_lg, i_sub_asph[i_lg], 8] = this_lg.LG1.m
+						median_over_simu[i_simu, i_lg, 0] += 1.0
+						median_over_simu[i_simu, i_lg, 1] += this_lg.LG1.m 
+						median_over_simu[i_simu, i_lg, 2] += nsub_asph_eval[i_lg, i_sub_asph[i_lg], 9] 
+						median_over_simu[i_simu, i_lg, 3] += nsub_asph_eval[i_lg, i_sub_asph[i_lg], 10] 
+						median_over_simu[i_simu, i_lg, 4] += nsub_asph_eval[i_lg, i_sub_asph[i_lg], 11] 
+						median_over_simu[i_simu, i_lg, 5] += a_on_c
+						median_over_simu[i_simu, i_lg, 6] += min_mmax
+						median_over_simu[i_simu, i_lg, 7] += min_mz0
+						median_over_simu[i_simu, i_lg, 8] += min_tacc
+					else:
+						nsub_asph_eval[i_lg, i_sub_asph[i_lg], 8] = this_lg.LG2.m
+						median_over_simu[i_simu, i_lg, 0] += 1.0
+						median_over_simu[i_simu, i_lg, 1] += this_lg.LG2.m 
+						median_over_simu[i_simu, i_lg, 2] += nsub_asph_eval[i_lg, i_sub_asph[i_lg], 9] 
+						median_over_simu[i_simu, i_lg, 3] += nsub_asph_eval[i_lg, i_sub_asph[i_lg], 10] 
+						median_over_simu[i_simu, i_lg, 4] += nsub_asph_eval[i_lg, i_sub_asph[i_lg], 11] 
+						median_over_simu[i_simu, i_lg, 5] += a_on_c
+						median_over_simu[i_simu, i_lg, 6] += min_mmax
+						median_over_simu[i_simu, i_lg, 7] += min_mz0
+						median_over_simu[i_simu, i_lg, 8] += min_tacc
+
+#median_over_simu = np.zeros((simu_end, 2, 5))  # 10 simulations, 2 LGs, 5 mean values = mass, + angles
 							
+					i_sub_asph[i_lg] += 1
 							
 							#print lg_angles_anis
 				except:
@@ -725,10 +744,12 @@ if do_subs_web == True:
 			#perc_asph[i_simu, i_lg, 2] = np.percentile(lg_perc_anis[i_lg], 90)
 			#print 'Asph: ', i_simu, i_lg, perc_asph[i_simu, i_lg, :]
 
+
 	# TODO Scatterplot of the subhalos in the inertia tensor frame of reference
 
 	if save_pkl == True:
 		f_anis_pkl = open(anis_pkl, 'w')
+		f_medians = open(medians_pkl, 'w')
 		f_angles_pkl = open(angles_pkl, 'w')
 		f_nsub_asph_pkl = open(nsub_asph_pkl, 'w')
 
@@ -736,6 +757,8 @@ if do_subs_web == True:
 		pickle.dump(lg_perc_anis, f_anis_pkl)
 		pickle.dump(lg_angles_anis, f_angles_pkl)
 		pickle.dump(nsub_asph_eval, f_nsub_asph_pkl)
+		pickle.dump(median_over_simu, f_medians)
+	#print median_over_simu/median_over_simu[:, 0, 0]
 			
 
 
@@ -745,9 +768,28 @@ if do_satellite_anisotropy_plots == True:
 	fout_anis_all = 'output/hist_percentiles_satellite_anisotropy_'+this_step+'.png'	
 	fout_angles_all = 'output/hist_angles_anisotropy_'+this_step+'.png'	
 	fout_anis_rand = 'output/satellite_anisotropy_rand_'+this_step+'.png'	
+	fout_medians = 'output/medians_'+this_step+'.png'	
 
 	f_nsub_asph_pkl = open(nsub_asph_pkl, 'r')
+	f_medians = open(medians_pkl, 'r')
 	nsub_asph_eval = pickle.load(f_nsub_asph_pkl)
+	medians = pickle.load(f_medians)
+
+	xs = np.zeros((10))
+	ys = np.zeros((10))
+	use_lg = 0
+
+	for isim in range(0, 10):
+		this_n = medians[isim, 0, 0]
+		xs[isim] = medians[isim, use_lg, 1] / this_n
+		ys[isim] = medians[isim, use_lg, 4] / this_n
+			
+	#plt.xscale('log')
+	#plt.yscale('log')
+	plt.scatter(xs, ys)
+	plt.show()
+	plt.clf()
+	plt.cla()
 
 	n_sub_min = 5
 	n_sub_max = 140
@@ -844,7 +886,7 @@ if do_satellite_anisotropy_plots == True:
 	#x_ev_mw = nsub_asph_eval[0, :, 3] + nsub_asph_eval[0, :, 2] + nsub_asph_eval[0, :, 3]; ax0.set_xlabel('$M_{ratio}$')
 	x_ev_mw = nsub_asph_eval[0, :, 2] - nsub_asph_eval[0, :, 3]; ax0.set_xlabel('$M_{ratio}$')
 	y_ev_mw = nsub_asph_eval[0, :, 8] + nsub_asph_eval[1, :, 8]; ax0.set_ylabel('$M_{sub}$')
-	print y_ev_mw
+	#print y_ev_mw
 	#y_ev_mw = nsub_asph_eval[0, :, 3]; ax0.set_ylabel('l2')
 	#x_ev_mw = nsub_asph_eval[0, :, 0]; ax0.set_xlabel('N')
 	#x_ev_mw = nsub_asph_eval[0, :, 0]; ax0.set_xlabel('N')

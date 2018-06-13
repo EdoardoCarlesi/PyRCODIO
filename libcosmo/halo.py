@@ -23,12 +23,20 @@ class Halo:
 	npart = 0
 	contam = 0.0	# level of contamination 
 
+	# Gas & star properties
+	m_dm = 0.0
+	m_gas = 0.0
+	m_star = 0.0
+
 	id_index = dict()
 
 	def __init__(self):
-		self.m  = 0.0
-		self.x  = [0.0, 0.0, 0.0]
-		self.v  = [0.0, 0.0, 0.0]
+		self.m = 0.0
+		self.m_dm = 0.0
+		self.m_gas = 0.0
+		self.m_star = 0.0
+		self.x = [0.0, 0.0, 0.0]
+		self.v = [0.0, 0.0, 0.0]
 		self.r = 0.0
 		self.nsub = 0
 		self.npart = 0
@@ -112,8 +120,6 @@ class HaloThroughZ:
 
 	progenitors = None	# This variable contains the list of progenitors at each step
 
-	#min_common = 20		# CLASS VARIABLE - This is shared through ALL the instances of the HaloThroughZ class! Minimum number of shared 
-	#			# particles between progenitors, it is 20 by default (but can be changed)
 	n_steps = 0		# Number of steps available for this halo
 	is_smooth = False
 	f_time = 0.0
