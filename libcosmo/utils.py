@@ -2,6 +2,7 @@ import random
 import math
 import numpy as np
 import scipy.stats as sp
+import pickle
 from numpy import linalg as la
 
 def distance(vec1, vec2):
@@ -370,7 +371,7 @@ def random_triaxialities(n_pts, n_trials, compare_value):
 	rand_evals = np.zeros((3, n_trials))
 	rand_disp = np.zeros((3, n_trials))
 
-	percMin = 1.0
+	percMin = 5.0
 	percMax = 100.0 - percMin
 	new_positions = np.zeros((3, n_pts))
 
@@ -403,6 +404,43 @@ def random_triaxialities(n_pts, n_trials, compare_value):
 	score_value = sp.percentileofscore(rand_evals[0, :], compare_value)
 
 	return (med_e, med_d, score_value)
+
+
+
+def random_table_triaxialities(n_pts, n_trials, read_table):
+		
+	points = '%05d' % n_pts
+	trials = '%05d' % n_trials
+	triax_name = 'saved/rand_triax_' + points + '_' + trials + '.pkl'
+
+	if read_table == True:
+
+		try:
+			print 'Reading pre-stored table values from: ', triax_name 
+			f_evals = open(triax_name, 'r')
+			rand_evals = pickle.load(f_evals)
+			return rand_evals
+		except:
+			print 'File not found: ', triax_name 
+	
+	# Generate tables
+	else:
+		masses = [1.0] * n_pts
+		rand_evals = np.zeros((3, n_trials))
+
+		for i_trial in range(0, n_trials):
+			these_pts = rand_points_sphere(n_pts)
+			(evals, evecs) = moment_inertia(these_pts, masses)
+			rand_evals[:, i_trial] = evals / evals[2]
+
+		f_evals = open(triax_name, 'w')
+		print 'Saving table to: ', triax_name
+		pickle.dump(rand_evals, f_evals)
+
+	#print rand_evals[0, :]
+	#score_value = sp.percentileofscore(rand_evals[0, :], compare_value)
+
+	#return (med_e, med_d, score_value)
 
 
 

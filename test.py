@@ -21,13 +21,21 @@ from libcosmo.grid import *
 #sats = pickle.load(filesub)
 #print sats
 
+#random_table_triaxialities(10, 1000, False)
+
+for npts in range(3, 200):
+	#rand = random_table_triaxialities(10, 1000, True)
+	random_table_triaxialities(npts, 10000, False)
+
+#print rand
+
 #print rand_points_sphere(16)
 
 #(evs, disps, perc) = random_triaxialities(10, 1000, 0.25)
 
-fopen = open('saved/angles_align_satellite_anisotropy_00_LG.pkl', 'r')
-angs = pickle.load(fopen)
-print angs
+#fopen = open('saved/angles_align_satellite_anisotropy_00_LG.pkl', 'r')
+#angs = pickle.load(fopen)
+#print angs
 
 #print evs, perc
 
