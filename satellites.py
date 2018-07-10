@@ -133,25 +133,28 @@ for run_j in range(run_init, run_end):
 				#if vel_r < vrad_max and m12 < m_max:
 				file_lg_txt.write(file_lg_line)
 
-				'''
 				# Now take care of the substructure
 				these_sub1 = find_halos(best_lg.LG1, ahf_all, fac_r * best_lg.LG1.r)
-				subs1 = SubHalos(best_lg.LG1, these_sub1, print_run, 'M31')
-				subs1.anisotropy("part", np_sub_min)
-				subs1.basis_eigenvectors("inertia")
-				nc = subs1.basis_eigenvectors("inertia")
+				subs1 = SubHalos(best_lg.LG1, these_sub1)
+				#subs1.anisotropy("part", np_sub_min)
+				#subs1.basis_eigenvectors("inertia")
+				#nc = subs1.basis_eigenvectors("inertia")
 
 				these_sub2 = find_halos(best_lg.LG2, ahf_all, fac_r * best_lg.LG2.r)
-				subs2 = SubHalos(best_lg.LG2, these_sub2, print_run, 'MW')
+				subs2 = SubHalos(best_lg.LG2, these_sub2)
+
+				'''		
 				subs2.anisotropy("part", np_sub_min)
 				subs2.basis_eigenvectors("inertia")
 				nc = subs2.basis_eigenvectors("inertia")
+				'''
 
 				file_sub_line  = subs1.all_info("part", 2 * np_sub_min)
 				file_sub_line += subs2.all_info("part", 2 * np_sub_min)
 				file_sub_line += '\n ------------------------ \n'
 				file_sub_txt.write(file_sub_line)
-
+		
+			'''
 				(x_m, y_n) = subs1.mass_function()
 				x_mf1.append(x_m); 	y_mf1.append(y_n)
 
@@ -170,8 +173,7 @@ for run_j in range(run_init, run_end):
 					del x_mf1; 	del x_mf2
 					del y_mf1; 	del y_mf2
 					n_mf = 0
-			'''
 			# Compute halo evolution
 
-			
+			'''
 

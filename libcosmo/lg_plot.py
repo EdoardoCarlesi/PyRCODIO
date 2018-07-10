@@ -11,6 +11,116 @@ from particles import *
 
 
 
+def plot_lv(f_snap, center, side_size, f_out):
+	facMpc = 1000.
+	thickn = 5000.
+	#side_size = 120.0e+3
+
+	print 'Plotting LV slices for snapshot: ', f_snap
+
+	# Plot properties
+	ptsize_lv = 10.0
+	plot_col = 3
+	plot_row = 1
+	
+	npt_lg_min = 100
+	axis_margins = 1
+	axis_size = 50
+	axis_units = 'Mpc/h'
+	axis_label = []
+	axis_label.append('SGX')
+	axis_label.append('SGY')
+	axis_label.append('SGZ')
+
+	partDM = []
+
+	# Read the particles
+	parts = readsnap(f_snap, 'pos', 1)
+	partDM.append(parts) 
+
+	# Identify the particles belonging to the different objects
+	i_type = 0
+
+	x_plotlv = [[] for ix in range(0, 3)]
+	y_plotlv = [[] for ix in range(0, 3)]
+
+	minima = [-side_size, -side_size, -side_size]
+
+	# Find slab of thickness +/- thickn around the axes
+	for ix in range(0, 3):
+		ixp1 = (ix+1) % 3
+		ixp2 = (ix+2) % 3
+
+		t1 = time.clock()
+		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(partDM[0], ix, center, minima, side_size, thickn, 1.0) 
+		t2 = time.clock()
+
+		print 'Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
+		plt.ylabel(axis_label[ixp2]+' '+axis_units)
+
+	# General plot settings
+	plt.figure(figsize=(60,40))
+	plt.rc('xtick', labelsize=axis_size)    
+	plt.rc('ytick', labelsize=axis_size)    
+	plt.rc('axes',  labelsize=axis_size)    
+	plt.margins(axis_margins)		
+
+	for ix in range(0, 3):
+		ixp1 = (ix+1) % 3
+		ixp2 = (ix+2) % 3
+
+		x_min = (-side_size) 
+		x_max = (side_size) 
+		y_min = (-side_size) 
+		y_max = (side_size) 
+
+		# These plots are in Mpc/h not kpc/h
+		x_min /= facMpc
+		x_max /= facMpc
+		y_min /= facMpc
+		y_max /= facMpc
+
+		# Plot settings for each subplot
+		plt.subplot(plot_row, plot_col, ix+1)
+		plt.axis([x_min, x_max, y_min, y_max])
+		plt.xlabel(axis_label[ixp1]+' '+axis_units)
+		plt.ylabel(axis_label[ixp2]+' '+axis_units)
+	
+		# Background high-res particles
+		plt.scatter(x_plotlg[ixp1][:], y_plotlg[ixp2][:], s=ptsize_lg, c=col_lg) 
+
+		# Actual plot
+		plt.scatter(x_ptslg0[ixp1][:], x_ptslg0[ixp2][:], s=ptsize_lg, c=col_mw) 
+		plt.scatter(x_ptslg1[ixp1][:], x_ptslg1[ixp2][:], s=ptsize_lg, c=col_m31) 
+
+	for ix in range(0, 3):
+		ixp1 = (ix+1) % 3
+		ixp2 = (ix+2) % 3
+
+		x_min = (min_lv_xyz[ixp1]) 
+		x_max = (x_min + side_lv) 
+		y_min = (min_lv_xyz[ixp2]) 
+		y_max = (y_min + side_lv) 
+
+		x_min /= facMpc
+		x_max /= facMpc
+		y_min /= facMpc
+		y_max /= facMpc
+
+		print 'Plot edges: %.3f, %.3f, %.3f, %.3f\n' % (x_min, x_max, y_min, y_max)
+
+		plt.subplot(plot_row, plot_col, 3+ix+1)
+		plt.axis([x_min, x_max, y_min, y_max])
+		plt.scatter(x_plotlv[ixp1][:], y_plotlv[ixp2][:], s=ptsize_lv, c=col_lv) 
+
+		plt.xlabel(axis_label[ixp1]+' '+axis_units)
+		plt.ylabel(axis_label[ixp2]+' '+axis_units)
+
+	# Save to file
+	plt.tight_layout()
+	plt.savefig(f_out)
+
+
 def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	facMpc = 1000.
 	buffPlot = 4000.	# Extra buffer on the edges

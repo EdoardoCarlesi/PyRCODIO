@@ -30,6 +30,8 @@ h0 = hubble
 #unitMpc = True
 unitMpc = False
 
+do_sub_runs=False
+
 if unitMpc == True:
 	facMpc = 1.0
 else:
@@ -49,8 +51,8 @@ env_type="std"
 #env_type="HESTIA"
 
 #resolution='512'; ptypes=2
-#resolution='1024'; ptypes=3
-resolution='2048'; ptypes=4
+resolution='1024'; ptypes=3
+#resolution='2048'; ptypes=4
 
 if do_plots == "true":
 	outp_dir = 'output_analysis/'
@@ -76,7 +78,7 @@ lss_end = 1
 
 # How many sub-runs per LS realisation
 run_init = 0
-run_end = 10
+run_end = 1
 
 # If running on all seeds
 ice_init = 0
@@ -176,12 +178,17 @@ for irun in range(lss_init, lss_end):
 
 	# Loop on the sub runs, third layer of WN
 	for run_i in range(run_init, run_end):
-		run_num = '%02d' % run_i
-                print_run = base_run + '_' + run_num
-		
-		settings.init_files(base_run, run_num)		
 
-		print 'Reading in AHF file: ', settings.file_ahf_in
+		if do_sub_runs == True:
+			un_num = '%02d' % run_i
+                	print_run = base_run + '_' + run_num
+			settings.init_files(base_run, run_num)		
+		else:
+                	print_run = base_run 
+			settings.init_files(base_run, '')		
+		
+
+		#print 'Reading in AHF file: ', settings.file_ahf_in
 
 		if os.path.exists(settings.file_ahf_in):
 			print ''

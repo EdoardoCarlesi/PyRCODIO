@@ -260,6 +260,7 @@ def locate_clusters(ahf_all, box_center):
 
 	cluster_name = []
 	cluster_pos = []
+	cluster_dist = []
 
 	cluster_name.append('Virgo')
 	cluster_pos.append([-4.67, 16.83, -0.87])
@@ -325,8 +326,9 @@ def locate_clusters(ahf_all, box_center):
 			for ix in range(0, 3):
 				cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
 
-	cluster_r = 12000.0
-	cluster_m = 0.7e+13
+
+	cluster_r = 5000.0
+	cluster_m = 0.5e+13
 	
 	ahf_x = []
 	ahf_m = []
@@ -337,13 +339,17 @@ def locate_clusters(ahf_all, box_center):
 		this_x = cluster_pos[ic]
 		clusters = find_halos_point(this_x, ahf_all, cluster_r)
 
+
 		for iv in range(0, len(clusters)):
 
 			if clusters[iv].m > m0:
 				m0 = clusters[iv].m
 				x0 = clusters[iv].x
 				
-		#print cluster_name[ic], x0, m0
+		cluster_dist.append(distance(cluster_pos[ic], x0))
+
+		print cluster_name[ic], cluster_dist[ic], m0#, x0[0] - box_center[0], x0[1] - box_center[1], x0[2] - box_center[2]
+
 
 		ahf_m.append(m0)
 		ahf_x.append(x0)

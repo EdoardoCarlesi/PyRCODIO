@@ -582,8 +582,8 @@ class SubHalos():
 			for il in range(1, n_print):
 				this_r = self.host.distance(these_subs[il].x)
 
-				line = '%ld    %.2e    %7.2f   %s      %s\n' % \
- 	      			 (these_subs[il].ID,  these_subs[il].m/h0, this_r/h0, self.host_name, self.code)
+				line = '%ld    %.2e    %7.2f\n' % \
+ 	      			 (these_subs[il].ID,  these_subs[il].m/h0, this_r/h0)
 				file_sub_line += line
 
 		return file_sub_line
