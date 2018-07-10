@@ -22,7 +22,7 @@ snap_name='snapshot_054'
 f_out='plot_256.png'
 
 box_size = 400.0e+3
-plot_side = 100.0e+3
+plot_side = 30.0e+3
 
 box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
 #all_halos = read_ahf(base_dir + ahf_name)
