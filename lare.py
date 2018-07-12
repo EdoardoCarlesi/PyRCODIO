@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 from libio.read_ascii import * 
-from libcosmo.lg_plot import *
+#from libcosmo.lg_plot import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.utils import *
@@ -17,8 +17,8 @@ ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
 
 #'snapshot_054.z0.000.AHF_halos'
-snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
-#snapshot = 'snapshot_054.AHF_halos'
+#snapshot = 'snapshot_054.0000.z0.000.AHF_halos'
+snapshot = 'snapshot_054.AHF_halos'
 #snapshot = 'merged_054.AHF_halos'
 #snapshot = 'snapshot_054.z0.000.AHF_halos'
 
@@ -36,11 +36,11 @@ else:
 
 generate_lare='false'
 #generate_lare='true'
-#do_plots='false'
-do_plots='true'
+do_plots='false'
+#do_plots='true'
 
 env_type="std"
-#env_type="512box100"
+#eanv_type="512box100"
 #env_type="HESTIA"
 
 resolution='512'
@@ -56,8 +56,8 @@ settings = Settings(home_dir, outp_dir, env_type, resolution, snapshot)
 # Factor rescaling the particle distribution in plots
 rescale = 10
 
-find_virgo='false'
-#find_virgo='true'
+#find_virgo='false'
+find_virgo='true'
 
 # Max/min distance from Virgo in Mpc/h
 if unitMpc == True:
@@ -76,17 +76,17 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
-ice_init= 0
-ice_end = 70
+ice_init= 70
+ice_end = 71
 
 gin_init = 0
-gin_end = 20
+gin_end = 30
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
 radius = 7000. 
 iso_radius = 2000.
-r_max = 1000.
+r_max = 1500.
 r_min = 250. 
 
 if unitMpc == True:
