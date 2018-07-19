@@ -8,13 +8,13 @@ import math
 from libcosmo.utils import *
 from pygadgetreader import *
 from particles import *
+from scipy.stats import kde
 
 
 
-def plot_lv(f_snap, center, side_size, f_out):
+def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale):
 	facMpc = 1000.
 	thickn = 7000.
-	#side_size = 120.0e+3
 
 	print 'Plotting LV slices for snapshot: ', f_snap
 
@@ -36,15 +36,12 @@ def plot_lv(f_snap, center, side_size, f_out):
 	# Read the particles
 	parts = readsnap(f_snap, 'pos', 1)
 
-	#print parts[0][1]
-
 	# Identify the particles belonging to the different objects
 	i_type = 0
 
 	x_plotlv = [[] for ix in range(0, 3)]
 	y_plotlv = [[] for ix in range(0, 3)]
 
-	#minima = [-side_size-center[0], -side_size-center[1], -side_size-center[2]]
 	minima = [0, 0,0]
 
 	# Find slab of thickness +/- thickn around the axes
@@ -53,27 +50,25 @@ def plot_lv(f_snap, center, side_size, f_out):
 		ixp2 = (ix+2) % 3
 
 		t1 = time.clock()
-		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, 1) 
+		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, 8) 
 		t2 = time.clock()
 
 		print 'Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 	# General plot settings
-	plt.figure(figsize=(30,10))
+	plt.figure(figsize=(120,40))
 	plt.rc('xtick', labelsize=axis_size)    
 	plt.rc('ytick', labelsize=axis_size)    
 	plt.rc('axes',  labelsize=axis_size)    
 	plt.margins(axis_margins)		
 
+#fig, axes = plt.subplots(ncols=6, nrows=1, figsize=(21, 5))
+
 	for ix in range(0, 3):
 		ixp1 = (ix+1) % 3
 		ixp2 = (ix+2) % 3
 
-		#x_min = (-side_size); x_max = (side_size) 
-		#y_min = (-side_size); y_max = (side_size) 
-		#x_min = minima[0]; x_max = center[0] * 2
-		#y_min = minima[0]; y_max = center[0] * 2
 		x_min = center[0]-side_size; x_max = center[0]+side_size
 		y_min = center[1]-side_size; y_max = center[1]+side_size
 
@@ -90,8 +85,28 @@ def plot_lv(f_snap, center, side_size, f_out):
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 	
 		# Background high-res particles
-		plt.scatter(x_plotlv[ixp1][:], y_plotlv[ixp2][:], s=ptsize_lv, c=col_lv) 
-		#plt.scatter(x_plotlv[ixp1][:]+minima[ixp1], y_plotlv[ixp2][:]+minima[ixp2], s=ptsize_lv, c=col_lv) 
+		#plt.scatter(x_plotlv[ixp1][:], y_plotlv[ixp2][:], s=ptsize_lv, c=col_lv) 
+ 		
+		this_x = x_plotlv[ixp1][:] #+minima[ixp1]
+		this_y = y_plotlv[ixp2][:] #+minima[ixp2]
+		
+		print len(this_x), len(this_y)
+
+		#print this_x
+
+		#axes[2].set_title('2D Histogram')
+		#plt.hist2d(this_x, this_y, bins=nbins, cmap=plt.cm.BuGn_r)
+		plt.hexbin(this_x, this_y, gridsize=nbins, cmap='inferno', bins='log') #, bins=nbins) #, cmap=plt.cm.BuGn_r)
+
+		# Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
+		#k = kde.gaussian_kde([this_x, this_y])
+		#xi, yi = np.mgrid[min(this_x):max(this_x.):nbins*1j, min(this_y):max(this_y):nbins*1j]
+		#zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+  
+		# plot a density
+		#plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.BuGn_r)
+		'''
+ 		'''
 
 		print 'Plot edges: %.3f, %.3f, %.3f, %.3f\n' % (x_min, x_max, y_min, y_max)
 
@@ -300,6 +315,7 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	##################################################################################################################
 	# Plot the LG, if plot_pos = "true" then repeat the computation in the PoS moment of inertial eigenvector system #
 	##################################################################################################################
+
 def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	facMpc = 1000.
 	buffPlot = 1.25 * lg0.r	# Extra buffer on the edges, largest Rvir of the two halos
@@ -432,6 +448,7 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	##################################################################################
 	# One LG type only either MW or M31, per ONE realisation and N sub-realisations	 #				
 	##################################################################################
+
 def bin_lg_sub(lgs):
 	n_tot = len(lgs)
 

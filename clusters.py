@@ -19,17 +19,25 @@ from libcosmo.grid import *
 #base_dir='/home/eduardo/CLUES/DATA/CF2P5/512/70_00/'
 #base_dir='/home/eduardo/CLUES/DATA/CF2P5/256/00/'
 #base_dir='/home/eduardo/CLUES/DATA/CF2P5/256b/90/'
-base_dir='/home/eduardo/CLUES/DATA/CF2YH/289090/'
+#base_dir='/home/eduardo/CLUES/DATA/CF2YH/375494/'
+#base_dir='/home/eduardo/CLUES/DATA/CF2YH/289090/'
+base_dir='/home/eduardo/CLUES/DATA/cf2JS/289090/'
+#base_dir='/home/eduardo/CLUES/DATA/CF2YH/286393/'
+#base_dir='/home/eduardo/CLUES/DATA/CF2YH/288191/'
+#base_dir='/home/eduardo/CLUES/DATA/QL/'
 ahf_name='snapshot_054.AHF_halos'
 snap_name='snapshot_054'
-f_out='plot_cf2yh_90.png'
+#snap_name='snapshot_019'
+f_out='plot_'+snap_name+'_js.png'
 
 box_size = 400.0e+3
-plot_side = 120.0e+3
+plot_side = 80.0e+3
+nbins = 300
+f_rescale = 1
 
 box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
 all_halos = read_ahf(base_dir + ahf_name)
 locate_clusters(all_halos, box_center)
 
-plot_lv(base_dir + snap_name, box_center, plot_side, f_out)
+plot_lv(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale)
 

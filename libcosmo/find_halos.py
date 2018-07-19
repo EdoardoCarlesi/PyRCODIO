@@ -327,7 +327,7 @@ def locate_clusters(ahf_all, box_center):
 				cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
 
 
-	cluster_r = 5000.0
+	cluster_r = 7000.0
 	cluster_m = 0.5e+13
 	
 	ahf_x = []

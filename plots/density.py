@@ -37,6 +37,34 @@ def find_indexes_in_slab(box, ngrid, data, min_x, max_x):
 
 	return (slab_x, slab_y, slab_z, slab_d)
 
+def read_cic(file_base, format_type):
+	data = []
+	f_in = open(file_name, 'r')
+
+	if format_type == 'ice':
+		for line in f_in.readlines():
+			values = line.split(' ')
+
+			for value in values:
+				if value != '' and value != '\n':
+					value = float(value)
+					data.append(value)	
+
+	if format_type == 'std':
+		for line in f_in.readlines():
+			values = line.split('\t')
+			value = float(values[3])
+			data.append(value)
+
+	#		print value	
+
+
+	return data
+
+
+
+
+
 		#################################
 		#				#
 		#	START THE PROGRAM	#
@@ -49,29 +77,26 @@ box = 400
 # Create a figure with 3 plot areas
 fig, axes = plt.subplots(ncols=1, nrows=1, figsize=(5, 5))
 
-base_path = '/home/eduardo/CLUES/DATA/'
+base_path = '/home/eduardo/CLUES/DATA/CF2YH/286393/'
+#base_path = '/home/eduardo/CLUES/DATA/'
 #file_base = 'CF2_grouped_YH_201611.co_128_400.000_WF_Dx.txt'
-file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx.txt.0'
+#file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx_rza.txt.10'
+#file_base = 'CF2_grouped_YH_201611.co_256_400.000_WF_Dx.txt'
+#file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx.txt.1'
+#file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx_rza.txt'
+#file_base='cf2gvpecc1pt5_256_400.000_Dx_rza.txt'
+#file_base = 'cic_128.txt'
+file_base = 'cic_256.txt'
+
 file_name = base_path + file_base 
 
-f_in = open(file_name, 'r')
-
-data = []
-
-for line in f_in.readlines():
-	values = line.split(' ')
-	for value in values:
-		
-		if value != '' and value != '\n':
-			#print value
-			value = float(value)
-			data.append(value)	
+data = read_cic(file_base, 'std')
 
 min_x = np.zeros((3), dtype=int)
 max_x = np.zeros((3), dtype=int)
 
-step = 64
-thick = 8
+step = 0
+thick = 16
 
 min_x[0] = step; max_x[0] = grid - step
 min_x[1] = step; max_x[1] = grid - step
@@ -81,7 +106,7 @@ min_x[2] = 0.5 * (grid - thick); max_x[2] = 0.5 * (grid + thick)
 
 plt.contour(sl_x, sl_y, sl_d)
 
-outname = 'dens_' + file_base + '.png'
+outname = 'dens_' + file_base + '_' + str(step) + '.png'
 
 plt.savefig(outname)
 
