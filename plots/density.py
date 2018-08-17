@@ -61,36 +61,36 @@ def read_cic(file_base, format_type):
 
 	return data
 
-
-
-
-
+		#################################
 		#################################
 		#				#
 		#	START THE PROGRAM	#
 		#				#
 		#################################
+		#################################
 
-grid = 256
+grid = 128
 box = 400
 
 # Create a figure with 3 plot areas
 fig, axes = plt.subplots(ncols=1, nrows=1, figsize=(5, 5))
 
-base_path = '/home/eduardo/CLUES/DATA/CF2YH/286393/'
-#base_path = '/home/eduardo/CLUES/DATA/'
-#file_base = 'CF2_grouped_YH_201611.co_128_400.000_WF_Dx.txt'
+#base_path = '/home/eduardo/CLUES/DATA/CF2YH/286393/'
+base_path = '/home/eduardo/CLUES/DATA/'
+#file_base='CF2P5_BT_022818_h75_cmb_MBc_fac0p65a_128_400.000_WF_Dx.txt'
+file_base = 'CF2_grouped_YH_201611.co_128_400.000_WF_Dx.txt'
 #file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx_rza.txt.10'
 #file_base = 'CF2_grouped_YH_201611.co_256_400.000_WF_Dx.txt'
 #file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx.txt.1'
 #file_base = 'CF2_grouped_YH_201611.co_256_400.000_Dx_rza.txt'
 #file_base='cf2gvpecc1pt5_256_400.000_Dx_rza.txt'
 #file_base = 'cic_128.txt'
-file_base = 'cic_256.txt'
+#file_base = 'cic_256.txt'
 
 file_name = base_path + file_base 
 
-data = read_cic(file_base, 'std')
+data = read_cic(file_base, 'ice')
+#data = read_cic(file_base, 'std')
 
 min_x = np.zeros((3), dtype=int)
 max_x = np.zeros((3), dtype=int)
@@ -109,6 +109,7 @@ plt.contour(sl_x, sl_y, sl_d)
 outname = 'dens_' + file_base + '_' + str(step) + '.png'
 
 plt.savefig(outname)
+
 
 '''
 # Thus we can cut the plotting window in several hexbins
@@ -137,8 +138,4 @@ axes[4].pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap=plt.cm.
 axes[5].set_title('Contour')
 axes[5].pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap=plt.cm.BuGn_r)
 axes[5].contour(xi, yi, zi.reshape(xi.shape) )
-
-
 '''
-
-

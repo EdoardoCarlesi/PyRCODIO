@@ -12,9 +12,8 @@ from scipy.stats import kde
 
 
 
-def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale):
-	facMpc = 1000.
-	thickn = 7000.
+def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
+	#thickn = 7000.
 
 	print 'Plotting LV slices for snapshot: ', f_snap
 
@@ -27,7 +26,12 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale):
 	npt_lg_min = 100
 	axis_margins = 1
 	axis_size = 50
-	axis_units = 'Mpc/h'
+
+	if units == 'kpc':
+		axis_units = 'kpc/h'; facMpc = 1.
+	else if units == 'Mpc':
+		axis_units = 'Mpc/h'; facMpc = 1000.
+
 	axis_label = []
 	axis_label.append('SGX')
 	axis_label.append('SGY')
@@ -50,14 +54,14 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale):
 		ixp2 = (ix+2) % 3
 
 		t1 = time.clock()
-		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, 8) 
+		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, f_rescale) 
 		t2 = time.clock()
 
 		print 'Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 	# General plot settings
-	plt.figure(figsize=(120,40))
+	plt.figure(figsize=(99,33))
 	plt.rc('xtick', labelsize=axis_size)    
 	plt.rc('ytick', labelsize=axis_size)    
 	plt.rc('axes',  labelsize=axis_size)    
