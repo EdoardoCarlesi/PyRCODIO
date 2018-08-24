@@ -255,7 +255,8 @@ def locate_clusters(ahf_all, box_center):
 	n_ahf = len(ahf_all)
 	coord_unit = box_center[0] + box_center[1] + box_center[2]
 
-	hubble = 0.677
+	#hubble = 0.677
+	hubble = 1.0
 	facMpc = 1000.
 
 	cluster_name = []
@@ -267,6 +268,7 @@ def locate_clusters(ahf_all, box_center):
 
 	cluster_name.append('Coma (a)')
 	cluster_pos.append([0.47, 72.55, 10.38])
+	#cluster_pos.append([0.47, 100.55, 14.38])
 
 	cluster_name.append('Coma (b)')
 	cluster_pos.append([-2.43, 68.58, -12.71])
@@ -327,7 +329,7 @@ def locate_clusters(ahf_all, box_center):
 				cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
 
 
-	cluster_r = 7000.0
+	cluster_r0 = 5000.0
 	cluster_m = 0.5e+13
 	
 	ahf_x = []
@@ -337,6 +339,8 @@ def locate_clusters(ahf_all, box_center):
 		m0 = cluster_m
 		x0 = [-1.0, -1.0, -1.0]
 		this_x = cluster_pos[ic]
+		d_center = distance(box_center, this_x)
+		cluster_r = cluster_r0 * (1. + 0.1 * (d_center / (2 * cluster_r0)))
 		clusters = find_halos_point(this_x, ahf_all, cluster_r)
 
 
