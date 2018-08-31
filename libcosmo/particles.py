@@ -152,7 +152,7 @@ def select_particles(x_com, x_p, r):
 	return (x_a, x_b, x_c)
 
 
-def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac):
+def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac, units):
 	halfside = 0.5 * side
 	n_p = len(x_p)
 	x_a = []
@@ -162,13 +162,10 @@ def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac):
 
 	print 'Finding slab across ', n_p, ' particles.'
 
-	#units = x_p[n_p-1][0] + x_p[n_p-1][1] + x_p[n_p-1][2]
-	units = x_p[0][0] + x_p[1][1] + x_p[0][2]
-	
-	if units > 5000. :
+	if units == 'kpc' :
 		facMpc = 1.0
 	else:
-		facMpc = 1000.0
+		facMpc = 1.0
 	
 	loc_x = [0.0] * 3
 	

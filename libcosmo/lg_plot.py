@@ -14,10 +14,8 @@ from scipy.stats import kde
 
 
 
-def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
-	#thickn = 7000.
-
-	print 'Plotting LV slices for snapshot: ', f_snap
+def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
+	print 'Plotting density slices for snapshot: ', f_snap
 
 	# Plot properties
 	ptsize_lv = 2.0
@@ -32,7 +30,8 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 	if units == 'Mpc':
 		axis_units = 'Mpc/h'; facMpc = 1.
 	elif units == 'kpc':
-		axis_units = 'kpc/h'; facMpc = 1000.
+		axis_units = 'Mpc/h'; facMpc = 1000.
+		#axis_units = 'kpc/h'; facMpc = 1000.
 
 	axis_label = []
 	axis_label.append('SGX')
@@ -42,6 +41,9 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 	# Read the particles
 	parts = readsnap(f_snap, 'pos', 1)
 
+	print parts.max()
+	print parts.min()
+
 	# Identify the particles belonging to the different objects
 	i_type = 0
 
@@ -49,7 +51,7 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 	y_plotlv = [[] for ix in range(0, 3)]
 
 	minx = center[0] - side_size;	miny = center[1] - side_size;	minz = center[2] - side_size
-	minima = [minx, miny, minz]
+	minima = [minx, miny, minz];	print minima
 
 	# Find slab of thickness +/- thickn around the axes
 	for ix in range(0, 3):
@@ -57,10 +59,12 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 		ixp2 = (ix+2) % 3
 
 		t1 = time.clock()
-		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, f_rescale) 
+		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, f_rescale, units) 
 		t2 = time.clock()
 
-		print 'Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
+		#print x_plotlv[ixp1]
+		
+		print 'Slab (%s, %s) with found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 	# General plot settings
@@ -105,6 +109,7 @@ def plot_lv(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 			data_xy[1, ip] = (this_y[ip] - center[ixp2])/facMpc
 	
 		colorscale = 'inferno'
+		#colorscale = 'rainbow'
 		#(counts, xbins, ybins) = np.histogram2d(data_xy[0, :], data_xy[1, :], bins=nbins)
 		#(counts, xbins, ybins, image) = plt.hist2d(data_xy[0, :], data_xy[1, :], bins=nbins) #, cmap=plt.cm.BuGn_r)
 		
@@ -507,8 +512,6 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	plt.savefig(f_out)
 
 
-
-
 	##################################################################################
 	# One LG type only either MW or M31, per ONE realisation and N sub-realisations	 #				
 	##################################################################################
@@ -715,13 +718,31 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	lnw = 1.0
 	col = 'b'
 	axis_margins = 2	
+#	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
 
-	x_min = 5.e+8; 	x_max = 5.e+11
-	y_min = 1; 	y_max = 50 #max_list(y_n)
+	n_bins = 20
+	y_bins = np.zeros((3, n_bins))
 
-	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
+	x_min = 1.e+15;	x_max = 1.e+7
+#	y_min = 10000.;	y_max = 1.0;
 
-	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
+	for im in range(0, n_mf):
+		x_max0 = max(x_m[:])
+		x_min0 = min(x_m[:])
+		
+		if x_max0 > x_max:
+			x_max = x_max0		
+	
+		if x_min0 < x_min:
+			x_min = x_min0		
+
+	x_bins = np.logspace(x_min, x_max, num=n_bins)
+
+	#x_min = 5.e+8; 	x_max = 5.e+11
+	#y_min = 1; 	y_max = 50 #max_list(y_n)
+
+
+	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
 
 	plt.rc({'text.usetex': True})
 	plt.margins(axis_margins)		

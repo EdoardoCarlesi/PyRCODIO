@@ -10,46 +10,55 @@ from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
 from pygadgetreader import *
+from libcosmo.grid import *
 from config import *
 import time
 import pickle
-from libcosmo.grid import *
+import os.path
 
-#run_num='90'
-#run_num='91'
-#run_num='92'
-run_num='00'
+base_path='/home/eduardo/CLUES/DATA/'
+#sub_dir='TEST'
+sub_dir='CF3'
+extra_tag='CF3k_YH_v1'
 
-#base_dir='/home/eduardo/CLUES/DATA/CF2P5/512/70_00/'
-#base_dir='/home/eduardo/CLUES/DATA/128/CF2P5/'
-#base_dir='/home/eduardo/CLUES/DATA/TEST/RAND/'; extra_tag='_std'
-#base_dir='/home/eduardo/CLUES/DATA/TEST/cf2/'; extra_tag='_js'
-#base_dir='/home/eduardo/CLUES/DATA/TEST/400/256/cf2/'+run_num+'/'; extra_tag='_'+run_num+'_cf2'
-#base_dir='/home/eduardo/CLUES/DATA/TEST/400/256/CF2P5_sigv10/'+run_num+'/'; extra_tag='_'+run_num+'_sigv10'
-#base_dir='/home/eduardo/CLUES/DATA/TEST/400/256/CF2P5/'+run_num+'/'; extra_tag='_'+run_num+'_CF2P5'
-#base_dir='/home/eduardo/CLUES/DATA/TEST/400/256/Std/'+run_num+'/'; extra_tag='_'+run_num+'_Std'
-#base_dir='/home/eduardo/CLUES/DATA/CF3/500/256/CF3_YH_v0/'+run_num+'/'; extra_tag='_'+run_num+'_CF3'
-base_dir='/home/eduardo/CLUES/DATA/2048/00_06/'+run_num+'/'; extra_tag='_00_06_'+run_num
-#base_dir='/home/eduardo/CLUES/DATA/CF2YH/286393/'
-#base_dir='/home/eduardo/CLUES/DATA/CF2YH/288191/'
-#base_dir='/home/eduardo/CLUES/DATA/QL/'
-ahf_name='snapshot_054.AHF_halos'
-snap_name='snapshot_054'
-#snap_name='snapshot_019'
-#f_out='plot_'+snap_name+'_js.png'
-f_out='plot_'+snap_name+extra_tag+'.png'
+plot_slice = True
+find_clusters = False
 
-#box_size = 400.0e+3; plot_side = 200.0e+3; thickn = 5000.0; units = 'kpc'
-box_size = 100.0e+3; plot_side = 7.0e+3; thickn = 2500.0; units = 'kpc'
-#box_size = 500.0e+3; plot_side = 100.0e+3; thickn = 5000.0; units = 'kpc'
-#box_size = 100.0e+3; plot_side = 50.0e+3; thickn = 2500.0; units = 'kpc'
-#box_size = 100.0; plot_side = 50.0; thickn = 5.0
-nbins = 256
+ini_num=70
+end_num=71
+
+nbins = 450
 f_rescale = 1
 
-box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
-#all_halos = read_ahf(base_dir + ahf_name)
-#locate_clusters(all_halos, box_center)
+box = '400'; num = '256'
+box_size = 400.0e+3; plot_side = 100.0e+3; thickn = 5000.0; units = 'kpc'
+#box_size = 100.0; plot_side = 5.0; thickn = 2.5; units = 'Mpc'
+#box_size = 100.0e+3; plot_side = 7.0e+3; thickn = 2.5e+3; units = 'Mpc'
+#box_size = 500.0e+3; plot_side = 100.0e+3; thickn = 5000.0; units = 'kpc'
+#box_size = 500.0; plot_side = 100.0; thickn = 9.5; units = 'Mpc'
 
-plot_lv(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
+ahf_name='snapshot_054.AHF_halos'
+snap_name='snapshot_054'
+
+for run_num in range(ini_num, end_num):
+
+	f_out='plot_'+snap_name+'_'+extra_tag+'_'+str(run_num)+'_bins'+str(nbins)+'.png'
+
+	print 'N = ', run_num, ' - ', f_out
+
+	run_num=str(run_num)
+	base_dir=base_path+sub_dir+'/'+box+'/'+num+'/'+extra_tag+'/'+run_num+'/'
+
+	box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
+
+	if os.path.isfile(base_dir + ahf_name) and find_clusters == True:
+		print base_dir + ahf_name
+		all_halos = read_ahf(base_dir + ahf_name)
+		locate_clusters(all_halos, box_center)
+
+	if os.path.isfile(base_dir + snap_name + '.0') and plot_slice == True:
+		print base_dir + snap_name
+		plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
+
+
 

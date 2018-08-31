@@ -15,6 +15,16 @@ import time
 import pickle
 from libcosmo.grid import *
 
+f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+
+halos = read_ahf(f_ahf)
+
+
+for ih in range (0, len(halos)):
+	mass = halos[ih].m/1e+8
+	print  mass, ' ', halos[ih].vmax
+
+'''
 #fname = 'saved/dyn_stats_MW_00_06_01.pkl'
 #fname='saved/web_00_06_01.pkl'
 #filesub = open(fname, 'r')
@@ -40,7 +50,6 @@ for npts in range(3, 200):
 #print evs, perc
 
 
-'''
 vec = [0.0, 1.0, 0.0]
 
 (e, d, c) = random_triaxialities_and_angles(20, 1000, vec)

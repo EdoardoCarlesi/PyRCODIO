@@ -22,6 +22,7 @@ class Halo:
 	progenitors = []	# Here we store the IDs (and maybe other properties, too) of the progenitors of the halo, based on particles and dynamics
 	npart = 0
 	contam = 0.0	# level of contamination 
+	vmax = 0.0
 
 	# Gas & star properties
 	m_dm = 0.0
@@ -40,6 +41,7 @@ class Halo:
 		self.r = 0.0
 		self.nsub = 0
 		self.npart = 0
+		self.vmax = 0.0
 		self.subhalos = []
 		self.progenitors = []
 

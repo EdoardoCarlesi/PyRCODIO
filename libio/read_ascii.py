@@ -209,6 +209,7 @@ def read_ahf(file_name):
 			rvir = float(column[11])
 			nsub = int(column[2])
 			npart = int(column[4])
+			vmax = float(column[16])
 			angmom = [float(column[21]), float(column[22]), float(column[23])]
 			contam = float(column[38])
 				
@@ -221,6 +222,7 @@ def read_ahf(file_name):
 			#halo.ID = idn
 			halo.l = angmom
 			halo.contam = contam
+			halo.vmax = vmax
 			halos_ahf.append(halo)
 			count += 1
 

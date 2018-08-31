@@ -19,7 +19,7 @@ simuruns = simu_runs()
 # Which realisation
 this_simu = 0
 simu_init = 0
-simu_end = 10
+simu_end = 1
 
 # Number of subrun
 sub_init = 0
@@ -64,16 +64,16 @@ do_plots_mass_sub = False
 do_trajectories = False
 
 # Plot sub halo mass functions and anisotropies
-#do_sub_plots = True
-do_sub_plots = False
+do_sub_plots = True
+#do_sub_plots = False
 
 # Plot mass accretion functions
-#do_plot_mfs = True
-do_plot_mfs = False
+do_plot_mfs = True
+#do_plot_mfs = False
 
 # Save informations about subhalos at different steps
-#do_subs = True
-do_subs = False
+do_subs = True
+#do_subs = False
 
 # Compute the cosmic web at each LG position
 #do_vweb = True
@@ -84,8 +84,8 @@ do_vweb = False
 do_subs_web = False
 
 # Load the pkl files and plot some statistical properties
-do_satellite_anisotropy_plots = True
-#do_satellite_anisotropy_plots = False
+#do_satellite_anisotropy_plots = True
+do_satellite_anisotropy_plots = False
 
 # Use the collected data on subhalos to do some statistics
 #do_subs_stats = True
@@ -122,11 +122,13 @@ true_sub_end = sub_end
 if do_evolution == False:
 	i_sub = 0
 	sub_init = 0
-	sub_end = 0
+	sub_end = 1
 
 
 for this_simu in range(simu_init, simu_end):
 	simurun = simuruns[this_simu]
+
+	print 'Doing simulation N=', simurun
 
 	# Total mass functions of ALL subhaloes
 	mfmw_z0_x = []; 		mfmw_z0_y = []
@@ -283,8 +285,10 @@ for this_simu in range(simu_init, simu_end):
 			pickle.dump(subs_stats, f_subs)
 
 	# The loop on the subrun is over
+
 	# Plot all the subhalo mass function for a given LG run
 	if do_plot_mfs == True and i_sub == sub_end-1:
+		print 'Plotting mass functions...'
 
 		out_mwz0 = 'output/mf_' + simurun + '_' + lg_names[0] + '_mz0_subs.png'
 		out_m31z0 = 'output/mf_' + simurun + '_' + lg_names[1] + '_mz0_subs.png'

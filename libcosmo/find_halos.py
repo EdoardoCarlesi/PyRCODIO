@@ -173,6 +173,7 @@ def find_lg(halos, lgmod):
 
 
 def rate_lg_pair(lg1, lg2):
+
 	# Benchmark (obs.) quantities
 	rhalo0 = 500.	# kpc/h
 	vrad0 = -100.
@@ -255,7 +256,7 @@ def locate_clusters(ahf_all, box_center):
 	n_ahf = len(ahf_all)
 	coord_unit = box_center[0] + box_center[1] + box_center[2]
 
-	#hubble = 0.677
+	hubble = 0.677
 	hubble = 1.0
 	facMpc = 1000.
 
@@ -266,27 +267,27 @@ def locate_clusters(ahf_all, box_center):
 	cluster_name.append('Virgo')
 	cluster_pos.append([-4.67, 16.83, -0.87])
 
-	cluster_name.append('Coma (a)')
-	cluster_pos.append([0.47, 72.55, 10.38])
-	#cluster_pos.append([0.47, 100.55, 14.38])
+	#cluster_name.append('Coma (a)')
+	#cluster_pos.append([0.47, 72.55, 10.38])
+	#cluster_pos.append([0.47/hubble, 72.55/hubble, 10.38/hubble])
 
 	cluster_name.append('Coma (b)')
 	cluster_pos.append([-2.43, 68.58, -12.71])
 
-	cluster_name.append('Coma (c)')
-	cluster_pos.append([-4.27, 74.18, -7.67])
+	#cluster_name.append('Coma (c)')
+	#cluster_pos.append([-4.27, 74.18, -7.67])
 
-	cluster_name.append('Leo (a)')
-	cluster_pos.append([-2.41, 71.25, -10.75])
+	#cluster_name.append('Leo (a)')
+	#cluster_pos.append([-2.41, 71.25, -10.75])
 
-	cluster_name.append('Hercules (a)')
-	cluster_pos.append([19.28, 57.68, 71.93])
+	#cluster_name.append('Hercules (a)')
+	#cluster_pos.append([19.28, 57.68, 71.93])
 
-	cluster_name.append('Hercules (b)')
-	cluster_pos.append([17.49, 63.64, -59.70])
+	#cluster_name.append('Hercules (b)')
+	#cluster_pos.append([17.49, 63.64, -59.70])
 
-	cluster_name.append('Hercules (c)')
-	cluster_pos.append([15.49, 60.94, 74.25])
+	#cluster_name.append('Hercules (c)')
+	#cluster_pos.append([15.49, 60.94, 74.25])
 
 	cluster_name.append('Perseus (no h)')
 	cluster_pos.append([43.05, -16.89, -21.82])
@@ -294,11 +295,11 @@ def locate_clusters(ahf_all, box_center):
 	cluster_name.append('Perseus-Pisces (a)')
 	cluster_pos.append([50.05, -10.89, -12.82])
 
-	cluster_name.append('Perseus-Pisces (b)')
-	cluster_pos.append([90.05, -18.39, -15.37])
+	#cluster_name.append('Perseus-Pisces (b)')
+	#cluster_pos.append([90.05, -18.39, -15.37])
 
-	cluster_name.append('Perseus-Pisces (c)')
-	cluster_pos.append([88.74, -19.15, -19.68])
+	#cluster_name.append('Perseus-Pisces (c)')
+	#cluster_pos.append([88.74, -19.15, -19.68])
 
 	cluster_name.append('Perseus-Pisces (d)')
 	cluster_pos.append([53.39, -16.06, -5.15])
@@ -306,31 +307,39 @@ def locate_clusters(ahf_all, box_center):
 	cluster_name.append('Centaurus (a)')
 	cluster_pos.append([-34.69, 15.27, -7.77])
 
-	cluster_name.append('Centaurus (b)')
-	cluster_pos.append([-42.34, 25.11, 2.59])
+	#cluster_name.append('Centaurus (b)')
+	#cluster_pos.append([-42.34, 25.11, 2.59])
 
-	cluster_name.append('Hydra')
-	cluster_pos.append([-24.67, 21.12, -25.01])
+	#cluster_name.append('Hydra')
+	#cluster_pos.append([-24.67, 21.12, -25.01])
 
-	cluster_name.append('Pavo-Indus')
-	cluster_pos.append([-22.18, -77.19, 55.09])
+	#cluster_name.append('Pavo-Indus')
+	#cluster_pos.append([-22.18, -77.19, 55.09])
 
-	cluster_name.append('Shapley (a)')
-	cluster_pos.append([-39.98, 19.87, 3.63])
+	#cluster_name.append('Shapley (a)')
+	#cluster_pos.append([-39.98, 19.87, 3.63])
 
-	cluster_name.append('Shapley (b)')
-	cluster_pos.append([-91.88, 34.42, -17.64])
+	#cluster_name.append('Shapley (b)')
+	#cluster_pos.append([-91.88, 34.42, -17.64])
 
 	if coord_unit > 10000.:
-		n_cl = len(cluster_name)
+		print box_center
+	else:
+		print 'Rescaling box center units... '
+		for ix in range(0, 3):
+			box_center[ix] = box_center[ix] * facMpc
+	
 
-		for ic in range(0, n_cl):
-			for ix in range(0, 3):
-				cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
+	n_cl = len(cluster_name)
 
+	for ic in range(0, n_cl):
+		for ix in range(0, 3):
+			cluster_pos[ic][ix] = cluster_pos[ic][ix] * hubble * facMpc + box_center[ix]
 
-	cluster_r0 = 5000.0
-	cluster_m = 0.5e+13
+		#print cluster_pos[ic][:] 
+
+	cluster_r0 = 10000.0
+	cluster_m = 0.1e+14
 	
 	ahf_x = []
 	ahf_m = []
@@ -339,21 +348,24 @@ def locate_clusters(ahf_all, box_center):
 		m0 = cluster_m
 		x0 = [-1.0, -1.0, -1.0]
 		this_x = cluster_pos[ic]
-		d_center = distance(box_center, this_x)
-		cluster_r = cluster_r0 * (1. + 0.1 * (d_center / (2 * cluster_r0)))
-		clusters = find_halos_point(this_x, ahf_all, cluster_r)
 
+		d_center  = distance(box_center, this_x)
+		cluster_r = cluster_r0 #* (1. + 0.1 * (d_center / (2 * cluster_r0)))
+		clusters  = find_halos_point(this_x, ahf_all, cluster_r)
+
+		#print 'Found: ', len(clusters), ' around: ', this_x, cluster_name[ic]
 
 		for iv in range(0, len(clusters)):
 
 			if clusters[iv].m > m0:
 				m0 = clusters[iv].m
 				x0 = clusters[iv].x
-				
+				d0 = distance(this_x, x0)
+				print cluster_name[ic], ' ',  clusters[iv].m, clusters[iv].x, d_center/1000., d0/1000.
+		
 		cluster_dist.append(distance(cluster_pos[ic], x0))
 
-		print cluster_name[ic], cluster_dist[ic], m0#, x0[0] - box_center[0], x0[1] - box_center[1], x0[2] - box_center[2]
-
+		#print cluster_name[ic], cluster_dist[ic], m0#, x0[0] - box_center[0], x0[1] - box_center[1], x0[2] - box_center[2]
 
 		ahf_m.append(m0)
 		ahf_x.append(x0)
