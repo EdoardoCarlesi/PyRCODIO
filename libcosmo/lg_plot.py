@@ -781,6 +781,7 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 			mf_poisson(sqrt(mmed))
 
 
+	'''
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
 
 	plt.rc({'text.usetex': True})
@@ -794,6 +795,7 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	if n_mf > 1:
 		for im in range(0, n_mf):
 			axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+	'''
 
 	plt.tight_layout()
 	plt.savefig(f_out)

@@ -29,7 +29,8 @@ sub_end = 10
 snap_init = 0
 snap_end = 54
 
-base_path = '/home/eduardo/CLUES/PyRCODIO/'
+#base_path = '/home/eduardo/CLUES/PyRCODIO/'
+base_path = '/home/edoardo/CLUES/PyRCODIO/'
 outp_path = 'output/'
 save_path = 'saved/'
 
