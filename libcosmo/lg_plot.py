@@ -721,7 +721,8 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 #	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
 
 	n_bins = 20
-	y_bins = np.zeros((3, n_bins))
+	y_bins = [ [] for i in range(0, n_bins-1) ]
+	#y_bins = np.zeros((3, n_bins))
 
 	x_min = 1.e+15;	x_max = 1.e+7
 #	y_min = 10000.;	y_max = 1.0;
@@ -738,8 +739,46 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 
 	x_bins = np.logspace(x_min, x_max, num=n_bins)
 
+
 	#x_min = 5.e+8; 	x_max = 5.e+11
 	#y_min = 1; 	y_max = 50 #max_list(y_n)
+
+	for im in range(0, n_mf):
+		n_mm = len(x_m[im])
+		m_mm = len(y_m[im])
+
+		for jm in range(0, n_mm):
+			m0 = m_mm[jm]
+			y0 = n_mm[jm]
+			
+			for km in range(0, n_bins-1):
+				mbin0 = x_bins[km]
+				mbin1 = x_bins[km+1]
+
+				if m0 > mbin0 and m0 < mbin1:
+					y_bins[km].append(y0)
+
+	mf_poisson = []
+	mf_median = []
+	mf_max = []
+	mf_min = []
+	mass_bins = []
+
+	for km in range(0, n_bins-1):
+		mbin0 = x_bins[km]
+		mbin1 = x_bins[km+1]
+		mmed = 0.5 * (mbin0 + mbin1)
+
+		if len(y_bins[km] > 0):
+			nmax = np.max(y_bins[km])
+			nmin = np.min(y_bins[km])
+			nmed = np.median(y_bins[km])
+			mass_bins.append(mmed)
+
+			mf_median.append(nmed)			
+			mf_min.append(nmin)			
+			mf_max.append(nmax)			
+			mf_poisson(sqrt(mmed))
 
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))

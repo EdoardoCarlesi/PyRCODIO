@@ -154,7 +154,6 @@ for run_j in range(run_init, run_end):
 				file_sub_line += '\n ------------------------ \n'
 				file_sub_txt.write(file_sub_line)
 		
-			'''
 				(x_m, y_n) = subs1.mass_function()
 				x_mf1.append(x_m); 	y_mf1.append(y_n)
 
@@ -173,6 +172,7 @@ for run_j in range(run_init, run_end):
 					del x_mf1; 	del x_mf2
 					del y_mf1; 	del y_mf2
 					n_mf = 0
+			'''
 			# Compute halo evolution
 
 			'''
