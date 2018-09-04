@@ -919,25 +919,66 @@ def plot_mass_accretions(time, mahs, f_out):
 	
 	n_plots = len(mahs[:,0])
 	x_min = np.min(time); x_max = np.max(time)
-	y_min = np.min(mahs); y_max = np.max(mahs) * 1.85
+	#y_min = np.log10(np.min(mahs)); y_max = np.log10(np.max(mahs) * 1.5)
+	#y_min = np.min(mahs); y_max = np.max(mahs) * 1.5
+	y_min = np.min(1.e+9); y_max = np.max(mahs) * 1.5
 
 	if y_min < 1.e+5:
 		y_min = y_max / 200.
+
+	n_steps = len(time)
+
+	all_mahs = [[] for i in range(0, n_steps)]
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
 	plt.yscale('log')
 	axs.axis([x_min, x_max, y_min, y_max])
 
-	for iplot in range(0, n_plots):
-		mah = mahs[iplot]
-		axs.plot(time, mah, linewidth=lnw, color=col)
+	for istep in range(0, n_steps):
+		for iplot in range(0, n_plots):
+			this_mahs = mahs[iplot, istep]
+			#all_mahs[istep].append(np.log10(this_mahs))
+			all_mahs[istep].append(this_mahs)
 
+	med_mah = [[] for i in range(0, n_steps)]; 	
+	min_mah = [[] for i in range(0, n_steps)]; 	
+	max_mah = [[] for i in range(0, n_steps)]; 	
+
+	for istep in range(0, n_steps):
+		med_mah[istep] = np.percentile(all_mahs[istep], 50)
+		min_mah[istep] = np.percentile(all_mahs[istep], 100)
+		max_mah[istep] = np.percentile(all_mahs[istep], 0)
+
+	#plt.margins(axis_margins)		
+	#axs.set_xscale('log')
+	plt.rc({'text.usetex': True})
+	plt.xlabel('GYr')
+	plt.ylabel('M')
+	#axs.set_yscale('log')
+	axs.axis([x_min, x_max, y_min, y_max])
+	
+	#print mf_poisson[0]
+	#print mf_poisson[1]
+
+	#print med_mah
+
+	axs.plot(time, med_mah, color='black')
+	#axs.plot(mass_bins, min_mah[1], linewidth=4, dashes=[2, 5], color='black')
+	#axs.plot(mass_bins, mf_poisson[2], linewidth=4, dashes=[2, 5], color='black')
+	#axs.fill_between(time, min_mah, max_mah, facecolor='azure')
+	axs.fill_between(time, min_mah, max_mah, facecolor='grey')
+	
+	#for iplot in range(0, n_plots):
+		#mah = mahs[iplot]
+		#axs.plot(time, mah, linewidth=lnw, color=col)
+
+	plt.tight_layout()
 	plt.savefig(f_out)
 	plt.clf()
 	plt.cla()
-	plt.close(fig)
-	plt.gcf().show()
+	#plt.close(fig)
+	#plt.gcf().show()
 
 
 def plot_trajectory(all_x, all_y, label_x, label_y, f_out):

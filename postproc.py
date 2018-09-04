@@ -19,7 +19,7 @@ simuruns = simu_runs()
 # Which realisation
 this_simu = 0
 simu_init = 0
-simu_end = 1
+simu_end = 10
 
 # Number of subrun
 sub_init = 0
@@ -49,8 +49,8 @@ stepMyr = 0.25
 	SELECT WHAT KIND OF ANALYSIS NEEDS TO BE DONE
 '''
 # Plot mass accretion histories and evolution of satellite anisotropy
-#do_evolution = True
-do_evolution = False
+do_evolution = True
+#do_evolution = False
 
 # General combined statistics of all LG realisations (gathers data on mass/nsub bins etc.)
 #do_all_lgs = True
@@ -73,8 +73,8 @@ do_plot_mfs = True
 #do_plot_mfs = False
 
 # Save informations about subhalos at different steps
-do_subs = True
-#do_subs = False
+#do_subs = True
+do_subs = False
 
 # Compute the cosmic web at each LG position
 #do_vweb = True
@@ -123,7 +123,7 @@ true_sub_end = sub_end
 if do_evolution == False:
 	i_sub = 0
 	sub_init = 0
-	sub_end = 1
+	sub_end = 0
 
 
 for this_simu in range(simu_init, simu_end):
@@ -315,11 +315,11 @@ for this_simu in range(simu_init, simu_end):
 			out_fname = 'output/anisotropy_' + simurun + '_' + lg_names[i_lg] + '_' + subrun + '_' + this_run + '.png'
 			plot_anisotropies(anisotropies, i_lg, sub_end-sub_skip, snap_end, out_fname)
 
-		print 'Plotting mass accretions...'
 		out_fname = 'output/mah_' + simurun + '_' + lg_names[0] + '.png'
 		plot_mass_accretions(time, mass_histories[0, :, :], out_fname)
 		out_fname = 'output/mah_' + simurun + '_' + lg_names[1] + '.png'
 		plot_mass_accretions(time, mass_histories[1, :, :], out_fname)
+		print 'Plotting mass accretions: ', out_fname
 
 '''
 	This section computes some GLOBAL statistics, i.e. taking into account all of the LG simulations
@@ -497,6 +497,8 @@ if do_plots_mass_sub == True:
 angles_fname = 'saved/all_angles.pkl'
 
 if do_vweb == True:
+	print 'Cosmic web computation'
+
 #	read_web_ascii = True
 	read_web_ascii = False
 
@@ -511,7 +513,7 @@ if do_vweb == True:
 		this_evals = []
 
 		#TODO look for the XX_XX modes
-		for i_sub in range(sub_init, sub_end):
+		for i_sub in range(true_sub_init, true_sub_end):
 			
 			this_sub = '%02d' % i_sub
 			lg_fname = 'saved/lg_' + main_run + '_' + this_sub + '.pkl'
@@ -560,11 +562,14 @@ if do_vweb == True:
 				virgo_x = [48000.0, 61000.0, 49000.0]
 				to_virgo = vec_subt(virgo_x, this_com)
 				virgo_n = vec_norm(to_virgo)
-				
+				#print evals[:]
+				#print vec_module(to_virgo)
 				this_evals.append(evals)
 				e3 = evecs[2, :]; ang3 = abs(angle(virgo_n, e3)); 
 				this_e3_angle.append(ang3)
 
+					
+#		print this_evals[0]
 		ang_med = np.median(this_e3_angle)
 		ang_std = np.std(this_e3_angle)
 		all_e3_angles[0, i_simu] = ang_med
