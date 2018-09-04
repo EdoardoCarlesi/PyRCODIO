@@ -712,7 +712,7 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 	plt.close()
 
 
-def plot_massfunctions(x_m, y_n, n_mf, f_out):
+def plot_massfunctions(x_m, y_m, n_mf, f_out):
 	size_x = 20
 	size_y = 20
 	lnw = 1.0
@@ -725,32 +725,49 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 	#y_bins = np.zeros((3, n_bins))
 
 	x_min = 1.e+15;	x_max = 1.e+7
-#	y_min = 10000.;	y_max = 1.0;
+	y_min = 10000.;	y_max = 1.0;
 
 	for im in range(0, n_mf):
-		x_max0 = max(x_m[:])
-		x_min0 = min(x_m[:])
+
+		try:
+			x_max0 = np.max(x_m[im])
+			x_min0 = np.min(x_m[im])
+			y_max0 = np.max(y_m[im])
+			y_min0 = np.min(y_m[im])
 		
-		if x_max0 > x_max:
-			x_max = x_max0		
+			if x_max0 > x_max:
+				x_max = x_max0		
 	
-		if x_min0 < x_min:
-			x_min = x_min0		
+			if x_min0 < x_min:
+				x_min = x_min0		
+	
+			if y_max0 > y_max:
+				y_max = y_max0		
+	
+			if y_min0 < y_min:
+				y_min = y_min0		
 
-	x_bins = np.logspace(x_min, x_max, num=n_bins)
+		except:
+			porco = 0.0
 
+	#print x_min/1.e+9, ' ', x_max/1.e+9, ' ', y_min, ' ', y_max
+
+	x_bins = np.logspace(np.log10(x_min * 0.99), np.log10(x_max * 1.01), num=n_bins, endpoint=True)
+	#x_bins = np.logspace(7, 10.0, num=n_bins, dtype=float, base=10.0, endpoint=True)
+
+	#print x_bins
 
 	#x_min = 5.e+8; 	x_max = 5.e+11
 	#y_min = 1; 	y_max = 50 #max_list(y_n)
 
 	for im in range(0, n_mf):
 		n_mm = len(x_m[im])
-		m_mm = len(y_m[im])
+		#m_mm = len(y_m[im])
 
 		for jm in range(0, n_mm):
-			m0 = m_mm[jm]
-			y0 = n_mm[jm]
-			
+			m0 = x_m[im][jm]
+			y0 = y_m[im][jm]
+				
 			for km in range(0, n_bins-1):
 				mbin0 = x_bins[km]
 				mbin1 = x_bins[km+1]
@@ -758,50 +775,119 @@ def plot_massfunctions(x_m, y_n, n_mf, f_out):
 				if m0 > mbin0 and m0 < mbin1:
 					y_bins[km].append(y0)
 
-	mf_poisson = []
+			# At the last step set all the remaining bins above m0 to zero
+			if jm == n_mm-1:						
+					
+				for km in range(0, n_bins-1):
+					mbin0 = x_bins[km]
+					mbin1 = x_bins[km+1]
+
+					if m0 > mbin0 and m0 < mbin1:
+						y_bins[km].append(0.0)
+
+	
+					
+		#if x_m[im][n_mm-1] < 0.7e+11
+		#		y_bins[].append(0)				
+
+
+
+	mf_poisson = [ [] for i in range(0, 3)]
 	mf_median = []
 	mf_max = []
 	mf_min = []
 	mass_bins = []
+	
 
 	for km in range(0, n_bins-1):
 		mbin0 = x_bins[km]
 		mbin1 = x_bins[km+1]
-		mmed = 0.5 * (mbin0 + mbin1)
+		mmed0 = 0.5 * (mbin0 + mbin1)
 
-		if len(y_bins[km] > 0):
-			nmax = np.max(y_bins[km])
-			nmin = np.min(y_bins[km])
-			nmed = np.median(y_bins[km])
+		if km == n_bins-2:
+			mmed0 = mbin0
+
+		if mbin0 > 3.e+10:
+			n_thresh = 0
+		else:
+			n_thresh = 3
+
+		if len(y_bins[km]) > n_thresh:
+
+			if mbin0 > 5.e+10:
+				nmax0 = np.percentile(y_bins[km], 100)
+				nmin0 = np.percentile(y_bins[km], 0)
+				nmed0 = np.mean(y_bins[km])
+				#nmed0 = np.median(y_bins[km]+1)
+			else:
+				nmax0 = np.percentile(y_bins[km], 80)
+				nmin0 = np.percentile(y_bins[km], 20)
+				nmed0 = np.mean(y_bins[km])
+
+			'''
+			plotLog10 = True
+
+			if plotLog10 == True:
+				#nmax = np.log10(nmax0)
+				#nmin = np.log10(nmin0)
+				#nmed = np.log10(nmed0)
+				#mmed = np.log10(mmed0)
+				#y_max = np.log10(y_max)
+				#y_min = np.log10(y_min)
+
+			else:
+			'''
+
+			nmax = nmax0+1
+			nmin = nmin0+1
+			nmed = nmed0+1
+			mmed = np.log10(mmed0)
+			#mmed = mmed0
+			
+			#print x_max, ' ', x_min
+
 			mass_bins.append(mmed)
-
 			mf_median.append(nmed)			
 			mf_min.append(nmin)			
 			mf_max.append(nmax)			
-			mf_poisson(sqrt(mmed))
+			mf_poisson[0].append(np.sqrt(nmed))
+			mf_poisson[1].append(nmed + np.sqrt(nmed))
+			mf_poisson[2].append(nmed - np.sqrt(nmed))
 
+			#print mmed, ' ', nmin, ' ', nmed, ' ', nmax, ' ', np.sqrt(nmed)
 
-	'''
+	x_max = np.log10(x_max)
+	x_min = np.log10(x_min)
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
 
 	plt.rc({'text.usetex': True})
-	plt.margins(axis_margins)		
+	#plt.margins(axis_margins)		
 	plt.xlabel('$M_{\odot}$')
-	plt.ylabel('N')
-	axs.set_xscale('log')
+	plt.ylabel('log_10(N+1)')
+	#axs.set_xscale('log')
 	axs.set_yscale('log')
 	axs.axis([x_min, x_max, y_min, y_max])
 	
-	if n_mf > 1:
-		for im in range(0, n_mf):
-			axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
-	'''
+	#print mf_poisson[0]
+	#print mf_poisson[1]
+
+	axs.plot(mass_bins, mf_median)
+	axs.plot(mass_bins, mf_poisson[1], linewidth=4, dashes=[2, 5], color='black')
+	axs.plot(mass_bins, mf_poisson[2], linewidth=4, dashes=[2, 5], color='black')
+	axs.fill_between(mass_bins, mf_min, mf_max, facecolor='azure')
+	#print mf_poisson[0]
+
+	#if n_mf > 1:
+	#	for im in range(0, n_mf):
+	#		axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
 
 	plt.tight_layout()
 	plt.savefig(f_out)
 	plt.clf()
 	plt.cla()
 	plt.close()
+	'''
+	'''
 
 
 
