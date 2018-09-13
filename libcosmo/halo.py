@@ -636,6 +636,15 @@ class LocalGroup:
 	def rating(self):
 		self.rating = fh.rate_lg_pair(self.LG1, self.LG2)
 
+	def geo_com(self):
+		geo_com = np.zeros((3))
+
+		for i in range(0, 3):
+			geo_com[i] = 0.5 * (self.LG1.x[i] + self.LG2.x[i])
+	
+		self.com = geo_com
+		return self.com 
+
 	def get_com(self):
 		self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
 		return self.com 

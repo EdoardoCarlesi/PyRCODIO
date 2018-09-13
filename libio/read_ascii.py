@@ -227,7 +227,7 @@ def read_ahf(file_name):
 			count += 1
 
 	n_lines = count
-	print "Read %s with a total of %d lines" % (file_name, n_lines)
+	#print "Read %s with a total of %d lines" % (file_name, n_lines)
 
 	return halos_ahf
 

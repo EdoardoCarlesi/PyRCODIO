@@ -712,7 +712,7 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 	plt.close()
 
 
-def plot_massfunctions(x_m, y_m, n_mf, f_out):
+def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 	size_x = 20
 	size_y = 20
 	lnw = 1.0
@@ -720,7 +720,7 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out):
 	axis_margins = 2	
 #	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
 
-	n_bins = 20
+	#n_bins = 15
 	y_bins = [ [] for i in range(0, n_bins-1) ]
 	#y_bins = np.zeros((3, n_bins))
 
@@ -750,6 +750,7 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out):
 		except:
 			porco = 0.0
 
+	y_min = 0.0
 	#print x_min/1.e+9, ' ', x_max/1.e+9, ' ', y_min, ' ', y_max
 
 	x_bins = np.logspace(np.log10(x_min * 0.99), np.log10(x_max * 1.01), num=n_bins, endpoint=True)
@@ -811,36 +812,22 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out):
 			n_thresh = 0
 		else:
 			n_thresh = 3
-
+		
 		if len(y_bins[km]) > n_thresh:
 
-			if mbin0 > 5.e+10:
-				nmax0 = np.percentile(y_bins[km], 100)
-				nmin0 = np.percentile(y_bins[km], 0)
-				nmed0 = np.mean(y_bins[km])
-				#nmed0 = np.median(y_bins[km]+1)
-			else:
-				nmax0 = np.percentile(y_bins[km], 80)
-				nmin0 = np.percentile(y_bins[km], 20)
-				nmed0 = np.mean(y_bins[km])
+			#if mbin0 > 5.e+10:
+			#	nmax0 = np.percentile(y_bins[km], 25)
+			#	nmin0 = np.percentile(y_bins[km], 75)
+			#	nmed0 = np.mean(y_bins[km])
+			#	nmed0 = np.median(y_bins[km]+1)
+			#else:
+			nmax0 = np.percentile(y_bins[km], 80)
+			nmin0 = np.percentile(y_bins[km], 20)
+			nmed0 = np.mean(y_bins[km])
 
-			'''
-			plotLog10 = True
-
-			if plotLog10 == True:
-				#nmax = np.log10(nmax0)
-				#nmin = np.log10(nmin0)
-				#nmed = np.log10(nmed0)
-				#mmed = np.log10(mmed0)
-				#y_max = np.log10(y_max)
-				#y_min = np.log10(y_min)
-
-			else:
-			'''
-
-			nmax = nmax0+1
-			nmin = nmin0+1
-			nmed = nmed0+1
+			nmax = nmax0
+			nmin = nmin0
+			nmed = nmed0
 			mmed = np.log10(mmed0)
 			#mmed = mmed0
 			
@@ -854,6 +841,10 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out):
 			mf_poisson[1].append(nmed + np.sqrt(nmed))
 			mf_poisson[2].append(nmed - np.sqrt(nmed))
 
+
+	#print mf_max
+	#print mf_poisson
+	y_max = max(mf_poisson[1])
 			#print mmed, ' ', nmin, ' ', nmed, ' ', nmax, ' ', np.sqrt(nmed)
 
 	x_max = np.log10(x_max)
@@ -862,19 +853,26 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out):
 
 	plt.rc({'text.usetex': True})
 	#plt.margins(axis_margins)		
-	plt.xlabel('$M_{\odot}$')
-	plt.ylabel('log_10(N+1)')
+	plt.xlabel('$log_{10}M_{\odot} h^{-1}$')
+	#plt.ylabel('log_10(N+1)')
+	plt.ylabel('$N(>M)$')
 	#axs.set_xscale('log')
-	axs.set_yscale('log')
+	#axs.set_yscale('log')
 	axs.axis([x_min, x_max, y_min, y_max])
 	
 	#print mf_poisson[0]
 	#print mf_poisson[1]
 
-	axs.plot(mass_bins, mf_median)
-	axs.plot(mass_bins, mf_poisson[1], linewidth=4, dashes=[2, 5], color='black')
-	axs.plot(mass_bins, mf_poisson[2], linewidth=4, dashes=[2, 5], color='black')
-	axs.fill_between(mass_bins, mf_min, mf_max, facecolor='azure')
+	
+	#usecolor='blue'
+	#usecolor='red'
+	usecolor='grey'
+	pois_col='red'
+
+	axs.plot(mass_bins, mf_median, linewidth=3, color='black')
+	axs.plot(mass_bins, mf_poisson[1], linewidth=2, dashes=[2, 5], color=pois_col)
+	axs.plot(mass_bins, mf_poisson[2], linewidth=2, dashes=[2, 5], color=pois_col)
+	axs.fill_between(mass_bins, mf_min, mf_max, facecolor=usecolor)
 	#print mf_poisson[0]
 
 	#if n_mf > 1:
@@ -886,8 +884,8 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out):
 	plt.clf()
 	plt.cla()
 	plt.close()
-	'''
-	'''
+
+
 
 
 
