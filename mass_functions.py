@@ -104,8 +104,8 @@ for i_simu in range(sub_ini, sub_end):
 			this_mt = this_lg.m_t()
 
 			com_lg = center_of_mass([1.0, 1.0], [main[0].halo[0].x, main[1].halo[0].x])
-			r_search = main[0].halo[0].r + main[1].halo[0].r + main[0].halo[0].distance(main[1].halo[0].x)
-		
+			r_search = main[0].halo[0].r + main[1].halo[0].r + main[0].halo[0].distance(main[1].halo[0].x) #+ 250.00
+
 			# This is a loop on all the other haloes stored at z=0
 			for i_main in range(n_lg, n_main):
 				this_main = main[i_main]
@@ -155,7 +155,7 @@ for i_simu in range(sub_ini, sub_end):
 	f_m31max = simu + '_mf_max_M31.png'
 	plot_massfunctions(mfm31_max_x, mfm31_max_y, n_simu, f_m31max, n_bins)
 
-	n_bins = 30
+	n_bins = 40
 	f_lgmax = simu + '_mf_max_LG.png'
 	plot_massfunctions(mflg_max_x, mflg_max_y, n_simu, f_lgmax, n_bins)
 

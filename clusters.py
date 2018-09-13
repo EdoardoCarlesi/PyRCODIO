@@ -21,13 +21,13 @@ base_path='/home/eduardo/CLUES/DATA/'
 sub_dir='SIMU_CF3'
 extra_tag='CF3k_YH_v1'
 
-plot_slice = True
-#plot_slice = False
-find_clusters = False
-#find_clusters = True
+#plot_slice = True
+plot_slice = False
+#find_clusters = False
+find_clusters = True
 
 ini_num=70
-end_num=75
+end_num=90
 
 nbins = 450
 f_rescale = 1
@@ -43,22 +43,24 @@ plot_side = 100.0e+3; thickn = 5000.0; units = 'kpc'
 ahf_name='snapshot_054.AHF_halos'
 snap_name='snapshot_054'
 
+print '# Run  M(1.e+14)  SGx, SGy, SGz	 Vx, Vy, Vz  Lx, Ly, Lz '
+
 for run_num in range(ini_num, end_num):
 
 	f_out='plot_'+snap_name+'_'+extra_tag+'_'+str(run_num)+'_bins'+str(nbins)+'.png'
 
 	#print 'N = ', run_num, ' - ', f_out
-	print ' ---- ', run_num, ' ----- '
+	#print ' ---- ', run_num, ' ----- '
 
 	run_num=str(run_num)
 	base_dir=base_path+sub_dir+'/'+box+'/'+num+'/'+extra_tag+'/'+run_num+'/'
 
 	box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
-
+	
 	if os.path.isfile(base_dir + ahf_name) and find_clusters == True:
 		#print base_dir + ahf_name
 		all_halos = read_ahf(base_dir + ahf_name)
-		locate_clusters(all_halos, box_center)
+		locate_clusters(all_halos, box_center, run_num)
 
 	if os.path.isfile(base_dir + snap_name + '.0') and plot_slice == True:
 		print base_dir + snap_name

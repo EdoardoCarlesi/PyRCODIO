@@ -791,14 +791,14 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 		#if x_m[im][n_mm-1] < 0.7e+11
 		#		y_bins[].append(0)				
 
-
-
 	mf_poisson = [ [] for i in range(0, 3)]
 	mf_median = []
 	mf_max = []
 	mf_min = []
 	mass_bins = []
-	
+	nmedStep = 0
+	nminStep = 0
+	nmaxStep = 0
 
 	for km in range(0, n_bins-1):
 		mbin0 = x_bins[km]
@@ -808,30 +808,40 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 		if km == n_bins-2:
 			mmed0 = mbin0
 
-		if mbin0 > 3.e+10:
+		if mbin0 > 1.e+10:
 			n_thresh = 0
 		else:
 			n_thresh = 3
 		
 		if len(y_bins[km]) > n_thresh:
-
-			#if mbin0 > 5.e+10:
-			#	nmax0 = np.percentile(y_bins[km], 25)
-			#	nmin0 = np.percentile(y_bins[km], 75)
-			#	nmed0 = np.mean(y_bins[km])
-			#	nmed0 = np.median(y_bins[km]+1)
-			#else:
 			nmax0 = np.percentile(y_bins[km], 80)
 			nmin0 = np.percentile(y_bins[km], 20)
 			nmed0 = np.mean(y_bins[km])
+
+			if km == 0:
+				nmedStep = nmed0
+				nmaxStep = nmax0
+				nminStep = nmin0
+			else:
+				if nmed0 > nmedStep:
+					nmed0 = nmedStep
+				else:
+					nmedStep = nmed0
+
+				if nmin0 > nminStep:
+					nmin0 = nminStep
+				else:
+					nminStep = nmin0
+
+				if nmax0 > nmaxStep:
+					nmax0 = nmaxStep
+				else:
+					nmaxStep = nmax0
 
 			nmax = nmax0
 			nmin = nmin0
 			nmed = nmed0
 			mmed = np.log10(mmed0)
-			#mmed = mmed0
-			
-			#print x_max, ' ', x_min
 
 			mass_bins.append(mmed)
 			mf_median.append(nmed)			
@@ -841,28 +851,18 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 			mf_poisson[1].append(nmed + np.sqrt(nmed))
 			mf_poisson[2].append(nmed - np.sqrt(nmed))
 
-
-	#print mf_max
-	#print mf_poisson
 	y_max = max(mf_poisson[1])
-			#print mmed, ' ', nmin, ' ', nmed, ' ', nmax, ' ', np.sqrt(nmed)
-
 	x_max = np.log10(x_max)
 	x_min = np.log10(x_min)
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
 
 	plt.rc({'text.usetex': True})
-	#plt.margins(axis_margins)		
 	plt.xlabel('$log_{10}M_{\odot} h^{-1}$')
-	#plt.ylabel('log_10(N+1)')
-	plt.ylabel('$N(>M)$')
-	#axs.set_xscale('log')
-	#axs.set_yscale('log')
-	axs.axis([x_min, x_max, y_min, y_max])
-	
-	#print mf_poisson[0]
-	#print mf_poisson[1]
 
+	#plt.ylabel('$N(>M)$')
+	axs.set_yscale('log'); plt.ylabel('$log_{10}N(>M)$'); y_min=1.0
+
+	axs.axis([x_min, x_max, y_min, y_max])
 	
 	#usecolor='blue'
 	#usecolor='red'
@@ -873,8 +873,8 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 	axs.plot(mass_bins, mf_poisson[1], linewidth=2, dashes=[2, 5], color=pois_col)
 	axs.plot(mass_bins, mf_poisson[2], linewidth=2, dashes=[2, 5], color=pois_col)
 	axs.fill_between(mass_bins, mf_min, mf_max, facecolor=usecolor)
-	#print mf_poisson[0]
 
+	#print mf_poisson[0]
 	#if n_mf > 1:
 	#	for im in range(0, n_mf):
 	#		axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
@@ -943,10 +943,11 @@ def plot_mass_accretions(time, mahs, f_out):
 	min_mah = [[] for i in range(0, n_steps)]; 	
 	max_mah = [[] for i in range(0, n_steps)]; 	
 
+	
 	for istep in range(0, n_steps):
 		med_mah[istep] = np.percentile(all_mahs[istep], 50)
-		min_mah[istep] = np.percentile(all_mahs[istep], 100)
-		max_mah[istep] = np.percentile(all_mahs[istep], 0)
+		min_mah[istep] = np.percentile(all_mahs[istep], 80)
+		max_mah[istep] = np.percentile(all_mahs[istep], 20)
 
 	#plt.margins(axis_margins)		
 	#axs.set_xscale('log')

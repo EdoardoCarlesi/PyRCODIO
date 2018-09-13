@@ -251,7 +251,7 @@ def locate_virgo(ahf_all):
 	return (x0, m0, mtotVirgo)
 
 
-def locate_clusters(ahf_all, box_center):
+def locate_clusters(ahf_all, box_center, runcode):
 	
 	n_ahf = len(ahf_all)
 	coord_unit = box_center[0] + box_center[1] + box_center[2]
@@ -289,12 +289,12 @@ def locate_clusters(ahf_all, box_center):
 	#cluster_name.append('Hercules (c)')
 	#cluster_pos.append([15.49, 60.94, 74.25])
 
-	cluster_name.append('Perseus')
+	#cluster_name.append('Perseus')
 	#cluster_pos.append([43.05, -16.89, -21.82])
 
 	#cluster_name.append('Perseus-Pisces (a)')
 	#cluster_name.append('Perseus(a)')
-	cluster_pos.append([50.05, -10.89, -12.82])
+	#cluster_pos.append([50.05, -10.89, -12.82])
 
 	#cluster_name.append('Perseus-Pisces (b)')
 	#cluster_pos.append([90.05, -18.39, -15.37])
@@ -306,8 +306,8 @@ def locate_clusters(ahf_all, box_center):
 	#cluster_name.append('Perseus(d)')
 	#cluster_pos.append([53.39, -16.06, -5.15])
 
-	#cluster_name.append('Centaurus (a)')
-	#cluster_pos.append([-34.69, 15.27, -7.77])
+	cluster_name.append('Centaurus (a)')
+	cluster_pos.append([-34.69, 15.27, -7.77])
 
 	#cluster_name.append('Centaurus (b)')
 	#cluster_pos.append([-42.34, 25.11, 2.59])
@@ -341,7 +341,7 @@ def locate_clusters(ahf_all, box_center):
 
 		#print cluster_pos[ic][:] 
 
-	cluster_r0 = 15000.0
+	cluster_r0 = 10000.0
 	cluster_m = 0.8e+14
 	
 	ahf_x = []
@@ -367,9 +367,11 @@ def locate_clusters(ahf_all, box_center):
 				x0 = clusters[iv].x
 				d0 = distance(this_x, x0)
 				#print cluster_name[ic], ' ',  clusters[iv].m, clusters[iv].x, d_center/1000., d0/1000.
-				print cluster_name[ic], ' ',  clusters[iv].m/1.e+14, \
-				(clusters[iv].x[0]-box_center[0])/facMpc,(clusters[iv].x[1]-box_center[1])/facMpc, (clusters[iv].x[2]-box_center[2])/facMpc,\
-				clusters[iv].v, clusters[iv].l
+				#print cluster_name[ic], ' ',  clusters[iv].m/1.e+14, \
+				print str(runcode), ' ', clusters[iv].m/1.e+14, \
+				(clusters[iv].x[0]-box_center[0])/facMpc,(clusters[iv].x[1]-box_center[1])/facMpc, (clusters[iv].x[2]-box_center[2])/facMpc, \
+				clusters[iv].v[0], clusters[iv].v[1], clusters[iv].v[2],  \
+				clusters[iv].l[0], clusters[iv].l[1], clusters[iv].l[2]#, '\n'
 					#d_center/facMpc, d0/facMpc, clusters[iv].v, clusters[iv].l
 	
 		cluster_dist.append(distance(cluster_pos[ic], x0))

@@ -132,10 +132,6 @@ for this_simu in range(simu_init, simu_end):
 	print 'Doing simulation N=', simurun
 
 	# Total mass functions of ALL subhaloes
-	mfmw_z0_x = []; 		mfmw_z0_y = []
-	mfmw_max_x = []; 		mfmw_max_y = []
-	mfm31_z0_x = []; 		mfm31_z0_y = []
-	mfm31_max_x = []; 		mfm31_max_y = []
 	n_simu = 0; 			sub_skip = 0
 	
 	for i_sub in range(sub_init, sub_end):
@@ -241,21 +237,9 @@ for this_simu in range(simu_init, simu_end):
 							subs_stats[i_lg].append(sub_stat)
 							dyns_stats[i_lg].append(this_xt)
 
-			# End of the loop on i_main, still looping on i_lg
-			(this_mfz0_x, this_mfz0_y) = mass_function(masses_z0)
-			(this_mfmax_x, this_mfmax_y) = mass_function(masses_max)
-	
 			'''	
 				Save informations on subhalo positions through time
 			'''
-			if i_lg == 0:
-				mfmw_z0_x.append(this_mfz0_x); 		mfmw_z0_y.append(this_mfz0_y) 
-				mfmw_max_x.append(this_mfmax_x); 	mfmw_max_y.append(this_mfmax_y) 
-
-			elif i_lg == 1:
-				mfm31_z0_x.append(this_mfz0_x); 	mfm31_z0_y.append(this_mfz0_y) 
-				mfm31_max_x.append(this_mfmax_x); 	mfm31_max_y.append(this_mfmax_y) 
-
 			if do_trajectories == True:
 				file_trajectory = outp_path + 'trajectories_lg' + this_run + '_' + simurun + '_' + subrun + '.png'
 				plot_trajectory(subs_xt, subs_yt, 'x', 'y', file_trajectory)
@@ -290,17 +274,6 @@ for this_simu in range(simu_init, simu_end):
 	# Plot all the subhalo mass function for a given LG run
 	if do_plot_mfs == True and i_sub == sub_end-1:
 		print 'Plotting mass functions...'
-
-		out_mwz0 = 'output/mf_' + simurun + '_' + lg_names[0] + '_mz0_subs.png'
-		out_m31z0 = 'output/mf_' + simurun + '_' + lg_names[1] + '_mz0_subs.png'
-		out_mwmax = 'output/mf_' + simurun + '_' + lg_names[0] + '_mmax_subs.png'
-		out_m31max = 'output/mf_' + simurun + '_' + lg_names[1] + '_mmax_subs.png'
-	
-		plot_massfunctions(mfmw_z0_x, mfmw_z0_y, n_simu, out_mwz0)
-		plot_massfunctions(mfm31_z0_x, mfm31_z0_y, n_simu, out_m31z0)
-		plot_massfunctions(mfmw_max_x, mfmw_max_y, n_simu, out_mwmax)
-		plot_massfunctions(mfm31_max_x, mfm31_max_y, n_simu, out_m31max)
-	
 		fout_mwz0 = 'saved/stats_' + simurun + '_' + lg_names[0] + '_mz0_subs.pkl'
 		fout_m31z0 = 'saved/stats_' + simurun + '_' + lg_names[1] + '_mz0_subs.pkl'
 		fout_mwmax = 'saved/stats_' + simurun + '_' + lg_names[0] + '_mmax_subs.pkl'
