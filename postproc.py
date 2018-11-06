@@ -49,28 +49,28 @@ stepMyr = 0.25
 	SELECT WHAT KIND OF ANALYSIS NEEDS TO BE DONE
 '''
 # Plot mass accretion histories and evolution of satellite anisotropy
-do_evolution = True
-#do_evolution = False
+#do_evolution = True
+do_evolution = False
 
 # General combined statistics of all LG realisations (gathers data on mass/nsub bins etc.)
-#do_all_lgs = True
-do_all_lgs = False
+do_all_lgs = True
+#do_all_lgs = False
 
 # Do plots of the mass - subhalo scatter for MW and M31
-#do_plots_mass_sub = True
-do_plots_mass_sub = False
+do_plots_mass_sub = True
+#do_plots_mass_sub = False
 
 # Subhalo trajectories
 #do_trajectories = True
 do_trajectories = False
 
 # Plot sub halo mass functions and anisotropies
-do_sub_plots = True
-#do_sub_plots = False
+#do_sub_plots = True
+do_sub_plots = False
 
 # Plot mass accretion functions
-do_plot_mfs = True
-#do_plot_mfs = False
+#do_plot_mfs = True
+do_plot_mfs = False
 
 # Save informations about subhalos at different steps
 #do_subs = True

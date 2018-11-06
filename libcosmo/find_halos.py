@@ -264,11 +264,12 @@ def locate_clusters(ahf_all, box_center, runcode):
 	cluster_pos = []
 	cluster_dist = []
 
-	#cluster_name.append('Virgo')
-	#cluster_pos.append([-4.67, 16.83, -0.87])
+	cluster_name.append('Virgo')
+	cluster_pos.append([-4.67, 16.83, -0.87])
 
 	#cluster_name.append('Coma (a)')
-	#cluster_pos.append([0.47, 72.55, 10.38])
+	cluster_name.append('Coma')
+	cluster_pos.append([0.47, 72.55, 10.38])
 	#cluster_pos.append([0.47/hubble, 72.55/hubble, 10.38/hubble])
 
 	#cluster_name.append('Coma (b)')
@@ -289,8 +290,8 @@ def locate_clusters(ahf_all, box_center, runcode):
 	#cluster_name.append('Hercules (c)')
 	#cluster_pos.append([15.49, 60.94, 74.25])
 
-	#cluster_name.append('Perseus')
-	#cluster_pos.append([43.05, -16.89, -21.82])
+	cluster_name.append('Perseus')
+	cluster_pos.append([43.05, -16.89, -21.82])
 
 	#cluster_name.append('Perseus-Pisces (a)')
 	#cluster_name.append('Perseus(a)')
@@ -306,7 +307,8 @@ def locate_clusters(ahf_all, box_center, runcode):
 	#cluster_name.append('Perseus(d)')
 	#cluster_pos.append([53.39, -16.06, -5.15])
 
-	cluster_name.append('Centaurus (a)')
+	#cluster_name.append('Centaurus (a)')
+	cluster_name.append('Centaurus')
 	cluster_pos.append([-34.69, 15.27, -7.77])
 
 	#cluster_name.append('Centaurus (b)')
@@ -368,7 +370,7 @@ def locate_clusters(ahf_all, box_center, runcode):
 				d0 = distance(this_x, x0)
 				#print cluster_name[ic], ' ',  clusters[iv].m, clusters[iv].x, d_center/1000., d0/1000.
 				#print cluster_name[ic], ' ',  clusters[iv].m/1.e+14, \
-				print str(runcode), ' ', clusters[iv].m/1.e+14, \
+				print str(runcode), ' ', cluster_name[ic], ' ', clusters[iv].m/1.e+14, \
 				(clusters[iv].x[0]-box_center[0])/facMpc,(clusters[iv].x[1]-box_center[1])/facMpc, (clusters[iv].x[2]-box_center[2])/facMpc, \
 				clusters[iv].v[0], clusters[iv].v[1], clusters[iv].v[2],  \
 				clusters[iv].l[0], clusters[iv].l[1], clusters[iv].l[2]#, '\n'

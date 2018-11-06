@@ -18,8 +18,8 @@ import os.path
 
 base_path='/home/eduardo/CLUES/DATA/'
 
-ini_num=6
-end_num=10
+ini_num=0
+end_num=1
 
 nbins = 2500
 f_rescale = 1

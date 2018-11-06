@@ -68,7 +68,8 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 	# General plot settings
-	plt.figure(figsize=(24,8))
+	#plt.figure(figsize=(24,8))
+	plt.figure(figsize=(60,20))
 	plt.rc('xtick', labelsize=axis_size)    
 	plt.rc('ytick', labelsize=axis_size)    
 	plt.rc('axes',  labelsize=axis_size)    
@@ -516,18 +517,18 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	# One LG type only either MW or M31, per ONE realisation and N sub-realisations	 #				
 	##################################################################################
 
-def bin_lg_sub(lgs):
+def bin_lg_sub(lgs, n_lgs):
 	n_tot = len(lgs)
 
-	m_lgs = np.zeros((2, n_tot))
-	n_sub = np.zeros((2, n_tot))
+	m_lgs = np.zeros((n_lgs, n_tot))
+	n_sub = np.zeros((n_lgs, n_tot))
 
-	bin_m = np.zeros((2, 5))
-	bin_n = np.zeros((2, 5))
+	bin_m = np.zeros((n_lgs, 5))
+	bin_n = np.zeros((n_lgs, 5))
 	
 	perc_min0 = 5.
 	perc_max0 = 100. - perc_min0
-	perc_min1 = 25.
+	perc_min1 = 32.
 	perc_max1 = 100. - perc_min1
 
 	for ilg in range(0, n_tot):
@@ -536,15 +537,15 @@ def bin_lg_sub(lgs):
 		n_sub[0][ilg] = lgs[ilg].LG1.nsub
 		n_sub[1][ilg] = lgs[ilg].LG2.nsub
 
-	for ilg in range(0, 2):
-		#bin_m[ilg][0] = np.amin(m_lgs[ilg][:])
-		bin_m[ilg][0] = np.percentile(m_lgs[ilg][:], perc_min0)
-		bin_m[ilg][1] = np.median(m_lgs[ilg][:])
+	for ilg in range(0, n_lgs):
+		bin_m[ilg][0] = np.median(m_lgs[ilg][:])
+		bin_m[ilg][1] = np.percentile(m_lgs[ilg][:], perc_min0)
 		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max0)
 		bin_m[ilg][3] = np.percentile(m_lgs[ilg][:], perc_min1)
 		bin_m[ilg][4] = np.percentile(m_lgs[ilg][:], perc_max1)
-		bin_n[ilg][0] = np.percentile(n_sub[ilg][:], perc_min0)
-		bin_n[ilg][1] = np.median(n_sub[ilg][:])
+
+		bin_n[ilg][0] = np.median(n_sub[ilg][:])
+		bin_n[ilg][1] = np.percentile(n_sub[ilg][:], perc_min0)
 		bin_n[ilg][2] = np.percentile(n_sub[ilg][:], perc_max0)
 		bin_n[ilg][3] = np.percentile(n_sub[ilg][:], perc_min1)
 		bin_n[ilg][4] = np.percentile(n_sub[ilg][:], perc_max1)
@@ -620,16 +621,18 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 		# Now loop for each halo on a 
 		for ibin in range(0, n_bins):
-			xs[ibin] = float(x_bins[ibin, ilg, 1])
-			x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][0]) / normx
-			x_err[1][ibin] = float(x_bins[ibin][ilg][2] - xs[ibin]) / normx
+			xs[ibin] = float(x_bins[ibin, ilg, 0])
+			x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][3]) / normx
+			x_err[1][ibin] = float(x_bins[ibin][ilg][4] - xs[ibin]) / normx
+			#x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][1]) / normx
+			#x_err[1][ibin] = float(x_bins[ibin][ilg][2] - xs[ibin]) / normx
 			xs[ibin] /= normx
-			ys[ibin] = float(y_bins[ibin][ilg][1])
-			y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][0]) / normy
-			y_err[1][ibin] = float(y_bins[ibin][ilg][2] - ys[ibin]) / normy
+			ys[ibin] = float(y_bins[ibin][ilg][0])
+			y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][3]) / normy
+			y_err[1][ibin] = float(y_bins[ibin][ilg][4] - ys[ibin]) / normy
+			#y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][1]) / normy
+			#y_err[1][ibin] = float(y_bins[ibin][ilg][2] - ys[ibin]) / normy
 			ys[ibin] /= normy
-
-		#	print xs[ibin], ys[ibin]
 
 		axs[ilg].errorbar(xs, ys, yerr=[y_err[0], y_err[1]], xerr=[x_err[0], x_err[1]], markersize=size_p, fmt='o')
 	
@@ -768,7 +771,7 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 		for jm in range(0, n_mm):
 			m0 = x_m[im][jm]
 			y0 = y_m[im][jm]
-				
+			
 			for km in range(0, n_bins-1):
 				mbin0 = x_bins[km]
 				mbin1 = x_bins[km+1]

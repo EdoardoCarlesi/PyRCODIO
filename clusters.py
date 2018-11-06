@@ -19,7 +19,8 @@ import os.path
 base_path='/home/eduardo/CLUES/DATA/'
 #sub_dir='TEST'
 sub_dir='SIMU_CF3'
-extra_tag='CF3k_YH_v1'
+#extra_tag='CF3k_YH_v1'
+extra_tag='CF3_YH_v2'
 
 #plot_slice = True
 plot_slice = False
@@ -27,7 +28,7 @@ plot_slice = False
 find_clusters = True
 
 ini_num=70
-end_num=90
+end_num=80
 
 nbins = 450
 f_rescale = 1
