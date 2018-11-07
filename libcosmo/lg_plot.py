@@ -39,16 +39,22 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 	axis_label.append('SGZ')
 
 	# Read the particles
-	parts = readsnap(f_snap, 'pos', 1)
+	parts1 = readsnap(f_snap, 'pos', 1)
+	parts2 = readsnap(f_snap, 'pos', 2)
+	parts3 = readsnap(f_snap, 'pos', 3)
+	parts4 = readsnap(f_snap, 'pos', 4)
 
-	print parts.max()
-	print parts.min()
+	#parts = [parts0, parts1, parts2]
+	#print parts.max()
+	#print parts.min()
 
 	# Identify the particles belonging to the different objects
 	i_type = 0
 
 	x_plotlv = [[] for ix in range(0, 3)]
 	y_plotlv = [[] for ix in range(0, 3)]
+	#x_plot_tmp = []
+	#y_plot_tmp = []
 
 	minx = center[0] - side_size;	miny = center[1] - side_size;	minz = center[2] - side_size
 	minima = [minx, miny, minz];	print minima
@@ -59,17 +65,50 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 		ixp2 = (ix+2) % 3
 
 		t1 = time.clock()
-		(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(parts, ix, center, minima, side_size, thickn, f_rescale, units) 
+		#(x_plotlv[ixp1], y_plotlv[ixp2]) = find_slab(part, ix, center, minima, side_size, thickn, f_rescale) 
+		(x_plot_tmp1, y_plot_tmp1) = find_slab(parts2, ix, center, minima, side_size, thickn, f_rescale * 512.0, units) 
+		(x_plot_tmp2, y_plot_tmp2) = find_slab(parts2, ix, center, minima, side_size, thickn, f_rescale * 64.0, units) 
+		(x_plot_tmp3, y_plot_tmp3) = find_slab(parts3, ix, center, minima, side_size, thickn, f_rescale * 8.0, units) 
+		(x_plot_tmp4, y_plot_tmp4) = find_slab(parts4, ix, center, minima, side_size, thickn, f_rescale * 1.0, units) 
+		
+		n_tmp1 = len(x_plot_tmp1); 		n_tmp2 = len(x_plot_tmp2)
+		n_tmp3 = len(x_plot_tmp3); 		n_tmp4 = len(x_plot_tmp4)
+
+		#x_plotlv[ixp1] = [n_tmp1+n_tmp2+n_tmp3+n_tmp4]
+		#y_plotlv[ixp2] = [n_tmp1+n_tmp2+n_tmp3+n_tmp4]
+
+		for ijk in range(0, n_tmp1):
+			x_plotlv[ixp1].append(x_plot_tmp1[ijk])
+			y_plotlv[ixp2].append(y_plot_tmp1[ijk])
+
+		for ijk in range(0, n_tmp2):
+			x_plotlv[ixp1].append(x_plot_tmp2[ijk])
+			y_plotlv[ixp2].append(y_plot_tmp2[ijk])
+			#x_plotlv[ixp1][n_tmp1+ijk] = x_plot_tmp2[ijk]
+			#y_plotlv[ixp2][n_tmp1+ijk] = y_plot_tmp2[ijk]
+
+		for ijk in range(0, n_tmp3):
+			x_plotlv[ixp1].append(x_plot_tmp3[ijk])
+			y_plotlv[ixp2].append(y_plot_tmp3[ijk])
+			#x_plotlv[ixp1][n_tmp1+n_tmp2+ijk] = x_plot_tmp1[ijk]
+			#y_plotlv[ixp2][n_tmp1+n_tmp2+ijk] = y_plot_tmp1[ijk]
+
+		for ijk in range(0, n_tmp4):
+			x_plotlv[ixp1].append(x_plot_tmp4[ijk])
+			y_plotlv[ixp2].append(y_plot_tmp4[ijk])
+			#x_plotlv[ixp1][n_tmp1+n_tmp2+n_tmp3+ijk] = x_plot_tmp1[ijk]
+			#y_plotlv[ixp2][n_tmp1+n_tmp2+n_tmp3+ijk] = y_plot_tmp1[ijk]
+
 		t2 = time.clock()
 
 		#print x_plotlv[ixp1]
 		
 		print 'Slab (%s, %s) with found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
+		print 'Selected a total of ', n_tmp1 + n_tmp2 + n_tmp3 + n_tmp4, ' particles.'
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 	# General plot settings
-	#plt.figure(figsize=(24,8))
-	plt.figure(figsize=(60,20))
+	plt.figure(figsize=(24,8))
 	plt.rc('xtick', labelsize=axis_size)    
 	plt.rc('ytick', labelsize=axis_size)    
 	plt.rc('axes',  labelsize=axis_size)    

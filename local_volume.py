@@ -28,8 +28,8 @@ snap_name='snapshot_054'
 #lg_base='34_13'
 #lg_base='45_17'
 #lg_base='55_02'
-lg_base='37_11'
-#lg_base='64_14'
+#lg_base='37_11'
+lg_base='64_14'
 
 plot_slice = True
 #plot_slice = False
@@ -37,16 +37,16 @@ plot_slice = True
 ini_num=0
 end_num=1
 
-nbins = 450
-f_rescale = 1
+nbins = 1000
+f_rescale = 0.25
 
-box = '100'; num = '256'; box_size=100.0e+3
+box = '100'; num = '256'; box_size=100.0
 #plot_side = 25.0e+3; thickn = 5000.0; units = 'kpc'
-plot_side = 25.0; thickn = 5.0; units = 'Mpc'
+plot_side = 20.0; thickn = 5.0; units = 'Mpc'
 
 for run_num in range(ini_num, end_num):
 
-	f_out='plot_'+snap_name+'_'+lg_base+'_'+str(run_num)+'_bins'+str(nbins)+'.png'
+	f_out='plot_'+snap_name+'_'+lg_base+'_0'+str(run_num)+'_bins'+str(nbins)+'.png'
 
 	base_dir=base_path+sub_dir+'/'+lg_base+'/0'+str(run_num)+'/'
 
