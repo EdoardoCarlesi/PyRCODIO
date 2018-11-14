@@ -20,43 +20,36 @@ base_path='/home/eduardo/CLUES/DATA/'
 sub_dir='2048'
 snap_name='snapshot_054'
 
-#lg_base='00_06'
-#lg_base='17_10'
-#lg_base='17_13'
-#lg_base='01_12'
-#lg_base='09_18'
-#lg_base='34_13'
-#lg_base='45_17'
-#lg_base='55_02'
-#lg_base='37_11'
-lg_base='64_14'
+all_lg_base = simu_runs()
 
 plot_slice = True
 #plot_slice = False
 
 ini_num=0
-end_num=1
+end_num=10
 
 nbins = 1000
-f_rescale = 0.25
+f_rescale = 1.0 / 1.0
 
 box = '100'; num = '256'; box_size=100.0
 #plot_side = 25.0e+3; thickn = 5000.0; units = 'kpc'
-plot_side = 20.0; thickn = 5.0; units = 'Mpc'
+plot_side = 15.0; thickn = 4.0; units = 'Mpc'
 
-for run_num in range(ini_num, end_num):
+for lg_base in all_lg_base:
 
-	f_out='plot_'+snap_name+'_'+lg_base+'_0'+str(run_num)+'_bins'+str(nbins)+'.png'
+	for run_num in range(ini_num, end_num):
+	
+		f_out='plot_'+snap_name+'_'+lg_base+'_0'+str(run_num)+'_bins'+str(nbins)+'.png'
+	
+		base_dir=base_path+sub_dir+'/'+lg_base+'/0'+str(run_num)+'/'
 
-	base_dir=base_path+sub_dir+'/'+lg_base+'/0'+str(run_num)+'/'
-
-	box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
-
-	print base_dir + snap_name
-
-	if os.path.isfile(base_dir + snap_name) and plot_slice == True:
+		box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
+	
 		print base_dir + snap_name
-		plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
+
+		if os.path.isfile(base_dir + snap_name) and plot_slice == True:
+			print base_dir + snap_name
+			plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
 
 
 

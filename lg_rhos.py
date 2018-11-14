@@ -19,12 +19,12 @@ import os.path
 base_path='/home/eduardo/CLUES/DATA/'
 
 ini_num=0
-end_num=1
+end_num=10
 
-nbins = 2500
-f_rescale = 1
+nbins = 1512
+f_rescale = 1.0 / 128.0
 
-#lg_00_06_00.pkl
+all_lg_base = simu_runs()
 
 #lg_base='00_06'
 #lg_base='17_10'
@@ -34,17 +34,46 @@ f_rescale = 1
 #lg_base='34_13'
 #lg_base='45_17'
 #lg_base='55_02'
-lg_base='37_11'
+#lg_base='37_11'
 #lg_base='64_14'
 
 box = '100'; num = '2048'
-box_size = 100.0; plot_side = 1.0; thickn = 2.0; units = 'Mpc'
+box_size = 100.0; plot_side = 1.5; thickn = 2.0; units = 'Mpc'
 #box_size = 100.0; plot_side = 1.5; thickn = 3.0; units = 'Mpc'
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 5000.0; units = 'kpc'
 snap_name='snapshot_054'
 
-for run_num in range(ini_num, end_num):
+for lg_base in all_lg_base:
 
+	# 04 subrun produces LGs in ALL the simulations: use this and plot everything 
+	pkl_name = 'saved/lg_' + lg_base + '_04.pkl'	
+	pkl_file = open(pkl_name, 'r')
+	this_lg = pickle.load(pkl_file)
+	box_center = this_lg.geo_com()
+
+	for i in range(0, 3):
+		box_center[i] = box_center[i] * 1.e-3
+
+	for run_num in range(ini_num, end_num):
+	
+		subrun = '%02d' % run_num
+		lg_tag = lg_base + '_' + subrun
+		f_out = 'lg_plot_'+snap_name+'_'+lg_tag+'_LG.png'
+		base_dir = base_path+'/'+num+'/'+lg_base+'/'+subrun+'/'
+
+		print 'N = ', lg_tag, ' - ', f_out
+
+		if os.path.isfile(base_dir + snap_name):
+			#print base_dir + snap_name
+			plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
+
+		else:
+			print 'File not found: ', base_dir + snap_name
+
+	
+	'''
+	This (older) version loops over all the LGs and finds each time all the LGs
+	
 	subrun = '%02d' % run_num
 	lg_tag = lg_base + '_' + subrun
 	pkl_name = 'saved/lg_' + lg_tag + '.pkl'	
@@ -54,21 +83,15 @@ for run_num in range(ini_num, end_num):
 	if os.path.isfile(pkl_name):
 		pkl_file = open(pkl_name, 'r')
 
-
 		this_lg = pickle.load(pkl_file)
-		#print	this_lg.info()
-
 		base_dir=base_path+'/'+num+'/'+lg_base+'/'+subrun+'/'
-
-		#box_center = this_lg.get_com()
 		box_center = this_lg.geo_com()
 		
 		for i in range(0, 3):
 			box_center[i] = box_center[i] * 1.e-3
-		#box_center = [0.5 * box_size, 0.5 * box_size, 0.5 * box_size]
 		
 		print box_center
-#		print base_dir + snap_name
+
 		if os.path.isfile(base_dir + snap_name):
 			print base_dir + snap_name
 			plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
@@ -76,3 +99,4 @@ for run_num in range(ini_num, end_num):
 	else:
 		print 'File not found: ', pkl_name
 
+	'''

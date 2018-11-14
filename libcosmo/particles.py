@@ -158,6 +158,9 @@ def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac, units):
 	x_a = []
 	x_b = []
 
+	if (reduce_fac < 1.0):
+		reduce_fac = 1.0
+
 	reduce_fac = int(reduce_fac)
 
 	print 'Finding slab across ', n_p, ' particles.'
