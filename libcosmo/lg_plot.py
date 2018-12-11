@@ -40,9 +40,13 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 
 	# Read the particles
 	parts1 = readsnap(f_snap, 'pos', 1)
-	parts2 = readsnap(f_snap, 'pos', 2)
-	parts3 = readsnap(f_snap, 'pos', 3)
-	parts4 = readsnap(f_snap, 'pos', 4)
+	#parts2 = readsnap(f_snap, 'pos', 2)
+	#parts3 = readsnap(f_snap, 'pos', 3)
+	#parts4 = readsnap(f_snap, 'pos', 4)
+
+	parts2 = []
+	parts3 = []
+	parts4 = []
 
 	#parts = [parts0, parts1, parts2]
 	#print parts.max()

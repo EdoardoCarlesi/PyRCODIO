@@ -19,16 +19,16 @@ import os.path
 base_path='/home/eduardo/CLUES/DATA/'
 
 ini_num=0
-end_num=10
+end_num=1
 
-nbins = 1512
+nbins = 2048
 f_rescale = 1.0 / 128.0
 
 all_lg_base = simu_runs()
 
 #lg_base='00_06'
 #lg_base='17_10'
-#lg_base='17_13'
+lg_base='17_13'
 #lg_base='01_12'
 #lg_base='09_18'
 #lg_base='34_13'
