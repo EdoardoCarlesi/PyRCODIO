@@ -5,6 +5,8 @@ def gen_table_lg():
 	CREATE TABLE local_group (
 	lg_number INTEGER PRIMARY KEY,
 	simu_code VARCHAR(10),
+	IDMW INT64;
+	IDM31 INT64;
 	v_rad DOUBLE(10,4),
 	r_mwm31 DOUBLE(10,4),
 	m_ratio DOUBLE(10,4),
