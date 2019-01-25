@@ -87,9 +87,23 @@ class SQL_IO:
 
 	# Simple database query
 	def select_tree(self, ID, columnName):
-		thisTree = self.dataframe.loc[self.dataframe['haloID'] == ID, columnName]
+		try:
+			thisStr = self.dataframe.loc[self.dataframe['haloID'] == ID, columnName].values[0].split(", ")
+			nStr = len(thisStr)
 
-		return thisTree
+			thisTree = np.zeros((nStr))
+
+			iTree = 0
+			for iStr in thisStr:
+				iStr.replace('u', '')
+				thisTree[iTree] = long(iStr)
+				iTree += 1
+
+			return thisTree
+
+		except:
+			return np.zeros((1))
+
 
 	# Simple database query
 	def select_trees(self, IDs):
@@ -97,7 +111,7 @@ class SQL_IO:
 
 		iID = 0
 		for ID in IDs:
-			thisTree = self.dataframe.loc[self.dataframe['haloID'] == ID, 'allHaloIDs']
+			thisTree = self.dataframe.loc[self.dataframe['haloID'] == ID, 'allHaloIDs'].values[0].split(", ")
 			allTrees.append(thisTree)
 
 		return allTrees
