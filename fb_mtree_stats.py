@@ -62,15 +62,21 @@ newSql = SQL_IO(in_db, n_steps)
 #newSql.cursor.execute('BEGIN TRANSACTION')
 testIDs = []
 
-columnRead = 'allHaloIDs'
+columnReadID = 'allHaloIDs'
+columnReadPT = 'allNumPart'
 
 #for this_lg in all_lgs[0:1000]:
 for this_lg in all_lgs:
-	testIDs.append(this_lg.LG1.ID)
-	this_tree = newSql.select_tree(this_lg.LG1.ID, columnRead)
-	print(this_tree.reset_index().values) #/float(this_tree[0]))
+	testIDs.append(this_lg.LG2.ID)
+	this_tree = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
+	this_ids = newSql.select_tree(this_lg.LG1.ID, columnReadID)
 
-these_trees = newSql.select_trees(testIDs)
+	if this_tree[0] != 0:
+		print(this_lg.LG2.ID, len(this_tree))
+		print(this_tree)
+		print(this_ids)
+
+#these_trees = newSql.select_trees(testIDs)
 
 #print these_trees
 
