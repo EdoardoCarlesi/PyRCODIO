@@ -18,40 +18,18 @@ from libSQL.sqllib import *
 from libSQL.mtree import *
 import pandas as pd
 
-file_single='snapshot_054.z0.000.AHF_halos'
 #file_single='snapshot_054.0000.z0.000.AHF_halos'
-
-box_size = 100000.0
-base_path = '/home/eduardo/CLUES/DATA/FullBox/'
-sub_path = '00'
-root_file = 'snapshot_'
-suff_halo = '.z0.000.AHF_halos'
-suff_part = '.z0.000.AHF_particles'
-this_ahf_file = base_path + sub_path + '/' + file_single
 
 tot_files = 1
 use_files = 1
 
-m_max = 2.e+15
-m_min = 1.e+11
+n_steps=175
 
-# Local group selection parameters
-iso_radius = 2200.
-radius = 1000. 
-r_max = 1500.
-r_min = 350. 
-m_min = 5.e+11  
-m_max = 5.0e+12 
-ratio_max = 5.0
-vrad_max = 0.0
-
-resolution = '1024'
-env_type = 'std'
-out_dir = 'output/'
-n_steps = 54
-
-in_db = '/home/eduardo/CLUES/DATA/FullBox/fullbox_00_trees.db'
-out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+file_ahf='/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/1024/00_06/snapshot_176.0000.z0.000.AHF_halos'
+#in_db = '/home/eduardo/CLUES/DATA/FullBox/fullbox_00_trees.db'
+in_db = '/home/edoardo/devel/MetroC++/output/lgf_test_trees.db'
+#out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+out_lgs = 'saved/test_lgs_00_06.pkl'
 f_out_lgs = open(out_lgs, 'r')
 all_lgs = pickle.load(f_out_lgs)
 
@@ -62,15 +40,30 @@ newSql = SQL_IO(in_db, n_steps)
 #newSql.cursor.execute('BEGIN TRANSACTION')
 testIDs = []
 
-columnRead = 'allHaloIDs'
+columnReadID = 'allHaloIDs'
+columnReadPT = 'allNumPart'
 
 #for this_lg in all_lgs[0:1000]:
+
+all_halos = read_ahf(file_ahf)
+
+
+for halo in all_halos:
+	if halo.npart > 25000:
+		this_id = newSql.select_tree(halo.ID, columnReadID).values
+		this_tree = newSql.select_tree(halo.ID, columnReadPT).values
+
+		#for iT in range(0, len(this_id)):
+		#	print(iT, this_id[iT], this_tree[iT])
+
+
+'''
 for this_lg in all_lgs:
 	testIDs.append(this_lg.LG1.ID)
 	this_tree = newSql.select_tree(this_lg.LG1.ID, columnRead)
 	print(this_tree.reset_index().values) #/float(this_tree[0]))
-
 these_trees = newSql.select_trees(testIDs)
+'''
 
 #print these_trees
 

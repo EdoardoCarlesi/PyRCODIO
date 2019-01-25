@@ -42,7 +42,7 @@ def merger_tree_chunks(end_snap, ini_snap, n_chunks, n_use, min_common, main_hal
 		this_t = z2Myr(this_z)
 		this_a = 1.0 / (1.0 + this_z)
 
-		print i_snap, n_chunks, this_root, suff_halo, suff_part, this_t, this_z
+		print(i_snap, n_chunks, this_root, suff_halo, suff_part, this_t, this_z)
 
 		# If this is the last snap just use all the inf
 		if i_snap == end_snap:
@@ -83,7 +83,7 @@ def merger_tree_chunks(end_snap, ini_snap, n_chunks, n_use, min_common, main_hal
 				try:
 					this_index = this_all_halo[0].id_index[str(this_id)]
 				except:
-					print 'Halo ID %s not found.' % this_id
+					print('Halo ID %s not found.' % this_id)
 
 				# If no likely progenitor has been found but only a token halo has been returned, then save the old particle list
 				# also for the next step
@@ -197,7 +197,7 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 
 		# This is not the first step - 
 		else:
-			print 'Reading files: ', this_part_file, this_halo_file
+			print('Reading files: ', this_part_file, this_halo_file)
 			this_all_halo = read_ahf(this_halo_file)
 			(this_all_ids, this_all_parts) = read_particles(this_part_file)
 
@@ -287,8 +287,8 @@ def find_halo_id_old(idnum, ahf_halos):
 	if h_found == True:
 		return i_halo
 	else:
-		print 'Halo ID: %ld not found.' % idnum
-		print ahf_halos[i_halo].info()
+		print('Halo ID: %ld not found.' % idnum)
+		print(ahf_halos[i_halo].info())
 		return -1
 
 

@@ -15,12 +15,15 @@ import time
 import pickle
 from libcosmo.grid import *
 
-file_single='snapshot_054.z0.000.AHF_halos'
+#file_single='snapshot_054.z0.000.AHF_halos'
 #file_single='snapshot_054.0000.z0.000.AHF_halos'
+file_single='snapshot_176.0000.z0.000.AHF_halos'
 
 box_size = 100000.0
-base_path = '/home/eduardo/CLUES/DATA/FullBox/'
-sub_path = '00'
+#base_path = '/home/eduardo/CLUES/DATA/FullBox/'
+base_path = '/home/edoardo/CLUES/DATA/SIMULATIONS/LGF/1024/'
+#sub_path = '00'
+sub_path = '00_06'
 root_file = 'snapshot_'
 suff_halo = '.z0.000.AHF_halos'
 suff_part = '.z0.000.AHF_particles'
@@ -46,38 +49,39 @@ resolution = '1024'
 env_type = 'std'
 out_dir = 'output/'
 
-end_snap = 55
-ini_snap = 54
+end_snap = 176
+ini_snap = 177
 
 settings = Settings(base_path, out_dir, env_type, resolution, root_file)
 settings.base_file_chunk = base_path + sub_path + '/' + root_file
 settings.ahf_path = base_path + sub_path 
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-this_root = base_path + sub_path + '/' + root_file + '054.'
+this_root = base_path + sub_path + '/' + root_file + '176.'
 
 all_halos = read_ahf(this_ahf_file)
 n_halos = len(all_halos)
 
-print n_halos, 'read in, finding Local Groups...'
+print('read in %d halos, finding Local Groups...', n_halos)
 
 # Filter by halo mass
 m_halos = []
 
-print 'Removing halos below ', m_min
+print('Removing halos below ', m_min)
 
 for ih in range(0, n_halos):
 	if all_halos[ih].m > m_min:
 		m_halos.append(all_halos[ih])
 
-print 'Found ', len(m_halos), ' above mass threshold'
+print('Found ', len(m_halos), ' above mass threshold')
 
 all_lgs = find_lg(m_halos, lg_model)
 
 n_lgs = len(all_lgs)
 	
-print 'Found ', n_lgs
+print('Found ', n_lgs)
 
-out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+#out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+out_lgs = 'saved/test_lgs_' + sub_path + '.pkl'
 f_out_lgs = open(out_lgs, 'w')
 pickle.dump(all_lgs, f_out_lgs)
