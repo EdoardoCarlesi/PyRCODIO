@@ -25,40 +25,42 @@ sub_path = '00'
 # Local group selection parameters
 iso_radius = 2000.
 radius = 1000. 
-r_max = 1250.
-r_min = 350. 
-m_min = 5.e+11  
+r_max = 1500.
+r_min = 250. 
+m_min = 4.e+11  
 m_max = 5.0e+12 
-ratio_max = 5.0
-vrad_max = 60.0
+ratio_max = 10.0
+vrad_max = 100.0
 
-lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-this_ahf_file = base_path + sub_path + '/' + file_single
+i_ini = 0
+i_end = 5
 
-print('Reading file : %s' % this_ahf_file)
-all_halos = read_ahf(this_ahf_file)
-n_halos = len(all_halos)
+for i_dir in range(i_ini, i_end):
+	sub_path = '%02d' % i_dir
 
-print('%d halos have been read in, finding Local Groups...' % n_halos)
+	lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+	this_ahf_file = base_path + sub_path + '/' + file_single
 
-# Filter by halo mass
-m_halos = []
+	print('Reading file : %s' % this_ahf_file)
+	all_halos = read_ahf(this_ahf_file)
+	n_halos = len(all_halos)
 
-#id_m_halos = np.where(all_halos.m > m_min)
-print 'Removing halos below ', m_min
+	print('%d halos have been read in, finding Local Groups...' % n_halos)
 
-for ih in range(0, n_halos):
-	if all_halos[ih].m > m_min:
-		m_halos.append(all_halos[ih])
+	# Filter by halo mass
+	print 'Removing halos below ', m_min
+	m_halos = []
 
-print 'Found ', len(m_halos), ' above mass threshold'
+	for halo in all_halos:
+		if halo.m > m_min:
+			m_halos.append(halo)
 
-all_lgs = find_lg(m_halos, lg_model)
+	print 'Found ', len(m_halos), ' above mass threshold'
 
-n_lgs = len(all_lgs)
-	
-print 'Found ', n_lgs
+	all_lgs = find_lg(m_halos, lg_model)
+	n_lgs = len(all_lgs)
+	print 'Found ', n_lgs
 
-out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
-f_out_lgs = open(out_lgs, 'w')
-pickle.dump(all_lgs, f_out_lgs)
+	out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+	f_out_lgs = open(out_lgs, 'w')
+	pickle.dump(all_lgs, f_out_lgs)
