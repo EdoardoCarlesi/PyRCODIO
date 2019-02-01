@@ -15,55 +15,36 @@ import time
 import pickle
 from libcosmo.grid import *
 
+# Simulation & catalog
 file_single='snapshot_054.z0.000.AHF_halos'
 #file_single='snapshot_054.0000.z0.000.AHF_halos'
-
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
 sub_path = '00'
-root_file = 'snapshot_'
-suff_halo = '.z0.000.AHF_halos'
-suff_part = '.z0.000.AHF_particles'
-this_ahf_file = base_path + sub_path + '/' + file_single
-
-tot_files = 1
-use_files = 1
-
-m_max = 2.e+15
-m_min = 1.e+11
 
 # Local group selection parameters
-iso_radius = 2200.
+iso_radius = 2000.
 radius = 1000. 
-r_max = 1500.
+r_max = 1250.
 r_min = 350. 
 m_min = 5.e+11  
 m_max = 5.0e+12 
 ratio_max = 5.0
-vrad_max = 0.0
+vrad_max = 60.0
 
-resolution = '1024'
-env_type = 'std'
-out_dir = 'output/'
+lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+this_ahf_file = base_path + sub_path + '/' + file_single
 
-end_snap = 55
-ini_snap = 54
-
-settings = Settings(base_path, out_dir, env_type, resolution, root_file)
-settings.base_file_chunk = base_path + sub_path + '/' + root_file
-settings.ahf_path = base_path + sub_path 
-
-lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-this_root = base_path + sub_path + '/' + root_file + '054.'
-
+print('Reading file : %s' % this_ahf_file)
 all_halos = read_ahf(this_ahf_file)
 n_halos = len(all_halos)
 
-print n_halos, 'read in, finding Local Groups...'
+print('%d halos have been read in, finding Local Groups...' % n_halos)
 
 # Filter by halo mass
 m_halos = []
 
+#id_m_halos = np.where(all_halos.m > m_min)
 print 'Removing halos below ', m_min
 
 for ih in range(0, n_halos):

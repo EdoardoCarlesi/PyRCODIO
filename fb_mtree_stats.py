@@ -2,6 +2,7 @@
 
 from libcosmo.track_halos import *
 from libcosmo.utils import *
+from libcosmo.mtree import *
 from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
@@ -23,58 +24,66 @@ file_single='snapshot_054.z0.000.AHF_halos'
 
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
-sub_path = '00'
-root_file = 'snapshot_'
-suff_halo = '.z0.000.AHF_halos'
-suff_part = '.z0.000.AHF_particles'
-this_ahf_file = base_path + sub_path + '/' + file_single
+#sub_path = '01'
+
+sub_ini = 0
+sub_end = 1
 
 tot_files = 1
 use_files = 1
-
-m_max = 2.e+15
-m_min = 1.e+11
-
-# Local group selection parameters
-iso_radius = 2200.
-radius = 1000. 
-r_max = 1500.
-r_min = 350. 
-m_min = 5.e+11  
-m_max = 5.0e+12 
-ratio_max = 5.0
-vrad_max = 0.0
-
 resolution = '1024'
 env_type = 'std'
 out_dir = 'output/'
 n_steps = 54
+n_lgs = 1
 
-in_db = '/home/eduardo/CLUES/DATA/FullBox/fullbox_00_trees.db'
-out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
-f_out_lgs = open(out_lgs, 'r')
-all_lgs = pickle.load(f_out_lgs)
+all_trees = np.zeros((n_lgs, n_steps))
 
-testID = all_lgs[0].LG1.ID
+for i_sub in range(sub_ini, sub_end):
+	sub_path = '%02d' % i_sub	
 
-newSql = SQL_IO(in_db, n_steps)
+	in_db = base_path + 'fullbox_' + sub_path + '_trees.db'
+	#in_db = base_path + 'trees/fullbox_' + sub_path + '_trees.db'
 
-#newSql.cursor.execute('BEGIN TRANSACTION')
-testIDs = []
+	# Load the pre-selected 
+	out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+	f_out_lgs = open(out_lgs, 'r')
+	all_lgs = pickle.load(f_out_lgs)
+	n_lgs = len(all_lgs)
 
-columnReadID = 'allHaloIDs'
-columnReadPT = 'allNumPart'
+	print('Merger tree stats for %d pairs, run = %s .' % (n_lgs, sub_path))
 
-#for this_lg in all_lgs[0:1000]:
-for this_lg in all_lgs:
-	testIDs.append(this_lg.LG2.ID)
-	this_tree = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
-	this_ids = newSql.select_tree(this_lg.LG1.ID, columnReadID)
+	newSql = SQL_IO(in_db, n_steps)
+	columnReadID = 'allHaloIDs'
+	columnReadPT = 'allNumPart'
 
-	if this_tree[0] != 0:
-		print(this_lg.LG2.ID, len(this_tree))
-		print(this_tree)
-		print(this_ids)
+	iValid = 0; iBroken = 0;
+
+	for this_lg in all_lgs:
+		this_tree = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
+		this_ids = newSql.select_tree(this_lg.LG1.ID, columnReadID)
+
+		valid_tree = np.where(this_tree > 0)
+
+		if valid_tree[0].size > 40:
+			iValid +=1 
+			this_mtree = MergerTree(n_steps, this_tree)
+			#this_mtree.info()
+			#if (this_mtree.last_major_merger() != None):
+			#	print(this_mtree.last_major_merger())
+			#if (this_mtree.formation_time() > 0):
+			print(this_mtree.formation_time())
+		else:
+			iBroken += 1
+
+		
+
+	#if this_tree[0] != 0:
+	#print('%lu %s' % (this_lg.LG1.ID, this_ids))
+		#print(this_tree)
+	#	print(this_ids)
+
+print('Found %d valid, %d broken trees.' % (iValid, iBroken))
 
 #these_trees = newSql.select_trees(testIDs)
 
