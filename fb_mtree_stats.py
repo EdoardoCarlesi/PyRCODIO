@@ -21,10 +21,13 @@ import pandas as pd
 
 file_single='snapshot_054.z0.000.AHF_halos'
 #file_single='snapshot_054.0000.z0.000.AHF_halos'
-
+time_step = 0.25 # In Gyrs
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
 #sub_path = '01'
+
+do_trees_db = True
+#do_trees_db = False
 
 sub_ini = 0
 sub_end = 1
@@ -39,6 +42,19 @@ n_lgs = 1
 
 all_trees = np.zeros((n_lgs, n_steps))
 
+# Append all trees here - use ALL the DB!	
+trees_mw = []; trees_m31 = []
+
+# Save all the selected merger trees to these files
+out_mws = 'saved/rand_mws_all_mah.pkl'
+out_m31s = 'saved/rand_m31_all_mah.pkl'
+
+# Skip the reading part from the DB
+if do_trees_db == False:
+	sub_ini = 0
+	sub_end = 0
+
+# Loop on the different box realisations
 for i_sub in range(sub_ini, sub_end):
 	sub_path = '%02d' % i_sub	
 
@@ -57,46 +73,60 @@ for i_sub in range(sub_ini, sub_end):
 	columnReadID = 'allHaloIDs'
 	columnReadPT = 'allNumPart'
 
-	iValid = 0; iBroken = 0;
+	iValid = 0; 
 
 	for this_lg in all_lgs:
-		this_tree = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
-		this_ids = newSql.select_tree(this_lg.LG1.ID, columnReadID)
+		this_tree_mw = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
+		this_tree_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)
 
-		valid_tree = np.where(this_tree > 0)
+		valid_tree_mw = np.where(this_tree_mw > 0)
+		valid_tree_m31 = np.where(this_tree_m31 > 0)
 
-		if valid_tree[0].size > 40:
+		if valid_tree_mw[0].size > 40 and valid_tree_m31[0].size > 40:
+			this_mtree_mw = MergerTree(n_steps, this_tree_mw)
+			this_mtree_m31 = MergerTree(n_steps, this_tree_m31)
+			trees_mw.append(this_mtree_mw)
+			trees_m31.append(this_mtree_m31)
 			iValid +=1 
-			this_mtree = MergerTree(n_steps, this_tree)
-			#this_mtree.info()
-			#if (this_mtree.last_major_merger() != None):
-			#	print(this_mtree.last_major_merger())
-			#if (this_mtree.formation_time() > 0):
-			print(this_mtree.formation_time())
-		else:
-			iBroken += 1
 
-		
 
-	#if this_tree[0] != 0:
-	#print('%lu %s' % (this_lg.LG1.ID, this_ids))
-		#print(this_tree)
-	#	print(this_ids)
+# Save the trees!
+if do_trees_db == True:
+	print('Found %d valid LG trees.' % (iValid))
+	print('Saving MW trees to %s and M31 trees to %s.' % (out_mws, out_m31s))
+	f_out_mws = open(out_mws, 'w')
+	pickle.dump(trees_mw, f_out_mws)
+	f_out_m31s = open(out_m31s, 'w')
+	pickle.dump(trees_m31, f_out_m31s)
+else:
+	print('Loading MW trees from %s and M31 trees from %s.' % (out_mws, out_m31s))
+	f_out_mws = open(out_mws, 'r')
+	trees_mws = pickle.load(f_out_mws)
+	f_out_m31s = open(out_m31s, 'r')
+	trees_m31 = pickle.load(f_out_m31s)
+	iValid = len(trees_m31)
 
-print('Found %d valid, %d broken trees.' % (iValid, iBroken))
+# Do some statistics now
+time_stats = np.zeros((2, 2, iValid))
+mah_stats = np.zeros((2, iValid, n_steps))
 
-#these_trees = newSql.select_trees(testIDs)
+for i_t in range(0, iValid):
+		time_stats[0][0][i_t] = trees_mw[i_t].formation_time(True) * time_step
+		time_stats[0][1][i_t] = trees_mw[i_t].last_major_merger(True) * time_step
+		time_stats[1][0][i_t] = trees_m31[i_t].formation_time(True) * time_step
+		time_stats[1][1][i_t] = trees_m31[i_t].last_major_merger(True) * time_step
 
-#print these_trees
+		mah_stats[0, iValid] = trees_mw[i_t] 
+		mah_stats[1, iValid] = trees_m31[i_t] 
 
-#print(these_trees)
-#for this_lg in all_lgs[0:10]:
-#	print(this_lg.info())
-#	this_tree = newSql.get_full_mtree(testID)
-	
-
-#	print(this_tree.norm_mass())
-#newSql.cursor.execute('COMMIT')
+		'''
+	# Do some statistics
+	percent = [20, 50, 80]
+	lmm_mw = np.percentile()
+		'''
 
 newSql.close()
+
+
+
 
