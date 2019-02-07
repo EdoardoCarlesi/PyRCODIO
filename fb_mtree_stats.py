@@ -26,8 +26,8 @@ box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
 #sub_path = '01'
 
-do_trees_db = True
-#do_trees_db = False
+#do_trees_db = True
+do_trees_db = False
 
 sub_ini = 0
 sub_end = 1
@@ -48,6 +48,10 @@ trees_mw = []; trees_m31 = []
 # Save all the selected merger trees to these files
 out_mws = 'saved/rand_mws_all_mah.pkl'
 out_m31s = 'saved/rand_m31_all_mah.pkl'
+
+# Save output statistics
+out_stat_mah = 'saved/rand_out_stat_mah.pkl'
+out_stat_time = 'saved/rand_out_stat_time.pkl'
 
 # Skip the reading part from the DB
 if do_trees_db == False:
@@ -87,8 +91,7 @@ for i_sub in range(sub_ini, sub_end):
 			this_mtree_m31 = MergerTree(n_steps, this_tree_m31)
 			trees_mw.append(this_mtree_mw)
 			trees_m31.append(this_mtree_m31)
-			iValid +=1 
-
+			iValid += 1 
 
 # Save the trees!
 if do_trees_db == True:
@@ -98,17 +101,20 @@ if do_trees_db == True:
 	pickle.dump(trees_mw, f_out_mws)
 	f_out_m31s = open(out_m31s, 'w')
 	pickle.dump(trees_m31, f_out_m31s)
+	newSql.close()
 else:
 	print('Loading MW trees from %s and M31 trees from %s.' % (out_mws, out_m31s))
-	f_out_mws = open(out_mws, 'r')
-	trees_mws = pickle.load(f_out_mws)
+	f_out_mws  = open(out_mws, 'r')
+	trees_mw   = pickle.load(f_out_mws)
 	f_out_m31s = open(out_m31s, 'r')
-	trees_m31 = pickle.load(f_out_m31s)
+	trees_m31  = pickle.load(f_out_m31s)
 	iValid = len(trees_m31)
+	print('Found %d trees.' % iValid)
 
 # Do some statistics now
-time_stats = np.zeros((2, 2, iValid))
+time_stats = np.zeros((2, 2, iValid))	# LMMT & FT
 mah_stats = np.zeros((2, iValid, n_steps))
+mah_avgs = np.zeros((2, n_steps, 3))	# This contains median and percentiles 
 
 for i_t in range(0, iValid):
 		time_stats[0][0][i_t] = trees_mw[i_t].formation_time(True) * time_step
@@ -116,17 +122,24 @@ for i_t in range(0, iValid):
 		time_stats[1][0][i_t] = trees_m31[i_t].formation_time(True) * time_step
 		time_stats[1][1][i_t] = trees_m31[i_t].last_major_merger(True) * time_step
 
-		mah_stats[0, iValid] = trees_mw[i_t] 
-		mah_stats[1, iValid] = trees_m31[i_t] 
+		mah_stats[0, i_t] = trees_mw[i_t].nPartNorm 
+		mah_stats[1, i_t] = trees_m31[i_t].nPartNorm
 
-		'''
-	# Do some statistics
-	percent = [20, 50, 80]
-	lmm_mw = np.percentile()
-		'''
+for i_n in range(0, n_steps):
+	percent = [32, 50, 68]
+	
+	for i_lg in range(0, 2):
+		nonzero = np.where(mah_stats[i_lg, :, i_n] > 0)
+		mah_avgs[i_lg, i_n, :] = np.percentile(mah_stats[i_lg, nonzero, i_n], percent)
+		#print(i_n, np.percentile(mah_stats[0, nonzero, i_n], percent))
+	
+#out_stat_mah = 'saved/rand_out_stat_mah.pkl'
+#out_stat_time = 'saved/rand_out_stat_time.pkl'
+	
+# Save the "condensed" data
+print('Saving MAH random LCDM statistics to %s and %s' % (out_stat_mah, out_stat_time))
+f_mah = open(out_stat_mah, 'w')
+f_time = open(out_stat_time, 'w')
 
-newSql.close()
-
-
-
-
+pickle.dump(time_stats, f_time)
+pickle.dump(mah_avgs, f_mah)

@@ -42,7 +42,7 @@ vrad_max = 100.0
 lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
 i_ini = 0
-i_end = 1
+i_end = 80
 g_ini = 0
 g_end = 20
 n_tot_lgs = 0

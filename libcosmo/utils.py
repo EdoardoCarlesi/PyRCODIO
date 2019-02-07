@@ -442,5 +442,23 @@ def random_table_triaxialities(n_pts, n_trials, read_table):
 
 	#return (med_e, med_d, score_value)
 
+def cdf(values):
+	n_values = len(values)
+	cdf = np.zeros((2, n_values))
+	
+	sv = np.sort(values)
+	#norm = np.max(values)
+	#norm = values[n_values-1]	
+
+	for i in range(0, n_values):
+		cdf[0][i] = sv[i] 
+		cdf[1][i] = float(i) / float(n_values)
+		#cdf[1][i] = float(n_values - i) / float(n_values)
+
+	return cdf
+
+
+
+
 
 
