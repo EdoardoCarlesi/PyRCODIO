@@ -26,8 +26,8 @@ box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/'
 #sub_path = '01'
 
-#do_trees_db = True
-do_trees_db = False
+do_trees_db = True
+#do_trees_db = False
 
 sub_ini = 0
 sub_end = 1
@@ -39,6 +39,8 @@ env_type = 'std'
 out_dir = 'output/'
 n_steps = 54
 n_lgs = 1
+
+min_tree_steps = 35
 
 all_trees = np.zeros((n_lgs, n_steps))
 
@@ -62,8 +64,8 @@ if do_trees_db == False:
 for i_sub in range(sub_ini, sub_end):
 	sub_path = '%02d' % i_sub	
 
-	in_db = base_path + 'fullbox_' + sub_path + '_trees.db'
-	#in_db = base_path + 'trees/fullbox_' + sub_path + '_trees.db'
+	#in_db = base_path + 'fullbox_' + sub_path + '_trees.db'
+	in_db = base_path + 'trees/fullbox_' + sub_path + '_trees.db'
 
 	# Load the pre-selected 
 	out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
@@ -80,19 +82,25 @@ for i_sub in range(sub_ini, sub_end):
 	iValid = 0; 
 
 	for this_lg in all_lgs:
+	#for this_lg in all_lgs[0:10]:
 		this_tree_mw = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
 		this_tree_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)
+
 
 		valid_tree_mw = np.where(this_tree_mw > 0)
 		valid_tree_m31 = np.where(this_tree_m31 > 0)
 
-		if valid_tree_mw[0].size > 40 and valid_tree_m31[0].size > 40:
+		if valid_tree_mw[0].size > min_tree_steps and valid_tree_m31[0].size > min_tree_steps:
 			this_mtree_mw = MergerTree(n_steps, this_tree_mw)
 			this_mtree_m31 = MergerTree(n_steps, this_tree_m31)
 			trees_mw.append(this_mtree_mw)
 			trees_m31.append(this_mtree_m31)
 			iValid += 1 
-
+		else:
+			print(this_tree_mw)
+			print(this_tree_m31)
+			print('--')
+		#	print(this_lg.LG1.info())
 # Save the trees!
 if do_trees_db == True:
 	print('Found %d valid LG trees.' % (iValid))
