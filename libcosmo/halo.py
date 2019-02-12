@@ -382,7 +382,6 @@ class SubHaloThroughZ(HaloThroughZ):
 
 
 class LocalGroupModel:
-	d_max = 5000. # Box center distance
 	d_iso = 2000.
 	r_max = 1250.
 	r_min = 250.
@@ -394,8 +393,7 @@ class LocalGroupModel:
 	center = [50000.0] * 3
 	model_code = '00'
 
-	def __init__(self, d_max, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
-		self.d_max = d_max
+	def __init__(self, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
 		self.d_iso = d_iso
 		self.r_max = r_max
 		self.r_min = r_min
@@ -405,8 +403,8 @@ class LocalGroupModel:
 		self.vrad_max = vrad_max
 
 	def info(self):
-		lg_mod_info = "D_max: %.3f, D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
-				(self.d_max, self.d_iso, self.r_max, self.r_min, self.m_min)
+		lg_mod_info = "D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
+				(self.d_iso, self.r_max, self.r_min, self.m_min)
 		return lg_mod_info
 
 

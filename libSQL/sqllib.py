@@ -91,17 +91,22 @@ class SQL_IO:
 			thisStr = self.dataframe.loc[self.dataframe['haloID'] == ID, columnName].values[0].split(", ")
 			nStr = len(thisStr)
 
-			thisTree = np.zeros((nStr))
+			if columnName == 'allHaloIDs':
+				thisTree = np.zeros((nStr), dtype=np.ulonglong)
+			elif columnName == 'allNumPart':
+				thisTree = np.zeros((nStr), dtype=np.uint)
 
 			iTree = 0
+
 			for iStr in thisStr:
 				iStr.replace('u', '')
 				thisTree[iTree] = long(iStr)
+				#print iTree, iStr
 				iTree += 1
 
 			return thisTree
-
 		except:
+			#print(ID, ' not found')
 			return np.zeros((1))
 
 

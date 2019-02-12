@@ -70,7 +70,6 @@ def find_halos_point(x_c, halo_all, radius):
 # Identify a suitable halo pair from a given halo list, a search center, a search radius and a minimum mass/separation for the LG candidates
 def find_lg(halos, lgmod):
 	center = lgmod.center
-	radius = lgmod.d_max
 	iso_radius = lgmod.d_iso
 	m_min = lgmod.m_min
 	m_max = lgmod.m_max
@@ -93,8 +92,6 @@ def find_lg(halos, lgmod):
 	for h in range(0, n_halos):
 		halo_this = halos[h]
 
-		# print halo_this.distance(center)
-		#if halo_this.m > m_min and halo_this.distance(center) < radius+r_max :
 		if halo_this.m > m_min:
 			halos_center.append(halo_this)
 			
