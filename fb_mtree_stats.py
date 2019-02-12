@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 from libcosmo.track_halos import *
 from libcosmo.utils import *
 from libcosmo.mtree import *
@@ -18,7 +17,6 @@ from libcosmo.grid import *
 from libSQL.sqllib import *
 from libSQL.mtree import *
 import pandas as pd
-
 
 file_single='snapshot_054.z0.000.AHF_halos'
 #file_single='snapshot_054.0000.z0.000.AHF_halos'

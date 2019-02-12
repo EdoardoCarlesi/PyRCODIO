@@ -15,7 +15,6 @@ import time
 import pickle
 from libcosmo.grid import *
 
-
 # Simulation & catalog
 file_single='snapshot_054.z0.000.AHF_halos'
 #file_single='snapshot_054.0000.z0.000.AHF_halos'
