@@ -58,8 +58,9 @@ class Grid:
 
 		return pos
 
-class VWeb(Grid):
 
+
+class VWeb(Grid):
 	evals = None
 	evecs = None
 

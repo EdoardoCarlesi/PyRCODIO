@@ -6,7 +6,7 @@ from libcosmo.units import *
 from libcosmo.halo import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
-#from libcosmo.lg_plot import *
+from libcosmo.lg_plot import *
 from libio.read_ascii import *
 from libio.find_files import *
 from pygadgetreader import *
@@ -14,6 +14,83 @@ from config import *
 import time
 import pickle
 from libcosmo.grid import *
+
+f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+
+halos = read_ahf(f_ahf)
+
+
+for ih in range (0, len(halos)):
+	mass = halos[ih].m/1e+8
+	print  mass, ' ', halos[ih].vmax
+
+'''
+#fname = 'saved/dyn_stats_MW_00_06_01.pkl'
+#fname='saved/web_00_06_01.pkl'
+#filesub = open(fname, 'r')
+#sats = pickle.load(filesub)
+#print sats
+
+#random_table_triaxialities(10, 1000, False)
+
+for npts in range(3, 200):
+	#rand = random_table_triaxialities(10, 1000, True)
+	random_table_triaxialities(npts, 10000, False)
+
+#print rand
+
+#print rand_points_sphere(16)
+
+#(evs, disps, perc) = random_triaxialities(10, 1000, 0.25)
+
+#fopen = open('saved/angles_align_satellite_anisotropy_00_LG.pkl', 'r')
+#angs = pickle.load(fopen)
+#print angs
+
+#print evs, perc
+
+
+vec = [0.0, 1.0, 0.0]
+
+(e, d, c) = random_triaxialities_and_angles(20, 1000, vec)
+
+print c
+
+basedir='/home/eduardo/CLUES/DATA/512/'
+snapfile=basedir+'70_00/snapshot_054'; ahffile=basedir+'70_00/snapshot_054.AHF_halos'; rho_out='rho_70_00_EC.png'
+#snapfile=basedir+'60_00/snapshot_054'; ahffile=basedir+'60_00/snapshot_054.AHF_halos'; rho_out='rho_60_00_EC.png'
+#snapfile=basedir+'NewParams/60_01/snapshot_054'; ahffile=basedir+'NewParams/60_01/snapshot_054.0000.z0.000.AHF_halos'; rho_out='rho_60_01_EC_new.png'
+#snapfile=basedir+'/NOAM/60_00/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_00/snapshot_127.0000.z0.000.AHF_halos'; rho_out='rho_60_00_NIL.png'
+#snapfile=basedir+'/NOAM/60_01/output/snapdir_127/snapshot_127'; ahffile=basedir+'NOAM/60_01/AHF_output/HESTIA_100Mpc_512_60_01.127.z0.000.AHF_halos'; rho_out='rho_60_01_NIL.png'
+#basedir='/home/eduardo/CLUES/DATA/2048/'
+ 
+halo_all = read_ahf(ahffile)
+
+rad = 15000.
+rescale = 2
+
+#virgo_x = [61000.0, 49500.0, 47000]
+virgo_x = [47000.0, 61000.0, 49500.0]
+#virgo_x = [49000.0, 47000.0, 61500.0]
+center = [50000.0, 50000.0, 50000.0]
+#find_halos_point(x_c, halo_all, radius):
+halos_c = find_halos_point(center, halo_all, rad)
+
+lg1 = halos_c[0]
+lg2 = halos_c[1]
+
+n_lgs = len(halos_c)
+
+#for i_lg in range(0, n_lgs):
+#	print halos_c[i_lg].info()
+
+
+#print lg1.info()
+#print lg2.info()
+
+#plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, 2)
+plot_lglv(snapfile, halo_all, rho_out, lg1, lg2, virgo_x, rescale, 2)
+
 
 webfile='/home/eduardo/CLUES/DATA/2048/00_06/00/zoom_2048_054.000064.Vweb-ascii'
 ahffile='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
@@ -26,7 +103,6 @@ print halos[0].id_index[index]
 
 #grid = read_vweb(webfile, 64, 100)
 
-'''
 pos = [50, 50, 50]
 
 print grid.rhoPos(pos)

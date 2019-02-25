@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import matplotlib.colors as colors
+from scipy.ndimage.filters import gaussian_filter
 
 from matplotlib import rc
 import time
@@ -8,11 +10,224 @@ import math
 from libcosmo.utils import *
 from pygadgetreader import *
 from particles import *
+from scipy.stats import kde
+
+
+
+def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
+	print 'Plotting density slices for snapshot: ', f_snap
+
+	# Plot properties
+	ptsize_lv = 2.0
+	col_lv = 'red'
+	plot_col = 3
+	plot_row = 1
+	
+	npt_lg_min = 100
+	axis_margins = 1
+	axis_size = 12
+
+	if units == 'Mpc':
+		axis_units = 'Mpc/h'; facMpc = 1.
+	elif units == 'kpc':
+		axis_units = 'Mpc/h'; facMpc = 1000.
+		#axis_units = 'kpc/h'; facMpc = 1000.
+
+	axis_label = []
+	axis_label.append('SGX')
+	axis_label.append('SGY')
+	axis_label.append('SGZ')
+
+	# Read the particles
+	parts1 = readsnap(f_snap, 'pos', 1)
+	#parts2 = readsnap(f_snap, 'pos', 2)
+	#parts3 = readsnap(f_snap, 'pos', 3)
+	#parts4 = readsnap(f_snap, 'pos', 4)
+
+	parts2 = []
+	parts3 = []
+	parts4 = []
+
+	#parts = [parts0, parts1, parts2]
+	#print parts.max()
+	#print parts.min()
+
+	# Identify the particles belonging to the different objects
+	i_type = 0
+
+	x_plotlv = [[] for ix in range(0, 3)]
+	y_plotlv = [[] for ix in range(0, 3)]
+
+	minx = center[0] - side_size;	miny = center[1] - side_size;	minz = center[2] - side_size
+	minima = [minx, miny, minz];	print minima
+
+	# Find slab of thickness +/- thickn around the axes
+	for ix in range(0, 3):
+		ixp1 = (ix+1) % 3
+		ixp2 = (ix+2) % 3
+
+		t1 = time.clock()
+		(x_plot_tmp1, y_plot_tmp1) = find_slab(parts1, ix, center, minima, side_size, thickn, f_rescale * 512.0, units) 
+		(x_plot_tmp2, y_plot_tmp2) = find_slab(parts2, ix, center, minima, side_size, thickn, f_rescale * 64.0, units) 
+		n_tmp1 = len(x_plot_tmp1); 		n_tmp2 = len(x_plot_tmp2)
+
+		print 'N Part1 in slab: ', n_tmp1
+		print 'N Part2 in slab: ', n_tmp2
+
+		for ijk in range(0, n_tmp1):
+			x_plotlv[ixp1].append(x_plot_tmp1[ijk])
+			y_plotlv[ixp2].append(y_plot_tmp1[ijk])
+
+		for ijk in range(0, n_tmp2):
+			x_plotlv[ixp1].append(x_plot_tmp2[ijk])
+			y_plotlv[ixp2].append(y_plot_tmp2[ijk])
+
+		if (units == 'Mpc' and side_size > 4.0) or (units == 'kpc' and side_size > 4000.0):
+			print 'Selecting additional slabs'
+			(x_plot_tmp3, y_plot_tmp3) = find_slab(parts3, ix, center, minima, side_size, thickn, f_rescale * 8.0, units) 
+			(x_plot_tmp4, y_plot_tmp4) = find_slab(parts4, ix, center, minima, side_size, thickn, f_rescale * 1.0, units) 
+			n_tmp3 = len(x_plot_tmp3); 		n_tmp4 = len(x_plot_tmp4)
+	
+			for ijk in range(0, n_tmp3):
+				x_plotlv[ixp1].append(x_plot_tmp3[ijk])
+				y_plotlv[ixp2].append(y_plot_tmp3[ijk])
+
+			for ijk in range(0, n_tmp4):
+				x_plotlv[ixp1].append(x_plot_tmp4[ijk])
+				y_plotlv[ixp2].append(y_plot_tmp4[ijk])
+		else:
+			print 'Zoom mode'
+			x_plot_tmp3 = []; x_plot_tmp4 = []; 
+			n_tmp3 = 0; n_tmp4 = 0;
+
+		t2 = time.clock()
+		
+		print 'Slab (%s, %s) with found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
+		print 'Selected a total of ', n_tmp1 + n_tmp2 + n_tmp3 + n_tmp4, ' particles.'
+		plt.ylabel(axis_label[ixp2]+' '+axis_units)
+
+	# General plot settings
+	plt.figure(figsize=(24,8))
+	plt.rc('xtick', labelsize=axis_size)    
+	plt.rc('ytick', labelsize=axis_size)    
+	plt.rc('axes',  labelsize=axis_size)    
+	plt.margins(axis_margins)		
+
+	#fig, axes = plt.subplots(ncols=6, nrows=1, figsize=(21, 5))
+
+	for ix in range(0, 3):
+		ixp1 = (ix+1) % 3
+		ixp2 = (ix+2) % 3
+
+		x_min = -side_size; x_max = side_size
+		y_min = -side_size; y_max = side_size
+
+		# These plots are in Mpc/h not kpc/h
+		x_min /= facMpc
+		x_max /= facMpc
+		y_min /= facMpc
+		y_max /= facMpc
+
+		print 'XMin: ', x_min, ' XMax: ', x_max
+
+		# Plot settings for each subplot
+		plt.subplot(plot_row, plot_col, ix+1)
+		plt.axis([x_min, x_max, y_min, y_max])
+		plt.xlabel(axis_label[ixp1]+' '+axis_units)
+		plt.ylabel(axis_label[ixp2]+' '+axis_units)
+	
+		this_x = x_plotlv[ixp1][:]
+		this_y = y_plotlv[ixp2][:]
+	
+		n_x = len(x_plotlv[ixp1])
+		data_xy = np.zeros((2, n_x), dtype='float')
+
+		# Convert units to Mpc
+		for ip in range(0, len(this_x)):
+			data_xy[0, ip] = (this_x[ip] - center[ixp1])/facMpc
+			data_xy[1, ip] = (this_y[ip] - center[ixp2])/facMpc
+	
+		colorscale = 'inferno'
+		#colorscale = 'rainbow'
+		#(counts, xbins, ybins) = np.histogram2d(data_xy[0, :], data_xy[1, :], bins=nbins)
+		#(counts, xbins, ybins, image) = plt.hist2d(data_xy[0, :], data_xy[1, :], bins=nbins) #, cmap=plt.cm.BuGn_r)
+		
+		#print counts
+		#print this_x
+
+		#smoothed = gaussian_filter(counts, sigma=2)
+		#print smoothed
+		#plt.pcolormesh(xbins, ybins, smoothed, cmap=plt.cm.BuGn_r)
+		#plt.pcolormesh(xbins, ybins, smoothed, norm=colors.LogNorm(vmin=smoothed.min(), vmax=smoothed.max()), cmap=plt.cm.viridis)
+		#plt.pcolormesh(xbins, ybins, smoothed, norm=colors.LogNorm(vmin=smoothed.min(), vmax=smoothed.max()), cmap=plt.cm.rainbow)
+		plt.hexbin(data_xy[0, :], data_xy[1, :], gridsize=nbins, cmap=colorscale, bins='log') #, bins=nbins) #, cmap=plt.cm.BuGn_r)
+
+		'''
+		print 'Estimating gaussian kernel... '
+		k = kde.gaussian_kde(data_xy)
+		xi, yi = np.mgrid[data_xy[0].min():data_xy[0].max():nbins*1j, data_xy[1].min():data_xy[1].max():nbins*1j]
+		zi = k(np.vstack([xi.flatten(), yi.flatten()]))		
+		print 'Done.'
+
+		# plot a density
+		#axes[3].set_title('Calculate Gaussian KDE')
+		#plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.BuGn_r)
+		#axes[3].pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.BuGn_r)
+		
+		plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap=plt.cm.BuGn_r)
+		plt.contour(xi, yi, zi.reshape(xi.shape) )
+
+		#axes[2].set_title('2D Histogram')
+		#(counts, ybins, xbins, image) = hist2d(this_x, this_y, nbins)
+		#(counts, xbins, ybins, image) = plt.hist2d(this_x, this_y) #, bins=nbins, cmap=plt.cm.BuGn_r)
+		#(counts, ybins, xbins, image) = plt.hist2d(this_x, this_y, gridsize=nbins, bins='log', cmap=plt.cm.BuGn_r)
+
+		xv = []; 	yv = [];	zv = []
+
+		# Set up a regular grid of interpolation points
+		#xi, yi = np.linspace(x_min, x_max, nbins), np.linspace(y_min, y_max, n_bins)
+		#xi, yi = np.meshgrid(xi, yi)
+
+		# Interpolate; there's also method='cubic' for 2-D data such as here
+		#zi = scipy.interpolate.griddata((x, y), rho, (xi, yi), method='linear')
+
+		for ib in range(0, len(counts)):
+			new_x = 0.5 * (xbins[ib] + xbins[ib+1])
+			new_y = 0.5 * (ybins[ib] + ybins[ib+1])
+			new_z = counts[ib]	
+
+			if (new_x < x_max) and (new_x > x_min) and (new_y < y_max) and (new_y > y_min):
+				xv.append(new_x)
+				yv.append(new_y)
+				zv.append(new_z)
+
+		#print len(counts)
+		#print xv, yv
+		print len(xv)
+		print len(yv)
+		print len(zv)
+
+		plt.imshow(zv, extent=[x_min, x_max, y_min, y_max])
+
+		'''
+
+		#locations = [0.1, 0.5, 1.0, 5.0, 10.0, 15.0, 20.0]
+		#plt.contour(xv, yv, np.transpose(zv), 5, fontsize=5, colors='black')#, manual=locations)
+		#plt.contour(xv, yv, zv, 5, fontsize=5, colors='black')
+  
+		# plot a density
+		#plt.pcolormesh(xv, yv, zv, cmap=plt.cm.BuGn_r)
+		#print 'Plot edges: %.3f, %.3f, %.3f, %.3f\n' % (x_min, x_max, y_min, y_max)
+
+	# Save to file
+	plt.tight_layout()
+	plt.savefig(f_out)
+
 
 def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	facMpc = 1000.
 	buffPlot = 4000.	# Extra buffer on the edges
-	thickn = 2000.
+	thickn = 2500.
 	r_virgo = 1500.
 
 	# This samples 8 times less particles in the high - res region
@@ -21,7 +236,8 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	for i_red in range(0, n_types):
 		reduce_factors[i_red] = pow(i_red+1,3) * reduce_fac
 
-	print reduce_factors
+	print 'Plotting LG & LV slices for snapshot: ', f_snap
+#	print reduce_factors
 
 	# Plot properties
 	ptsize_lg = 150.0
@@ -207,6 +423,7 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	##################################################################################################################
 	# Plot the LG, if plot_pos = "true" then repeat the computation in the PoS moment of inertial eigenvector system #
 	##################################################################################################################
+
 def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	facMpc = 1000.
 	buffPlot = 1.25 * lg0.r	# Extra buffer on the edges, largest Rvir of the two halos
@@ -334,20 +551,23 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	plt.savefig(f_out)
 
 
+	##################################################################################
+	# One LG type only either MW or M31, per ONE realisation and N sub-realisations	 #				
+	##################################################################################
 
-
-# One LG type only either MW or M31, per ONE realisation and N sub-realisations
-def bin_lg_sub(lgs):
+def bin_lg_sub(lgs, n_lgs):
 	n_tot = len(lgs)
 
-	m_lgs = np.zeros((2, n_tot))
-	n_sub = np.zeros((2, n_tot))
+	m_lgs = np.zeros((n_lgs, n_tot))
+	n_sub = np.zeros((n_lgs, n_tot))
 
-	bin_m = np.zeros((2, 3))
-	bin_n = np.zeros((2, 3))
+	bin_m = np.zeros((n_lgs, 5))
+	bin_n = np.zeros((n_lgs, 5))
 	
-	perc_min = 10.
-	perc_max = 100. - perc_min 
+	perc_min0 = 5.
+	perc_max0 = 100. - perc_min0
+	perc_min1 = 32.
+	perc_max1 = 100. - perc_min1
 
 	for ilg in range(0, n_tot):
 		m_lgs[0][ilg] = lgs[ilg].LG1.m
@@ -355,17 +575,18 @@ def bin_lg_sub(lgs):
 		n_sub[0][ilg] = lgs[ilg].LG1.nsub
 		n_sub[1][ilg] = lgs[ilg].LG2.nsub
 
-	for ilg in range(0, 2):
-		#bin_m[ilg][0] = np.amin(m_lgs[ilg][:])
-		bin_m[ilg][0] = np.percentile(m_lgs[ilg][:], perc_min)
-		bin_m[ilg][1] = np.median(m_lgs[ilg][:])
-		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max)
-		#bin_m[ilg][2] = np.amax(m_lgs[ilg][:])
-		#bin_n[ilg][0] = np.amin(n_sub[ilg][:])
-		bin_n[ilg][0] = np.percentile(n_sub[ilg][:], perc_min)
-		bin_n[ilg][1] = np.median(n_sub[ilg][:])
-		bin_n[ilg][2] = np.percentile(n_sub[ilg][:], perc_max)
-		#bin_n[ilg][2] = np.amax(n_sub[ilg][:])
+	for ilg in range(0, n_lgs):
+		bin_m[ilg][0] = np.median(m_lgs[ilg][:])
+		bin_m[ilg][1] = np.percentile(m_lgs[ilg][:], perc_min0)
+		bin_m[ilg][2] = np.percentile(m_lgs[ilg][:], perc_max0)
+		bin_m[ilg][3] = np.percentile(m_lgs[ilg][:], perc_min1)
+		bin_m[ilg][4] = np.percentile(m_lgs[ilg][:], perc_max1)
+
+		bin_n[ilg][0] = np.median(n_sub[ilg][:])
+		bin_n[ilg][1] = np.percentile(n_sub[ilg][:], perc_min0)
+		bin_n[ilg][2] = np.percentile(n_sub[ilg][:], perc_max0)
+		bin_n[ilg][3] = np.percentile(n_sub[ilg][:], perc_min1)
+		bin_n[ilg][4] = np.percentile(n_sub[ilg][:], perc_max1)
 
 	return [bin_m, bin_n]
 
@@ -415,8 +636,8 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	(fig, axs) = plt.subplots(ncols=2, nrows=1, figsize=(size_x, size_y)) #, sharey = True)
 
 	#axs[0].yaxis.set_ticks_position('left')
-	#axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
-	#axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	axs[0].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
+	axs[1].set_xlabel('M / $10^{12}M_{\odot} $', fontsize=axis_size)
 	axs[0].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
 	axs[1].set_ylabel('$N_{sub} (M > 3\\times 10^{8} M_{\odot})$', fontsize=axis_size) 
 	axs[0].axis([x_min0, x_max0, y_min0, y_max0])
@@ -438,16 +659,18 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 
 		# Now loop for each halo on a 
 		for ibin in range(0, n_bins):
-			xs[ibin] = float(x_bins[ibin, ilg, 1])
-			x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][0]) / normx
-			x_err[1][ibin] = float(x_bins[ibin][ilg][2] - xs[ibin]) / normx
+			xs[ibin] = float(x_bins[ibin, ilg, 0])
+			x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][3]) / normx
+			x_err[1][ibin] = float(x_bins[ibin][ilg][4] - xs[ibin]) / normx
+			#x_err[0][ibin] = float(xs[ibin] - x_bins[ibin][ilg][1]) / normx
+			#x_err[1][ibin] = float(x_bins[ibin][ilg][2] - xs[ibin]) / normx
 			xs[ibin] /= normx
-			ys[ibin] = float(y_bins[ibin][ilg][1])
-			y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][0]) / normy
-			y_err[1][ibin] = float(y_bins[ibin][ilg][2] - ys[ibin]) / normy
+			ys[ibin] = float(y_bins[ibin][ilg][0])
+			y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][3]) / normy
+			y_err[1][ibin] = float(y_bins[ibin][ilg][4] - ys[ibin]) / normy
+			#y_err[0][ibin] = float(ys[ibin] - y_bins[ibin][ilg][1]) / normy
+			#y_err[1][ibin] = float(y_bins[ibin][ilg][2] - ys[ibin]) / normy
 			ys[ibin] /= normy
-
-		#	print xs[ibin], ys[ibin]
 
 		axs[ilg].errorbar(xs, ys, yerr=[y_err[0], y_err[1]], xerr=[x_err[0], x_err[1]], markersize=size_p, fmt='o')
 	
@@ -515,9 +738,10 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 			if math.isnan(w_n[i_y]):
 				w_n[i_y] = 0.0
 
-		axs[0].set_title("e1 / e3")
-		axs[1].set_title("e2 / e3")
-		axs[2].set_title("(e2 - e3) / e1")
+		# TODO plot median in shaded region!!!!!!
+		axs[0].set_title("a/c")
+		axs[1].set_title("b/c")
+		axs[2].set_title("(b - c) / a")
 
 		axs[0].plot(x_m, y_n, linewidth=lnw, color=col)
 		axs[1].plot(x_m, z_n, linewidth=lnw, color=col)
@@ -525,33 +749,184 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 
 	plt.savefig(f_out)
 	plt.clf()
+	plt.cla()
+	plt.close()
 
 
-def plot_massfunctions(x_m, y_n, n_mf, f_out):
-	size_x = 40
+def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
+	size_x = 20
 	size_y = 20
 	lnw = 1.0
 	col = 'b'
+	axis_margins = 2	
+#	print 'Plotting massfunctions to file: ', n_mf, f_out, y_max
+
+	#n_bins = 15
+	y_bins = [ [] for i in range(0, n_bins-1) ]
+	#y_bins = np.zeros((3, n_bins))
+
+	x_min = 1.e+15;	x_max = 1.e+7
+	y_min = 10000.;	y_max = 1.0;
+
+	for im in range(0, n_mf):
+
+		try:
+			x_max0 = np.max(x_m[im])
+			x_min0 = np.min(x_m[im])
+			y_max0 = np.max(y_m[im])
+			y_min0 = np.min(y_m[im])
+		
+			if x_max0 > x_max:
+				x_max = x_max0		
 	
-	x_min = 1.e+9; 	x_max = 5.e+11
-	y_min = 1; 	y_max = 50 #max_list(y_n)
+			if x_min0 < x_min:
+				x_min = x_min0		
+	
+			if y_max0 > y_max:
+				y_max = y_max0		
+	
+			if y_min0 < y_min:
+				y_min = y_min0		
 
-	print 'Plotting massfunctions to file: ', f_out, y_max
+		except:
+			porco = 0.0
 
-	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
+	y_min = 0.0
+	#print x_min/1.e+9, ' ', x_max/1.e+9, ' ', y_min, ' ', y_max
 
-	axs.set_xscale('log')
-	axs.set_yscale('log')
+	x_bins = np.logspace(np.log10(x_min * 0.99), np.log10(x_max * 1.01), num=n_bins, endpoint=True)
+	#x_bins = np.logspace(7, 10.0, num=n_bins, dtype=float, base=10.0, endpoint=True)
+
+	#print x_bins
+
+	#x_min = 5.e+8; 	x_max = 5.e+11
+	#y_min = 1; 	y_max = 50 #max_list(y_n)
+
+	for im in range(0, n_mf):
+		n_mm = len(x_m[im])
+		#m_mm = len(y_m[im])
+
+		for jm in range(0, n_mm):
+			m0 = x_m[im][jm]
+			y0 = y_m[im][jm]
+			
+			for km in range(0, n_bins-1):
+				mbin0 = x_bins[km]
+				mbin1 = x_bins[km+1]
+
+				if m0 > mbin0 and m0 < mbin1:
+					y_bins[km].append(y0)
+
+			# At the last step set all the remaining bins above m0 to zero
+			if jm == n_mm-1:						
+					
+				for km in range(0, n_bins-1):
+					mbin0 = x_bins[km]
+					mbin1 = x_bins[km+1]
+
+					if m0 > mbin0 and m0 < mbin1:
+						y_bins[km].append(0.0)
+
+	
+					
+		#if x_m[im][n_mm-1] < 0.7e+11
+		#		y_bins[].append(0)				
+
+	mf_poisson = [ [] for i in range(0, 3)]
+	mf_median = []
+	mf_max = []
+	mf_min = []
+	mass_bins = []
+	nmedStep = 0
+	nminStep = 0
+	nmaxStep = 0
+
+	for km in range(0, n_bins-1):
+		mbin0 = x_bins[km]
+		mbin1 = x_bins[km+1]
+		mmed0 = 0.5 * (mbin0 + mbin1)
+
+		if km == n_bins-2:
+			mmed0 = mbin0
+
+		if mbin0 > 1.e+10:
+			n_thresh = 0
+		else:
+			n_thresh = 3
+		
+		if len(y_bins[km]) > n_thresh:
+			nmax0 = np.percentile(y_bins[km], 80)
+			nmin0 = np.percentile(y_bins[km], 20)
+			nmed0 = np.mean(y_bins[km])
+
+			if km == 0:
+				nmedStep = nmed0
+				nmaxStep = nmax0
+				nminStep = nmin0
+			else:
+				if nmed0 > nmedStep:
+					nmed0 = nmedStep
+				else:
+					nmedStep = nmed0
+
+				if nmin0 > nminStep:
+					nmin0 = nminStep
+				else:
+					nminStep = nmin0
+
+				if nmax0 > nmaxStep:
+					nmax0 = nmaxStep
+				else:
+					nmaxStep = nmax0
+
+			nmax = nmax0
+			nmin = nmin0
+			nmed = nmed0
+			mmed = np.log10(mmed0)
+
+			mass_bins.append(mmed)
+			mf_median.append(nmed)			
+			mf_min.append(nmin)			
+			mf_max.append(nmax)			
+			mf_poisson[0].append(np.sqrt(nmed))
+			mf_poisson[1].append(nmed + np.sqrt(nmed))
+			mf_poisson[2].append(nmed - np.sqrt(nmed))
+
+	y_max = max(mf_poisson[1])
+	x_max = np.log10(x_max)
+	x_min = np.log10(x_min)
+	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
+
+	plt.rc({'text.usetex': True})
+	plt.xlabel('$log_{10}M_{\odot} h^{-1}$')
+
+	#plt.ylabel('$N(>M)$')
+	axs.set_yscale('log'); plt.ylabel('$log_{10}N(>M)$'); y_min=1.0
+
 	axs.axis([x_min, x_max, y_min, y_max])
 	
-	if n_mf > 1:
-		for im in range(0, n_mf):
-			axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+	#usecolor='blue'
+	#usecolor='red'
+	usecolor='grey'
+	pois_col='red'
 
+	axs.plot(mass_bins, mf_median, linewidth=3, color='black')
+	axs.plot(mass_bins, mf_poisson[1], linewidth=2, dashes=[2, 5], color=pois_col)
+	axs.plot(mass_bins, mf_poisson[2], linewidth=2, dashes=[2, 5], color=pois_col)
+	axs.fill_between(mass_bins, mf_min, mf_max, facecolor=usecolor)
+
+	#print mf_poisson[0]
+	#if n_mf > 1:
+	#	for im in range(0, n_mf):
+	#		axs.plot(x_m[im], y_n[im], linewidth=lnw, color=col)
+
+	plt.tight_layout()
 	plt.savefig(f_out)
 	plt.clf()
 	plt.cla()
 	plt.close()
+
+
 
 
 
@@ -563,7 +938,6 @@ def plot_mass_accretion(time, mah, f_out):
 	
 	x_min = np.min(time); x_max = np.max(time)
 	y_min = np.min(mah); y_max = np.max(mah)
-
 	plt.yscale('log')
 	plt.axis([x_min, x_max, y_min, y_max])
 	
@@ -584,25 +958,67 @@ def plot_mass_accretions(time, mahs, f_out):
 	
 	n_plots = len(mahs[:,0])
 	x_min = np.min(time); x_max = np.max(time)
-	y_min = np.min(mahs); y_max = np.max(mahs)
+	#y_min = np.log10(np.min(mahs)); y_max = np.log10(np.max(mahs) * 1.5)
+	#y_min = np.min(mahs); y_max = np.max(mahs) * 1.5
+	y_min = np.min(1.e+9); y_max = np.max(mahs) * 1.5
 
 	if y_min < 1.e+5:
 		y_min = y_max / 200.
+
+	n_steps = len(time)
+
+	all_mahs = [[] for i in range(0, n_steps)]
 
 	(fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
 	plt.yscale('log')
 	axs.axis([x_min, x_max, y_min, y_max])
 
-	for iplot in range(0, n_plots):
-		mah = mahs[iplot]
-		axs.plot(time, mah, linewidth=lnw, color=col)
+	for istep in range(0, n_steps):
+		for iplot in range(0, n_plots):
+			this_mahs = mahs[iplot, istep]
+			#all_mahs[istep].append(np.log10(this_mahs))
+			all_mahs[istep].append(this_mahs)
 
+	med_mah = [[] for i in range(0, n_steps)]; 	
+	min_mah = [[] for i in range(0, n_steps)]; 	
+	max_mah = [[] for i in range(0, n_steps)]; 	
+
+	
+	for istep in range(0, n_steps):
+		med_mah[istep] = np.percentile(all_mahs[istep], 50)
+		min_mah[istep] = np.percentile(all_mahs[istep], 80)
+		max_mah[istep] = np.percentile(all_mahs[istep], 20)
+
+	#plt.margins(axis_margins)		
+	#axs.set_xscale('log')
+	plt.rc({'text.usetex': True})
+	plt.xlabel('GYr')
+	plt.ylabel('M')
+	#axs.set_yscale('log')
+	axs.axis([x_min, x_max, y_min, y_max])
+	
+	#print mf_poisson[0]
+	#print mf_poisson[1]
+
+	#print med_mah
+
+	axs.plot(time, med_mah, color='black')
+	#axs.plot(mass_bins, min_mah[1], linewidth=4, dashes=[2, 5], color='black')
+	#axs.plot(mass_bins, mf_poisson[2], linewidth=4, dashes=[2, 5], color='black')
+	#axs.fill_between(time, min_mah, max_mah, facecolor='azure')
+	axs.fill_between(time, min_mah, max_mah, facecolor='grey')
+	
+	#for iplot in range(0, n_plots):
+		#mah = mahs[iplot]
+		#axs.plot(time, mah, linewidth=lnw, color=col)
+
+	plt.tight_layout()
 	plt.savefig(f_out)
 	plt.clf()
 	plt.cla()
-	plt.close(fig)
-	plt.gcf().show()
+	#plt.close(fig)
+	#plt.gcf().show()
 
 
 def plot_trajectory(all_x, all_y, label_x, label_y, f_out):

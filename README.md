@@ -29,8 +29,9 @@ Tools to analyze AREPO - GADGET simulations of the Local Group and the local env
 
 TODO (ShortTerm):
 	
-	
-
+	- Histograms of LG differences
+	- Vweb at each Lg point
+	- mtree for full box simulations	
 
 TODO (LongTerm):
 

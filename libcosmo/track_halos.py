@@ -7,6 +7,108 @@ import pickle
 import numpy as np
 import math
 
+
+
+def merger_tree_chunks(end_snap, ini_snap, n_chunks, n_use, min_common, main_halos, main_parts, main_ids, settings):
+	zs = settings.redshifts
+
+	n_halos = len(main_halos)
+
+	# Final list containing HaloThroughZ objects
+	all_halo_z = [] 
+
+	# Append a list of subhalos to each main id halo being tracked
+	#for i_sub in range(0, n_ids):
+	#	this_subs = []
+	#	all_subs_z[i_sub].append(this_subs)
+
+	# Temporary lists that allow intra-snapshot comparisons - only for the haloes being tracked
+	old_main_halo = []
+	old_main_part = []
+	old_main_ids = []
+	
+	# Initialize halo_z list members 
+	for i_halo in range(0, n_halos):
+		halo_z = HaloThroughZ(end_snap - ini_snap)
+		all_halo_z.append(halo_z)
+
+	# Now loop over all the particle and halo files
+	for i_snap in range(end_snap, ini_snap, -1):
+		this_task = 0				# FIXME this assumes one mpi task only
+		(this_root, suff_halo, suff_part) = settings.get_chunk_files(i_snap, n_chunks)
+
+		# Time steps, redshift and expansion factors
+		this_z = float(settings.redshifts[i_snap * n_chunks])
+		this_t = z2Myr(this_z)
+		this_a = 1.0 / (1.0 + this_z)
+
+		print i_snap, n_chunks, this_root, suff_halo, suff_part, this_t, this_z
+
+		# If this is the last snap just use all the inf
+		if i_snap == end_snap:
+
+			# Loop on the main halos to be tracked (usually the two LG main members)
+			for i_main in range(0, n_halos):
+				this_halo = main_halos[i_main]
+				this_part = main_parts[i_main]
+				this_ids  = main_ids[i_main]
+
+				all_halo_z[i_main].add_step(this_halo, this_z)
+
+				# Save all the halos for the next step
+				old_main_halo.append(this_halo)
+				old_main_part.append(this_part)
+				old_main_ids.append(this_ids)
+
+			# Do this once the loop on all the halos is finished
+			old_t = this_t
+	
+		# This is not the first step - 
+		else:
+			#print 'Reading files: ', this_part_file, this_halo_
+			this_all_halo = read_ahf_chunks(this_root, suff_halo, n_use)
+			n_this_halos = len(this_all_halo)
+			(this_all_ids, this_all_parts) = read_particles_chunks(this_root, suff_part, n_use, n_this_halos)
+
+			# Time step is deltaT, it might be a fixed quantity but we don't know in advance so we compute it every time
+			time_step = abs(old_t - this_t)	
+
+			for i_main in range(0, n_halos):
+				#print 'oldmain: ', i_main, old_main_halo[i_main].info()
+				(this_halo, token_halo) = find_progenitors(old_main_halo[i_main], old_main_part[i_main],\
+						this_all_halo, this_all_parts, min_common, this_a, time_step)
+
+				this_id = this_halo.ID
+
+				try:
+					this_index = this_all_halo[0].id_index[str(this_id)]
+				except:
+					print 'Halo ID %s not found.' % this_id
+
+				# If no likely progenitor has been found but only a token halo has been returned, then save the old particle list
+				# also for the next step
+			if token_halo == True:
+				this_part = old_main_part[i_main]
+				this_ids = old_main_ids[i_main]
+			else:	
+				# Find the particle ID list of the main progenitor
+				this_part = this_all_parts[this_index] 
+				this_ids = this_id
+					
+			# Now save the particles and halo for the next step
+			old_main_halo[i_main] = this_halo
+			old_main_part[i_main] = this_part
+			old_main_ids[i_main] = this_ids
+			
+			# Store the halo into the general structure
+			all_halo_z[i_main].add_step(this_halo, this_z)
+
+		old_t = this_t
+
+	return all_halo_z
+
+
+
 '''
 	Computes the merger tree for a given number of halos. This is generally the two main LG halos at z=0 and their satellites
 	Subhaloes are stored separately if the trace_subs boolean variable is set to true. Then ids_subs contains the ids of the main haloes
@@ -50,10 +152,11 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 		
 		# Time steps, redshift and expansion factors
 		this_z = float(settings.redshifts[i_snap])
-		#this_z = float(zs[i_snap])
 		this_t = z2Myr(this_z)
 		this_a = 1.0 / (1.0 + this_z)
 	
+		#print this_t, this_z
+
 		# This index is reinitialized to 0 at every loop
 		i_subs = 0
 
@@ -98,6 +201,8 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 			this_all_halo = read_ahf(this_halo_file)
 			(this_all_ids, this_all_parts) = read_particles(this_part_file)
 
+			#this_t = z2Myr(this_z)
+
 			# Time step is deltaT, it might be a fixed quantity but we don't know in advance so we compute it every time
 			time_step = abs(old_t - this_t)	
 
@@ -111,8 +216,9 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 
 				try:
 					this_index = this_all_halo[0].id_index[str(this_id)]
-				except:
-					print 'Halo ID %s not found.' % this_id
+				except:	
+					this_ids = this_id
+					#print 'Halo ID %s not found.' % this_id
 
 				# If no likely progenitor has been found but only a token halo has been returned, then save the old particle list
 				# also for the next step
@@ -122,7 +228,6 @@ def merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, main_ids
 				else:	
 					# Find the particle ID list of the main progenitor
 					this_part = this_all_parts[this_index] 
-					this_ids = this_id
 					
 				# Now save the particles and halo for the next step
 				old_main_halo[i_main] = this_halo
@@ -192,7 +297,8 @@ def find_halo_id_old(idnum, ahf_halos):
 def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aFactor, timeStep):
 	r_prog = 0.0
 	guess_x = backward_x(halo_z.x, halo_z.v, aFactor, timeStep)
-	r_prog = module(halo_z.v) * timeStep * s2Myr() / km2kpc() / aFactor	# In comoving units
+	r_prog = 3.0 * module(halo_z.v) * timeStep * s2Myr() / km2kpc() / aFactor	# In comoving units
+
 	halos_zp1 = find_halos_point(guess_x, halos_all_zp1, r_prog)
 	
 	token_halo = False
@@ -204,7 +310,9 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	n_zp1 = len(halos_zp1)
 	id_z = halo_z.ID
 	m_z = halo_z.m
-	
+
+	#print '----> Find progenitors: ', guess_x, halo_z.x, r_prog, ' possible progenitors: ', n_zp1
+
 	for i_prog in range(0, n_zp1):
 		this_m = halos_zp1[i_prog].m
 		this_id = halos_zp1[i_prog].ID
@@ -214,6 +322,7 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 		this_part = part_all_zp1[this_index]
 
 		this_common = compare_particles(part_z, this_part)
+		#print i_prog, this_common
 
 		if this_common > min_common:
 			this_progenitor = halos_zp1[i_prog]
@@ -250,12 +359,12 @@ def find_progenitors(halo_z, part_z, halos_all_zp1, part_all_zp1, min_common, aF
 	
 	# If there is no likely progenitor then we place a token halo instead	FIXME	do a better modeling
 	if n_progenitors == 0:
-		print 'Progenitor for %ld (npart=%d) not found, replacing with token halo.' % (id_z, halo_z.npart)
+		#print 'Progenitor for %ld (npart=%d) not found, replacing with token halo.' % (id_z, halo_z.npart)
 		token_halo = True
 		return_halo = compute_token_halo(aFactor, timeStep, guess_x, halo_z)
 
 	elif n_zp1 == 0:
-		print 'No likely progenitors for %ld.' 
+		#print 'No likely progenitors for %ld.' 
 		token_halo = True
 		return_halo = compute_token_halo(aFactor, timeStep, guess_x, halo_z)
 
@@ -269,7 +378,7 @@ def compute_token_halo(a0, tStep, guess_x, halo):
 	if tStep < 100.:
 		tStep *= 1000.
 
-	print 'Compute token halo ', a0, tStep, guess_x
+	#print 'Compute token halo ', a0, tStep, guess_x
 	t1 = a2Myr(a0) - tStep
 	a1 = Myr2a(t1)
 	z1 = 1.0/ a0 - 1.0

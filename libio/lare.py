@@ -46,11 +46,6 @@ def gen_mask(this_run, lare_x, lare_gen_sh, dir_sh):
 	print 'Mask input %s \n' % lare_gen_exec 
 	print lare_gen_exec
 	os.system(lare_gen_exec)
-	
-
-
-
-
 
 
 

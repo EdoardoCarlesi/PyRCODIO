@@ -23,11 +23,14 @@ k1 = 3.14 * (npart1) / box
 k2 = 3.14 * (npart2) / box
 k3 = 3.14 * (npart3) / box
 
+kMin = 3.14 * (2.0) / box
+kMax = 3.14 * (2.0 * npart3) / box
+
 #print k1, k2, k3
 
 k = []; pk = []
 
-k_min = 0.1
+k_min = 0.01
 k_max = 100.
 
 y_min = 0.00035
@@ -60,17 +63,22 @@ while line1:
 vx1 = [k1, k1, k1]; vy1 = [0.00001, 1.0, 100000.] 
 vx2 = [k2, k2, k2]; vy2 = [0.00001, 1.0, 100000.] 
 vx3 = [k3, k3, k3]; vy3 = [0.00001, 1.0, 100000.] 
+vxMin = [kMin, kMin, kMin]; vyMin = [0.00001, 1.0, 100000.] 
+vxMax = [kMax, kMax, kMax]; vyMax = [0.00001, 1.0, 100000.] 
 
 lnw = 2
 lnw2 = 5
+lnw3 = 7
 col1='black'
 
 plt.plot(k, pk, linewidth=lnw, color=col1)
-plt.plot(vx1, vy1, linewidth=lnw2); f_out='../output/pks_01.png'
-plt.plot(vx2, vy2, linewidth=lnw2); f_out='../output/pks_02.png'
+plt.plot(vxMin, vyMin, linewidth=lnw3) 
+#plt.plot(vx1, vy1, linewidth=lnw2); f_out='../output/pks_01.png'
+#plt.plot(vx2, vy2, linewidth=lnw2); f_out='../output/pks_02.png'
 plt.plot(vx3, vy3, linewidth=lnw2); f_out='../output/pks_03.png'
+plt.plot(vxMax, vyMax, linewidth=lnw3) 
 
-f_out='../output/pks_allcuts.png'
+#f_out='../output/pks_allcuts.png'
 
 plt.savefig(f_out)
 plt.clf()

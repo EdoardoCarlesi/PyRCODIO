@@ -11,7 +11,8 @@ from libcosmo.utils import *
 from libio.lare import *
 from config import *
 
-home_dir = '/z/carlesi/CLUES/'
+#home_dir = '/z/carlesi/CLUES/'
+home_dir = '/home/eduardo/CLUES/'
 #ginn_dir = '/ginnunagap/'
 ginn_dir = 'ginnungagap/ginnungagap/'
 lare_dir = 'GridProperties/'
@@ -23,11 +24,13 @@ snapshot = 'snapshot_054.AHF_halos'
 #snapshot = 'snapshot_054.z0.000.AHF_halos'
 
 #home_dir = '/home/eduardo/'
-hubble = 0.671		
+hubble = 0.677
 h0 = hubble 
 
 #unitMpc = True
 unitMpc = False
+
+do_sub_runs=False
 
 if unitMpc == True:
 	facMpc = 1.0
@@ -36,15 +39,25 @@ else:
 
 generate_lare='false'
 #generate_lare='true'
+<<<<<<< HEAD
 do_plots='false'
 #do_plots='true'
+=======
+
+do_plots='false'
+#do_plots='true'
+
+#find_virgo='false'
+find_virgo='true'
+>>>>>>> 84bbbf49a5b0eb3df01d3a4d1959c7d502d8722f
 
 env_type="std"
 #eanv_type="512box100"
 #env_type="HESTIA"
 
-resolution='512'
-#resolution='1024'
+#resolution='512'; ptypes=2
+resolution='1024'; ptypes=3
+#resolution='2048'; ptypes=4
 
 if do_plots == "true":
 	outp_dir = 'output_analysis/'
@@ -54,10 +67,14 @@ else:
 settings = Settings(home_dir, outp_dir, env_type, resolution, snapshot)
 
 # Factor rescaling the particle distribution in plots
+<<<<<<< HEAD
 rescale = 10
 
 #find_virgo='false'
 find_virgo='true'
+=======
+rescale = 5
+>>>>>>> 84bbbf49a5b0eb3df01d3a4d1959c7d502d8722f
 
 # Max/min distance from Virgo in Mpc/h
 if unitMpc == True:
@@ -76,11 +93,18 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
+<<<<<<< HEAD
 ice_init= 70
 ice_end = 71
 
 gin_init = 0
 gin_end = 30
+=======
+ice_init = 0
+ice_end = 70
+gin_init = 0
+gin_end = 40
+>>>>>>> 84bbbf49a5b0eb3df01d3a4d1959c7d502d8722f
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]
@@ -101,6 +125,7 @@ m_max = 3.0e+12
 ratio_max = 3.
 vrad_max = -1.0
 npart_min = 500.
+
 
 lg_model = LocalGroupModel(radius, iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
@@ -146,14 +171,8 @@ base_lss = []
 # This is generating all the possible folders and subfolders with the main seed and small scale seed
 for iice in range(ice_init, ice_end): 
 	for igin in range(gin_init, gin_end):
-		if iice < 10:
-			nice='0'+str(iice)
-		else:
-			nice=str(iice)
-		if igin < 10:
-			ngin='0'+str(igin)
-		else:
-			ngin=str(igin)
+		nice = '%02d' % iice
+		ngin = '%02d' % igin
 
 		lss_init = 0
 		lss_end = (ice_end - ice_init) * (gin_end - gin_init)
@@ -177,13 +196,19 @@ for irun in range(lss_init, lss_end):
 	# when several LG-like pairs are found, get the first pair (0) second pair (2) etc.
 	ind_lg = 0
 
+	# Loop on the sub runs, third layer of WN
 	for run_i in range(run_init, run_end):
-		run_num = '%02d' % run_i
-                print_run = base_run + '_' + run_num
-		
-		settings.init_files(base_run, run_num)		
 
-		print 'Reading in AHF file: ', settings.file_ahf_in
+		if do_sub_runs == True:
+			un_num = '%02d' % run_i
+                	print_run = base_run + '_' + run_num
+			settings.init_files(base_run, run_num)		
+		else:
+                	print_run = base_run 
+			settings.init_files(base_run, '')		
+		
+
+		#print 'Reading in AHF file: ', settings.file_ahf_in
 
 		if os.path.exists(settings.file_ahf_in):
 			print ''
@@ -198,6 +223,12 @@ for irun in range(lss_init, lss_end):
 			
 			#for ih in (halo_centers):
 			#	print ih.info()
+
+			if resolution == '2048':
+				(all_lg_models, hash_run) = lg_models()
+				this_run = hash_run[base_run]
+				lg_model = all_lg_models[this_run]	
+				#settings.plot_out = '/home/eduardo/CLUES/DATA/output_analysis/'
 
 			if find_virgo == "true":
 				(x0, m0, mtotVirgo) = locate_virgo(ahf_all)
@@ -214,7 +245,7 @@ for irun in range(lss_init, lss_end):
 				rating = 1000
 				file_lg_line = ''
 				best_lg_line = 'None.'
-				save_lg = "false"
+				save_lg = False
 
 				for ilg in range(0, n_lgs):
 					mw = these_lg[ilg].LG2			
@@ -223,7 +254,6 @@ for irun in range(lss_init, lss_end):
 					lg = LocalGroup(print_run)
 					lg.init_halos(m31, mw)				
 					file_lg_line = lg.info()
-
 
 					if find_virgo == "true":
 						file_lg_line.rstrip()
@@ -262,10 +292,14 @@ for irun in range(lss_init, lss_end):
 					file_codes_txt.write(settings.base_run+"   ")
 					#print best_lg1.npart, best_lg2.npart, best_lg2.m, best_lg1.m
 		
+					lg_fname = 'saved/lg_' + print_run + '.pkl'
+					lg_file = open(lg_fname, 'w')
+					pickle.dump(best_lg, lg_file)
+
 					# Plot the particle distributions in 3D slices around the LG and in the LV
 					if do_plots == "true" and lg.LG1.npart > npart_min and lg.LG2.npart > npart_min:
 						print 'Plotting particle distributions to file ', settings.plot_out
-						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg1, best_lg2, x0, rescale)
+						plot_lglv(settings.file_z0_in, ahf_all, settings.plot_out, best_lg.LG1, best_lg.LG2, x0, rescale, ptypes)
 			
 					# Only add the LaRe if for the likeliest pair 
 					if generate_lare == "true":

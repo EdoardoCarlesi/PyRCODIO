@@ -22,16 +22,26 @@ class Halo:
 	progenitors = []	# Here we store the IDs (and maybe other properties, too) of the progenitors of the halo, based on particles and dynamics
 	npart = 0
 	contam = 0.0	# level of contamination 
+	vmax = 0.0
+
+	# Gas & star properties
+	m_dm = 0.0
+	m_gas = 0.0
+	m_star = 0.0
 
 	id_index = dict()
 
 	def __init__(self):
-		self.m  = 0.0
-		self.x  = [0.0, 0.0, 0.0]
-		self.v  = [0.0, 0.0, 0.0]
+		self.m = 0.0
+		self.m_dm = 0.0
+		self.m_gas = 0.0
+		self.m_star = 0.0
+		self.x = [0.0, 0.0, 0.0]
+		self.v = [0.0, 0.0, 0.0]
 		self.r = 0.0
 		self.nsub = 0
 		self.npart = 0
+		self.vmax = 0.0
 		self.subhalos = []
 		self.progenitors = []
 
@@ -112,8 +122,6 @@ class HaloThroughZ:
 
 	progenitors = None	# This variable contains the list of progenitors at each step
 
-	#min_common = 20		# CLASS VARIABLE - This is shared through ALL the instances of the HaloThroughZ class! Minimum number of shared 
-	#			# particles between progenitors, it is 20 by default (but can be changed)
 	n_steps = 0		# Number of steps available for this halo
 	is_smooth = False
 	f_time = 0.0
@@ -374,7 +382,6 @@ class SubHaloThroughZ(HaloThroughZ):
 
 
 class LocalGroupModel:
-	d_max = 5000. # Box center distance
 	d_iso = 2000.
 	r_max = 1250.
 	r_min = 250.
@@ -386,8 +393,7 @@ class LocalGroupModel:
 	center = [50000.0] * 3
 	model_code = '00'
 
-	def __init__(self, d_max, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
-		self.d_max = d_max
+	def __init__(self, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
 		self.d_iso = d_iso
 		self.r_max = r_max
 		self.r_min = r_min
@@ -397,8 +403,8 @@ class LocalGroupModel:
 		self.vrad_max = vrad_max
 
 	def info(self):
-		lg_mod_info = "D_max: %.3f, D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
-				(self.d_max, self.d_iso, self.r_max, self.r_min, self.m_min)
+		lg_mod_info = "D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
+				(self.d_iso, self.r_max, self.r_min, self.m_min)
 		return lg_mod_info
 
 
@@ -521,34 +527,19 @@ class SubHalos():
 					subs_x.resize((ih+1, 3))
 					subs_x[ih] = this_x
 
-			#print len(subs_x)
 			self.host_coords = subs_x
-			#x = subs_x[:, 0]
-			#y = subs_x[:, 1]
-			#z = subs_x[:, 2]
 
 			# Automatically compute all types of tensors
-			#print 'Inertia tensor computed using %d subhalos.' % subs_n
 			(self.moi_evals, self.moi_evecs) = moment_inertia(subs_x, subs_m)
-			
-			#print 'Reduced inertia tensor computed using %d subhalos.' % subs_n
 			(self.moi_red_evals, self.moi_red_evecs) = moment_inertia_reduced(subs_x, subs_m)
 
-			#(evals, evecs, triax, ratio) = inertiaTensor(x, y, z)			
-
-			#return (self.moi_red_evals, self.moi_red_evecs, self.moi_evals, self.moi_evecs)
-			#return (self.moi_evals, self.moi_red_evals, evals)
 			return (self.moi_evals, self.moi_red_evals, self.moi_evecs, self.moi_red_evecs)
-			#return (self.moi_red_evals, self.moi_evals)
-			#return (self.moi_red_evals) #, self.moi_evals)
 
+	# TODO
 	#def recursive_anisotropy(self, plane, frac):
 			# Given a plane rank the haloes by distance to it and thake only frac % of the closest ones
-			
 			# Re-compute the PoS using this new system of coordinates
-
-			#return (evals, evecs, triax, ratio)
-
+			# return (evals, evecs, triax, ratio)
 
 	def basis_eigenvectors(self, evec_type):
 
@@ -597,8 +588,8 @@ class SubHalos():
 			for il in range(1, n_print):
 				this_r = self.host.distance(these_subs[il].x)
 
-				line = '%ld    %.2e    %7.2f   %s      %s\n' % \
- 	      			 (these_subs[il].ID,  these_subs[il].m/h0, this_r/h0, self.host_name, self.code)
+				line = '%ld    %.2e    %7.2f\n' % \
+ 	      			 (these_subs[il].ID,  these_subs[il].m/h0, this_r/h0)
 				file_sub_line += line
 
 		return file_sub_line
@@ -642,6 +633,15 @@ class LocalGroup:
 
 	def rating(self):
 		self.rating = fh.rate_lg_pair(self.LG1, self.LG2)
+
+	def geo_com(self):
+		geo_com = np.zeros((3))
+
+		for i in range(0, 3):
+			geo_com[i] = 0.5 * (self.LG1.x[i] + self.LG2.x[i])
+	
+		self.com = geo_com
+		return self.com 
 
 	def get_com(self):
 		self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
