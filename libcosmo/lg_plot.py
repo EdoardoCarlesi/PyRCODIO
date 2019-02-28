@@ -15,7 +15,7 @@ from scipy.stats import kde
 
 
 def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
-	print 'Plotting density slices for snapshot: ', f_snap
+	print('Plotting density slices for snapshot: ', f_snap)
 
 	# Plot properties
 	ptsize_lv = 2.0
@@ -59,7 +59,7 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 	y_plotlv = [[] for ix in range(0, 3)]
 
 	minx = center[0] - side_size;	miny = center[1] - side_size;	minz = center[2] - side_size
-	minima = [minx, miny, minz];	print minima
+	minima = [minx, miny, minz];	#print minima
 
 	# Find slab of thickness +/- thickn around the axes
 	for ix in range(0, 3):
@@ -71,8 +71,8 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 		(x_plot_tmp2, y_plot_tmp2) = find_slab(parts2, ix, center, minima, side_size, thickn, f_rescale * 64.0, units) 
 		n_tmp1 = len(x_plot_tmp1); 		n_tmp2 = len(x_plot_tmp2)
 
-		print 'N Part1 in slab: ', n_tmp1
-		print 'N Part2 in slab: ', n_tmp2
+		print('N Part1 in slab: ', n_tmp1)
+		print('N Part2 in slab: ', n_tmp2)
 
 		for ijk in range(0, n_tmp1):
 			x_plotlv[ixp1].append(x_plot_tmp1[ijk])
@@ -83,7 +83,7 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 			y_plotlv[ixp2].append(y_plot_tmp2[ijk])
 
 		if (units == 'Mpc' and side_size > 4.0) or (units == 'kpc' and side_size > 4000.0):
-			print 'Selecting additional slabs'
+			print('Selecting additional slabs')
 			(x_plot_tmp3, y_plot_tmp3) = find_slab(parts3, ix, center, minima, side_size, thickn, f_rescale * 8.0, units) 
 			(x_plot_tmp4, y_plot_tmp4) = find_slab(parts4, ix, center, minima, side_size, thickn, f_rescale * 1.0, units) 
 			n_tmp3 = len(x_plot_tmp3); 		n_tmp4 = len(x_plot_tmp4)
@@ -96,14 +96,14 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 				x_plotlv[ixp1].append(x_plot_tmp4[ijk])
 				y_plotlv[ixp2].append(y_plot_tmp4[ijk])
 		else:
-			print 'Zoom mode'
+			print('Zoom mode')
 			x_plot_tmp3 = []; x_plot_tmp4 = []; 
 			n_tmp3 = 0; n_tmp4 = 0;
 
 		t2 = time.clock()
 		
-		print 'Slab (%s, %s) with found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
-		print 'Selected a total of ', n_tmp1 + n_tmp2 + n_tmp3 + n_tmp4, ' particles.'
+		print('Slab (%s, %s) with found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1)))
+		print('Selected a total of ', n_tmp1 + n_tmp2 + n_tmp3 + n_tmp4, ' particles.')
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 	# General plot settings
@@ -128,7 +128,7 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 		y_min /= facMpc
 		y_max /= facMpc
 
-		print 'XMin: ', x_min, ' XMax: ', x_max
+		print('XMin: ', x_min, ' XMax: ', x_max)
 
 		# Plot settings for each subplot
 		plt.subplot(plot_row, plot_col, ix+1)
@@ -236,7 +236,7 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	for i_red in range(0, n_types):
 		reduce_factors[i_red] = pow(i_red+1,3) * reduce_fac
 
-	print 'Plotting LG & LV slices for snapshot: ', f_snap
+	print('Plotting LG & LV slices for snapshot: ', f_snap)
 #	print reduce_factors
 
 	# Plot properties
@@ -289,14 +289,14 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 		n_ptlg1 = len(x_ptslg1[0])
 	
 		if n_ptlg0 > npt_lg_min:
-			print 'M31 type:%d particles found in %.3f s. ' % (i_type, t2-t1)
+			print('M31 type:%d particles found in %.3f s. ' % (i_type, t2-t1))
 		else:
-			print 'M31 type:%d particles not found after %.3f s, looking for particle types: %d ' % (t2-t1, i_type, i_type)
+			print('M31 type:%d particles not found after %.3f s, looking for particle types: %d ' % (t2-t1, i_type, i_type))
 		
 		if n_ptlg1 > npt_lg_min:
-			print 'MW  type:%d particles found in %.3f s. ' % (i_type, t2-t1)
+			print('MW  type:%d particles found in %.3f s. ' % (i_type, t2-t1))
 		else:
-			print 'MW  type:%d particles not found after %.3f s, looking for particle types: %d ' % (t2-t1, i_type, i_type)
+			print('MW  type:%d particles not found after %.3f s, looking for particle types: %d ' % (t2-t1, i_type, i_type))
 
 		if (n_ptlg0 < npt_lg_min) or (n_ptlg0 < npt_lg_min):
 			i_type += 1
@@ -309,14 +309,14 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 	lgcom = center_of_mass([lg0.m, lg1.m], [lg0.x, lg1.x])
 	d_lgvirgo = distance(lgcom, x_virgo)
 	d_mwm31 = distance(lg0.x, lg1.x)
-	print 'Distance LG to Virgo: %.3f ' % d_lgvirgo
+	print('Distance LG to Virgo: %.3f ' % d_lgvirgo)
 
 	# Center of plot
 	c_plot = center_of_mass([1.0, 1.0], [lgcom, x_virgo])
 	side_lv = d_lgvirgo + buffPlot * 2.0
 	side_lg = d_mwm31 * 2
-	print 'Plot center: ', c_plot
-	print 'Plot side  : ', side_lg
+	print('Plot center: ', c_plot)
+	print('Plot side  : ', side_lg)
 
 	# This vector contains the minima of the XYZ coordinates for the plot
 	min_lv_xyz = [0.0] * 3 
@@ -347,7 +347,7 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 		(x_plotlg[ixp1], y_plotlg[ixp2]) = find_slab(partDM[0], ix, lgcom, min_lg_xyz, side_lv, thickn, reduce_factors[n_types-1]) 
 		t2 = time.clock()
 
-		print 'Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
+		print('Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1)))
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 
@@ -400,7 +400,7 @@ def plot_lglv(f_snap, h_ahf, f_out, lg0, lg1, x_virgo, reduce_fac, n_types):
 		y_min /= facMpc
 		y_max /= facMpc
 
-		print 'Plot edges: %.3f, %.3f, %.3f, %.3f\n' % (x_min, x_max, y_min, y_max)
+		print('Plot edges: %.3f, %.3f, %.3f, %.3f\n' % (x_min, x_max, y_min, y_max))
 
 		plt.subplot(plot_row, plot_col, 3+ix+1)
 		plt.axis([x_min, x_max, y_min, y_max])
@@ -480,8 +480,8 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 	# Center of plot
 	c_plot = lgcom
 	side_lg = d_mwm31 + buffPlot
-	print 'Plot center: ', c_plot
-	print 'Plot side  : ', side_lg
+	print('Plot center: ', c_plot)
+	print('Plot side  : ', side_lg)
 
 	# This vector contains the minima of the XYZ coordinates for the plot
 	min_lg_xyz = [0.0] * 3 
@@ -505,7 +505,7 @@ def plot_lg(f_snap, f_out, lg0, lg1, reduce_fac, ptype, plot_pos):
 		(x_plotlg[ixp1], y_plotlg[ixp2]) = find_slab(partDM, ix, lgcom, min_lg_xyz, side_lg, thickn, reduce_fac)
 		t2 = time.clock()
 
-		print 'Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1))
+		print('Slab (%s, %s) found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1)))
 		plt.ylabel(axis_label[ixp2]+' '+axis_units)
 
 
@@ -621,7 +621,7 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	#print 'Y Axis min=%.3f  max=%.3f\n' % (y_min, y_max)
 
 	n_bins = len(x_bins)
-	print 'Nbins = ', n_bins
+	#print 'Nbins = ', n_bins
 
 	xs = np.zeros(n_bins)
 	ys = np.zeros(n_bins)
@@ -684,7 +684,7 @@ def plot_lg_bins(x_bins, y_bins, f_out):
 	#axs[0].set_title(r'MW')#, size=title_size)
 	#axs[1].set_title(r'M31')#, size=title_size)
 	
-	print 'Saving png to file: ', f_out
+	print('Saving png to file: ', f_out)
 	plt.savefig(f_out)
 	plt.close()
 	plt.clf()
@@ -700,7 +700,7 @@ def plot_anisotropies(anisotropies, i_main, n_sub, n_snap, f_out):
 	x_min = 0; 	x_max = 54 * 0.25 # GYrs
 	y_min = 0; 	y_max = 1.0
 
-	print 'Plotting anisotropies to file: ', f_out
+	print('Plotting anisotropies to file: ', f_out)
 
 	(fig, axs) = plt.subplots(ncols=3, nrows=1, figsize=(12, 4))
 	

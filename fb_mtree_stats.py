@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 from libcosmo.track_halos import *
 from libcosmo.utils import *
 from libcosmo.mtree import *
@@ -28,20 +29,11 @@ base_path = '/home/eduardo/CLUES/DATA/FullBox/'
 do_trees_db = True
 #do_trees_db = False
 
-sub_ini = 0
-sub_end = 1
+sub_ini = 4
+sub_end = 5
 
-tot_files = 1
-use_files = 1
-resolution = '1024'
-env_type = 'std'
-out_dir = 'output/'
 n_steps = 54
-n_lgs = 1
-
-min_tree_steps = 35
-
-all_trees = np.zeros((n_lgs, n_steps))
+min_tree_steps = 30
 
 # Append all trees here - use ALL the DB!	
 trees_mw = []; trees_m31 = []
@@ -80,11 +72,10 @@ for i_sub in range(sub_ini, sub_end):
 
 	iValid = 0; 
 
-	for this_lg in all_lgs:
-	#for this_lg in all_lgs[0:10]:
+	#for this_lg in all_lgs:
+	for this_lg in all_lgs[0:100]:
 		this_tree_mw = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
 		this_tree_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)
-
 
 		valid_tree_mw = np.where(this_tree_mw > 0)
 		valid_tree_m31 = np.where(this_tree_m31 > 0)
@@ -95,10 +86,12 @@ for i_sub in range(sub_ini, sub_end):
 			trees_mw.append(this_mtree_mw)
 			trees_m31.append(this_mtree_m31)
 			iValid += 1 
+			#print(this_tree_mw)
+			#print(this_tree_m31)
 		else:
 			print(this_tree_mw)
 			print(this_tree_m31)
-			print('--')
+		#	print('--')
 		#	print(this_lg.LG1.info())
 # Save the trees!
 if do_trees_db == True:

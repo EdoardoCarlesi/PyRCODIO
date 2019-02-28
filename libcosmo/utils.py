@@ -1,7 +1,7 @@
 import random
 import math
 import numpy as np
-import scipy.stats as sp
+#import scipy.stats as sp
 import pickle
 from numpy import linalg as la
 
@@ -333,7 +333,7 @@ def random_triaxialities_and_angles(n_pts, n_trials, vector):
 		#rand_cos[2, i_trial] = np.arccos(abs(angle(vector, evecs[2, :]))) * rad2deg
 
 		for i_sat in range(0, n_pts):
-        	        new_pos = change_basis(these_pts[i_sat, :], evecs)
+			new_pos = change_basis(these_pts[i_sat, :], evecs)
 			new_positions[:, i_sat] = new_pos			
 
 		rand_disp[0, i_trial] = np.std(abs(new_positions[0, :]))
@@ -381,7 +381,7 @@ def random_triaxialities(n_pts, n_trials, compare_value):
 		rand_evals[:, i_trial] = evals / evals[2]
 
 		for i_sat in range(0, n_pts):
-        	        new_pos = change_basis(these_pts[i_sat, :], evecs)
+			new_pos = change_basis(these_pts[i_sat, :], evecs)
 			new_positions[:, i_sat] = new_pos			
 
 		rand_disp[0, i_trial] = np.std(abs(new_positions[0, :]))
@@ -416,12 +416,12 @@ def random_table_triaxialities(n_pts, n_trials, read_table):
 	if read_table == True:
 
 		try:
-			print 'Reading pre-stored table values from: ', triax_name 
+			print('Reading pre-stored table values from: ', triax_name)
 			f_evals = open(triax_name, 'r')
 			rand_evals = pickle.load(f_evals)
 			return rand_evals
 		except:
-			print 'File not found: ', triax_name 
+			print('File not found: ', triax_name )
 	
 	# Generate tables
 	else:
@@ -434,7 +434,7 @@ def random_table_triaxialities(n_pts, n_trials, read_table):
 			rand_evals[:, i_trial] = evals / evals[2]
 
 		f_evals = open(triax_name, 'w')
-		print 'Saving table to: ', triax_name
+		print('Saving table to: ', triax_name)
 		pickle.dump(rand_evals, f_evals)
 
 	#print rand_evals[0, :]

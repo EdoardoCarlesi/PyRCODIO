@@ -58,7 +58,7 @@ def read_ahf_chunks(file_root, file_suffix, n_chunks):
 		line = file_ahf.readline()
 	
 		while line:
-    			line = file_ahf.readline()
+			line = file_ahf.readline()
 			line = line.strip()
 			column = line.split()
 			n_col = len(column)
@@ -86,7 +86,7 @@ def read_ahf_chunks(file_root, file_suffix, n_chunks):
 				count += 1
 
 	n_lines = count
-	print "Found a total of %d halos " % (n_lines)
+	print("Found a total of %d halos " % (n_lines))
 
 	return halos_ahf
 
@@ -105,7 +105,7 @@ def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
 		line = file_ahf.readline()
 	
 		while line:
-    			line = file_ahf.readline()
+			line = file_ahf.readline()
 			line = line.strip()
 			column = line.split()
 			n_col = len(column)
@@ -134,7 +134,7 @@ def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
 					count += 1
 
 	n_lines = count
-	print "Found a total of %d halos in mass range (%e, %e)" % (n_lines, m_min, m_max)
+	print("Found a total of %d halos in mass range (%e, %e)" % (n_lines, m_min, m_max))
 
 	return halos_ahf
 
@@ -149,7 +149,7 @@ def read_ahf_mass_range(file_name, m_max, m_min):
 	count = 0
 	
 	while line:
-    		line = file_ahf.readline()
+		line = file_ahf.readline()
 		line = line.strip()
 		column = line.split()
 		n_col = len(column)
@@ -180,7 +180,7 @@ def read_ahf_mass_range(file_name, m_max, m_min):
 				count += 1
 
 	n_lines = count
-	print "Found a total of %d halos in mass range (%e, %e)" % (n_lines, m_min, m_max)
+	print("Found a total of %d halos in mass range (%e, %e)" % (n_lines, m_min, m_max))
 
 	return halos_ahf
 
@@ -195,7 +195,7 @@ def read_ahf(file_name):
 	count = 0
 	
 	while line:
-    		line = file_ahf.readline()
+		line = file_ahf.readline()
 		line = line.strip()
 		column = line.split()
 		n_col = len(column)
@@ -259,7 +259,7 @@ def read_particles_chunks(file_root, file_suff, n_files, n_halos):
 		(tot_l, fname) = out_os.split()
 		tot_l = long(tot_l)
 
-		print 'Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, n_halos)
+		print('Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, n_halos))
 
 		while line:
 			line = file_part.readline()
@@ -290,7 +290,7 @@ def read_particles_chunks(file_root, file_suff, n_files, n_halos):
 					count_h += 1
 					count_p = 0			# Reset the particle number
 		
-	print 'Expected %d halos, found %d ' % (count_h, n_halos)
+	print('Expected %d halos, found %d ' % (count_h, n_halos))
 
 	return (ids, parts)
 
@@ -320,7 +320,7 @@ def read_particles(file_name):
 	out_os = os.popen(lines_command).read()
 	(tot_l, fname) = out_os.split()
 	tot_l = long(tot_l)
-	print 'Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, tot_h)
+	print('Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, tot_h))
 
 	while line:
 		line = file_part.readline()
@@ -370,7 +370,7 @@ def read_lgs(file_name):
 
 
 	while line:
-    		line = file_txt.readline()
+		line = file_txt.readline()
 		line = line.strip()
 		column = line.split()
 		n_col = len(column)
