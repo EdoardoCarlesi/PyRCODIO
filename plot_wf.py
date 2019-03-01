@@ -9,8 +9,8 @@ path_wf = '/home/eduardo/CLUES/DATA/WF/'
 #root_wf = 'mock_CF3_z_brent_EDO-format_25_0_256_500.000'; do_mock = True
 #root_wf = 'mock_CF3_z_brent_EDO-format_50_0_256_500.000'; do_mock = True
 #root_wf = 'mock_CF3_z_brent_EDO-format_50_1_256_500.000'; do_mock = True
-#root_wf = 'mock_CF3_z_brent_EDO-format_50_2_256_500.000'; do_mock = True
-root_wf = 'mock_CF3_z_brent_EDO-format_50_3_256_500.000'; do_mock = True
+root_wf = 'mock_CF3_z_brent_EDO-format_50_2_256_500.000'; do_mock = True
+#root_wf = 'mock_CF3_z_brent_EDO-format_50_3_256_500.000'; do_mock = True
 
 #root_wf='CF3_RG_1300_256_500.000'; do_mock = False
 #root_wf='CF3_RG_1200_256_500.000'; do_mock = False

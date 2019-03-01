@@ -13,13 +13,24 @@ rand_stat_mah = 'saved/rand_out_stat_mah.pkl'
 rand_stat_time = 'saved/rand_out_stat_time.pkl'
 
 # LGF LGs statistics TODO
+cs_stat_mah = 'saved/all_lgf_stat_mah.pkl'
+cs_stat_time = 'saved/all_lgf_stat_time.pkl'
 	
-# Save the "condensed" data
+# Filenames
 print('Loading MAH random LCDM statistics from %s and %s' % (rand_stat_mah, rand_stat_time))
+print('Loading MAH CS LCDM statistics from %s and %s' % (cs_stat_mah, cs_stat_time))
+
+# Open files
 rand_f_mah = open(rand_stat_mah, 'r')
 rand_f_time = open(rand_stat_time, 'r')
+cs_f_mah = open(cs_stat_mah, 'r')
+cs_f_time = open(cs_stat_time, 'r')
 
+# Load all files
 rand_times = pickle.load(rand_f_time)
+rand_mahs = pickle.load(rand_f_mah)
+cs_times = pickle.load(cs_f_time)
+cs_mahs = pickle.load(cs_f_mah)
 
 '''
 	GENERAL PLOT PROPERTIES
@@ -35,26 +46,45 @@ plt.rc({'text.usetex': True})
 #	time_stats = np.zeros((2, 2, iValid))	---> # LMMT & FT
 n_bins = 12
 
-# FT bins 2D
+# FT bins 2D ---> Rand
 ft_fb = rand_times[:, 0, :]
-plt.hist2d(ft_fb[0], ft_fb[1], bins=(n_bins, n_bins), cmap=plt.cm.jet, alpha=0.75)
+plt.hist2d(ft_fb[0], ft_fb[1], bins=(n_bins, n_bins), cmap=plt.cm.jet, alpha=0.8)
 
-# Contour lines
-H, xed, yed = np.histogram2d(ft_fb[1], ft_fb[0], bins=(n_bins, n_bins))
+# Contour lines ---> CS
+ft_cs = cs_times[:, 0, :]
+H, xed, yed = np.histogram2d(ft_cs[1], ft_cs[0], bins=(n_bins, n_bins))
 plt.contour(H, colors='black')
-#contour(counts,extent=[xbins.min(),xbins.max(),ybins.min(),ybins.max()],linewidths=3)
+
+# Axes and title
+ax = plt.gca()
+ax.set_xlabel('MW')
+ax.set_ylabel('M31')
+plt.title('Formation Time')
 
 # Formation Time 2D
 plt.tight_layout()
-plt.savefig('test_ft.png')
+plt.savefig('histo_ft.png')
 plt.clf()
 plt.cla()
 
 # MMT bins 2D
 mmt_fb = rand_times[:, 1, :]
 plt.hist2d(mmt_fb[0], mmt_fb[1], bins=(n_bins, n_bins), cmap=plt.cm.jet)
+
+# Contour lines ---> CS
+mmt_cs = cs_times[:, 1, :]
+H, xed, yed = np.histogram2d(mmt_cs[1], mmt_cs[0], bins=(n_bins, n_bins))
+plt.contour(H, colors='black')
+#contour(counts,extent=[xbins.min(),xbins.max(),ybins.min(),ybins.max()],linewidths=3)
+
+# Axes and title
+ax = plt.gca()
+ax.set_xlabel('MW')
+ax.set_ylabel('M31')
+plt.title('Last Major Merger Time')
+
 plt.tight_layout()
-plt.savefig('test_mmt.png')
+plt.savefig('histo_mmt.png')
 plt.clf()
 plt.cla()
 
@@ -62,7 +92,6 @@ plt.cla()
 	1D PLOTS OF MAHs
 '''
 #	mah_avgs = np.zeros((2, n_steps, 3))	---> This contains median and percentiles 
-rand_mahs = pickle.load(rand_f_mah)
 
 # General properties
 x_min = 0.0; x_max = 13.0

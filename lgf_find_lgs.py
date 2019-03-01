@@ -18,7 +18,8 @@ from libcosmo.grid import *
 # Simulation & catalog 
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/LGF/1024/'
-file_single0 = 'snapshot_054.0000.z0.000.AHF_halos'
+file_single0 = 'snapshot_054.z0.000.AHF_halos'
+#file_single0 = 'snapshot_054.0000.z0.000.AHF_halos'
 file_single1 = 'snapshot_054.0000.z0.001.AHF_halos'
 
 # Search distance from the box center
@@ -32,11 +33,11 @@ for ix in range(0, 3):
 # Local group selection parameters
 iso_radius = 2000.
 r_max = 1300.
-r_min = 350. 
+r_min = 250. 
 m_min = 5.e+11  
 m_max = 5.0e+12 
 ratio_max = 5.0
-vrad_max = 100.0
+vrad_max = 50.0
 
 # Initialzie a local group model
 lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
