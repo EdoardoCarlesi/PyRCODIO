@@ -2,7 +2,7 @@
 
 import numpy as np
 import sys
-from read_ascii import *
+from .read_ascii import *
 
 def mah_main_file_name(out_path, num_run, i_main):
 	main_code = '%02d' % i_main

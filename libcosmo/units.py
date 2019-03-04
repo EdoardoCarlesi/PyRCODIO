@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from scipy import interpolate
+#from scipy import interpolate
 
 def km2kpc():
 	km2kpc = 3.086e+16

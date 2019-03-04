@@ -12,7 +12,7 @@ from libcosmo.lg_plot import *
 
 resolution='2048'
 #resolution='1024'
-run_init = 9
+run_init = 0
 run_end = 10
 
 subrun_init = 0
@@ -172,8 +172,6 @@ for run_j in range(run_init, run_end):
 					del x_mf1; 	del x_mf2
 					del y_mf1; 	del y_mf2
 					n_mf = 0
-			'''
-			# Compute halo evolution
 
 			'''
 

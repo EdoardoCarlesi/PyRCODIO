@@ -15,8 +15,8 @@ def ahf_snapshots(base_path):
 	ns = len(line_s)
 	ss = []
 
-        for js in range(0, ns):
-                this_line = line_s[js].rstrip()
+	for js in range(0, ns):
+		this_line = line_s[js].rstrip()
 		ss.append(str(this_line))
 	return ss
 
@@ -28,17 +28,17 @@ def ahf_redshifts(base_path):
 	proc = subprocess.Popen(exec_z, stdout=subprocess.PIPE, shell=True)
 	(f_out, f_err) = proc.communicate()
 	
-	print '-'
-	print f_out
-	print '-'
+	print('-')
+	print(f_out)
+	print('-')
 
 	file_z = open(f_out.rstrip(), 'r')
 	line_z = file_z.readlines()
 	nz = len(line_z)
 	zs = []
 
-        for iz in range(0, nz):
-                this_line = line_z[iz].rstrip()
+	for iz in range(0, nz):
+		this_line = line_z[iz].rstrip()
 		zs.append(this_line)
 	return zs
 

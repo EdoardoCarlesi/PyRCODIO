@@ -1,12 +1,12 @@
 import math 
 import pickle
 import numpy as np
-import find_halos as fh
+from .find_halos import *
 import sys
-from scipy import interpolate
+#from scipy import interpolate
 from operator import *
-from utils import *
-from units import *
+from .utils import *
+from .units import *
 
 class MergerTree:
 
@@ -40,8 +40,14 @@ class MergerTree:
 
 		iN = 0
 		for thisNPart in self.nPart:
-			self.nPartNorm[iN] = (1.0 * thisNPart) / nNorm
-			iN += 1
+			try:
+				self.nPartNorm[iN] = (1.0 * thisNPart) / nNorm
+				iN += 1
+			except:
+				dummy = 0.0
+				#self.nPartNorm[iN] = 0.0 
+
+				#print(thisNPart, nSteps, iN)
 
 		# Automatically smooth the tree when reading in
 		self.smooth_tree()

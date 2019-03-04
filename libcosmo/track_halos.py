@@ -1,7 +1,7 @@
-from find_halos import *
-from utils import *
-from units import *
-from halo import *
+from .find_halos import *
+from .utils import *
+from .units import *
+from .halo import *
 
 import pickle
 import numpy as np

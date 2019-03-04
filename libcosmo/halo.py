@@ -1,12 +1,12 @@
 import math 
 import pickle
 import numpy as np
-import find_halos as fh
+#from .find_halos import find_halos as fh
 import sys
-from scipy import interpolate
+#from scipy import interpolate
 from operator import *
-from utils import *
-from units import *
+from .utils import *
+from .units import *
 
 class Halo:
 	'Class containing a single DM halo'
@@ -251,25 +251,24 @@ class HaloThroughZ:
 		return self.f_time
 
 	def dump_history(self, f_name):
-       		f_out = open(f_name, 'wb')
-       		header = "# " 
-        	header += self.header()
-        	header += "\n"
+		f_out = open(f_name, 'wb')
+		header = "# " 
+		header += self.header()
+		header += "\n"
 
-        	f_out.write(header)
+		f_out.write(header)
 
-        	for ih in range(0, self.n_steps):
-        	        line_z = "%5.3f " % (self.z_step[ih])
-        	        line = line_z + self.self[ih].info() + "\n"
-        	        f_out.write(line)
+		for ih in range(0, self.n_steps):
+			line_z = "%5.3f " % (self.z_step[ih])
+			line = line_z + self.self[ih].info() + "\n"
+			f_out.write(line)
 
 	def dump_tree(self, f_name):
-       		f_out = open(f_name, 'wb')
-
-        	for iz in range(0, self.n_steps):
+		f_out = open(f_name, 'wb')
+		for iz in range(0, self.n_steps):
 			n_progenitors = len(self.halo[iz].progenitors)
 			line = "# z = %5.3f" % (self.z_step[iz])
-        	        f_out.write(line)
+			f_out.write(line)
 
 			for ip in range(0, n_progenitors):
         		        line_z = "%ld    %ld    %ld\n" % (self.halo[ih].progenitors)
@@ -370,7 +369,7 @@ class SubHaloThroughZ(HaloThroughZ):
 				r_old = r_host 
 
 			except:
-				print 'Error at step ', iat
+				print('Error at step ', iat)
 
 		return self.acc_time
 
@@ -553,10 +552,10 @@ class SubHalos():
 
 		else:
 			change_basis = False
-			print 'Error. Select "inertia" or "inertia_reduced". '
+			print('Error. Select "inertia" or "inertia_reduced". ')
 
 		if change_basis == True:
-			print 'Computing subhalo positions in the %s tensor eigenvector basis.' % evec_type
+			print('Computing subhalo positions in the %s tensor eigenvector basis.' % evec_type)
 			new_coords = np.zeros((self.n_select_subs, 3))
 
 			for i_s in range(0, self.n_select_subs):

@@ -1,6 +1,8 @@
-import halo as hl
-from utils import *
-from particles import *
+from .halo import * 
+#halo as hl
+#import halo as hl
+from .utils import *
+from .particles import *
 
 import numpy as np 
 import sys
@@ -213,7 +215,7 @@ def rate_lg_pair(lg1, lg2):
 
 	#contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
 	#print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
-	print 'LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart)
+	print('LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart))
 
 	return lg_rate
 
@@ -242,8 +244,8 @@ def locate_virgo(ahf_all):
 			m0 = virgos[iv].m
 			x0 = virgos[iv].x
 
-	print 'At position %.3f, %.3f, %.3f found Virgo of mass %.3e. Total mass in a sphere of %.3f kpc/h around it = %.3e ' % \
-		(x0[0], x0[1], x0[2], m0, virgo_r, mtotVirgo)
+	print('At position %.3f, %.3f, %.3f found Virgo of mass %.3e. Total mass in a sphere of %.3f kpc/h around it = %.3e ' % \
+		(x0[0], x0[1], x0[2], m0, virgo_r, mtotVirgo))
 
 	return (x0, m0, mtotVirgo)
 
@@ -327,7 +329,7 @@ def locate_clusters(ahf_all, box_center, runcode):
 		#print box_center	
 		dio='porco'
 	else:
-		print 'Rescaling box center units... '
+		print('Rescaling box center units... ')
 		for ix in range(0, 3):
 			box_center[ix] = box_center[ix] * facMpc
 	
@@ -367,10 +369,10 @@ def locate_clusters(ahf_all, box_center, runcode):
 				d0 = distance(this_x, x0)
 				#print cluster_name[ic], ' ',  clusters[iv].m, clusters[iv].x, d_center/1000., d0/1000.
 				#print cluster_name[ic], ' ',  clusters[iv].m/1.e+14, \
-				print str(runcode), ' ', cluster_name[ic], ' ', clusters[iv].m/1.e+14, d0/facMpc, ' ', \
+				print(str(runcode), ' ', cluster_name[ic], ' ', clusters[iv].m/1.e+14, d0/facMpc, ' ', \
 				(clusters[iv].x[0]-box_center[0])/facMpc,(clusters[iv].x[1]-box_center[1])/facMpc, (clusters[iv].x[2]-box_center[2])/facMpc, \
 				clusters[iv].v[0], clusters[iv].v[1], clusters[iv].v[2],  \
-				clusters[iv].l[0], clusters[iv].l[1], clusters[iv].l[2]#, '\n'
+				clusters[iv].l[0], clusters[iv].l[1], clusters[iv].l[2])#, '\n'
 	
 		cluster_dist.append(distance(cluster_pos[ic], x0))
 

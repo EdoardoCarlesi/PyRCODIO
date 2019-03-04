@@ -1,6 +1,6 @@
-from utils import *
-from units import *
-from halo import *
+from .utils import *
+from .units import *
+from .halo import *
 import math
 import numpy as np
 
@@ -10,7 +10,7 @@ class Particle:
 	Pos = np.zeros((3))
 	Vel = np.zeros((3))
 	Mass = 0.0
-	ID = long(0)
+	ID = 123123123123123123
 
 	def __init__(self, Type, Pos, Vel, Mass, ID):
 		self.Type = Type
@@ -81,7 +81,7 @@ def select_particles_halo(halo, x_p):
 	x_b = []
 	x_c = []
 
-	print 'Selecting %d particles within %f kpc/h out of %d' % (n_h, r, n_p)
+	print('Selecting %d particles within %f kpc/h out of %d' % (n_h, r, n_p))
 
 	units = x_p[n_p-1][0] + x_p[n_p-1][1] + x_p[n_p-1][2]
 
@@ -110,7 +110,7 @@ def select_particles_halo(halo, x_p):
 
 		ip = next_ip_sphere(ip, r, d)
 
-	print 'Found %d particles within the sphere, read %d particles in total.' % (len(x_a), ip)
+	print('Found %d particles within the sphere, read %d particles in total.' % (len(x_a), ip))
 	return (x_a, x_b, x_c)
 
 
@@ -120,11 +120,11 @@ def select_particles(x_com, x_p, r):
 	x_b = []
 	x_c = []
 
-	print 'Selecting particles within %f kpc/h out of %d' % (r, n_p)
+	print('Selecting particles within %f kpc/h out of %d' % (r, n_p))
 
 	units = x_p[n_p-1][0] + x_p[n_p-1][1] + x_p[n_p-1][2]
 
-	print units, x_com
+	print(units, x_com)
 
 	if units > 5000. :
 		facMpc = 1.0
@@ -148,7 +148,7 @@ def select_particles(x_com, x_p, r):
 
 		ip = next_ip_sphere(ip, r, d)
 
-	print 'Found %d particles within the sphere.' % len(x_a)
+	print('Found %d particles within the sphere.' % len(x_a))
 	return (x_a, x_b, x_c)
 
 
@@ -163,7 +163,7 @@ def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac, units):
 
 	reduce_fac = int(reduce_fac)
 
-	print 'Finding slab across ', n_p, ' particles.'
+	print('Finding slab across ', n_p, ' particles.')
 
 	if units == 'kpc' :
 		facMpc = 1.0
@@ -178,7 +178,7 @@ def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac, units):
 	max_a = min_ab[0] + side
 	max_b = min_ab[1] + side
 
-	print 'Selecting particles within %.3f side and %.3f height around %s' % (side, thick, center)
+	print('Selecting particles within %.3f side and %.3f height around %s' % (side, thick, center))
 	
 	a = (axis+1) % 3
 	b = (axis+2) % 3
@@ -207,7 +207,7 @@ def find_slab(x_p, axis, center, min_ab, side, thick, reduce_fac, units):
 		ip = next_ip_slab(ip, thick, delta_c)
 		ip += reduce_fac
 
-	print 'Found %d particles within the slab, reduced by a factor of %d.' % (len(x_a), reduce_fac)
+	print('Found %d particles within the slab, reduced by a factor of %d.' % (len(x_a), reduce_fac))
 	return (x_a, x_b)
 
 
@@ -226,7 +226,7 @@ def find_slice(x_p, axis, center, shell):
 	x_a = []
 	x_b = []
 
-	print 'Selecting particles within %f distance out of %d' % (shell, n_p)
+	print('Selecting particles within %f distance out of %d' % (shell, n_p))
 	
 	a = (axis+1) % 3
 	b = (axis+2) % 3
@@ -237,5 +237,5 @@ def find_slice(x_p, axis, center, shell):
 			x_a.append(x_p[ip][a])	
 			x_b.append(x_p[ip][b])	
 
-	print 'Found %d particles within the shell.' % len(x_a)
+	print('Found %d particles within the shell.' % len(x_a))
 	return (x_a, x_b)
