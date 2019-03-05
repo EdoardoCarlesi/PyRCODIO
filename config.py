@@ -340,15 +340,3 @@ class Settings:
 
 	def get_files_input(self):
 		return (self.file_z0, self.base_out, self.n_ic, self.n_z0)
-
-
-
-
-
-
-
-
-
-
-
-
