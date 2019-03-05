@@ -38,7 +38,7 @@ n_lgs = 1
 
 time_step = 0.25	# GYrs
 all_trees = []
-min_tree_size = 45
+min_tree_size = 50
 
 list_sub_sh = "cd " + base_path + "; ls -d ??_?? > " + list_tmp
 os.system(list_sub_sh)
@@ -58,7 +58,7 @@ out_stat_time = 'saved/all_lgf_stat_time.pkl'
 trees_mw_cs = []
 trees_m31_cs = []
 
-read_db = False
+read_db = True
 
 if read_db == False:
 	paths = []

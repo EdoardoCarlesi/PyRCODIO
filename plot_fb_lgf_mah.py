@@ -44,15 +44,16 @@ plt.rc({'text.usetex': True})
 '''
 
 #	time_stats = np.zeros((2, 2, iValid))	---> # LMMT & FT
-n_bins = 12
+n_bins_rand = 18
+n_bins_cs = 12
 
 # FT bins 2D ---> Rand
 ft_fb = rand_times[:, 0, :]
-plt.hist2d(ft_fb[0], ft_fb[1], bins=(n_bins, n_bins), cmap=plt.cm.jet, alpha=0.8)
+plt.hist2d(ft_fb[0], ft_fb[1], bins=(n_bins_rand, n_bins_rand), cmap=plt.cm.jet, alpha=0.8)
 
 # Contour lines ---> CS
 ft_cs = cs_times[:, 0, :]
-H, xed, yed = np.histogram2d(ft_cs[1], ft_cs[0], bins=(n_bins, n_bins))
+H, xed, yed = np.histogram2d(ft_cs[1], ft_cs[0], bins=(n_bins_cs, n_bins_cs))
 plt.contour(H, colors='black')
 
 # Axes and title
@@ -69,11 +70,11 @@ plt.cla()
 
 # MMT bins 2D
 mmt_fb = rand_times[:, 1, :]
-plt.hist2d(mmt_fb[0], mmt_fb[1], bins=(n_bins, n_bins), cmap=plt.cm.jet)
+plt.hist2d(mmt_fb[0], mmt_fb[1], bins=(n_bins_rand, n_bins_rand), cmap=plt.cm.jet)
 
 # Contour lines ---> CS
 mmt_cs = cs_times[:, 1, :]
-H, xed, yed = np.histogram2d(mmt_cs[1], mmt_cs[0], bins=(n_bins, n_bins))
+H, xed, yed = np.histogram2d(mmt_cs[1], mmt_cs[0], bins=(n_bins_cs, n_bins_cs))
 plt.contour(H, colors='black')
 #contour(counts,extent=[xbins.min(),xbins.max(),ybins.min(),ybins.max()],linewidths=3)
 
@@ -112,10 +113,16 @@ axs.plot(time, rand_mahs[0, :, 1], color='red')
 axs.fill_between(time, rand_mahs[0, :, 0], rand_mahs[0, :, 2], facecolor='orange', alpha=0.2)
 
 # Overplot
-axs.plot(time, rand_mahs[1, :, 1], color='blue')
-axs.fill_between(time, rand_mahs[1, :, 0], rand_mahs[1, :, 2], facecolor='cyan', alpha=0.2)
+axs.plot(time, cs_mahs[0, :, 1], color='blue')
+axs.fill_between(time, cs_mahs[0, :, 0], cs_mahs[0, :, 2], facecolor='cyan', alpha=0.2)
+
+# Axes and title
+ax = plt.gca()
+ax.set_xlabel('T [Gyr]')
+ax.set_ylabel('M/M(z=0)')
+plt.title('MW MAH')
 plt.tight_layout()
-plt.savefig('test_mah_mw.png')
+plt.savefig('mah_mw.png')
 plt.clf()
 plt.cla()
 

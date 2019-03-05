@@ -33,7 +33,7 @@ sub_ini = 2
 sub_end = 5
 
 n_steps = 54
-min_tree_steps = 45
+min_tree_steps = 50
 
 # Append all trees here - use ALL the DB!	
 trees_mw = []; trees_m31 = []
