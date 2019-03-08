@@ -78,7 +78,7 @@ for path in paths:
 		out_size = os.path.getsize(out_lgs)
 
 		if out_size > 0:
-			f_out_lgs = open(out_lgs, 'r')
+			f_out_lgs = open(out_lgs, 'rb')
 			all_lgs = pickle.load(f_out_lgs)
 			n_lgs = len(all_lgs)
 
@@ -96,8 +96,8 @@ for path in paths:
 
 		if valid_mw[0].size > min_tree_size and valid_m31[0].size > min_tree_size:
 			iValid += 1 
-			this_mtree_mw = MergerTree(n_steps, this_mw)
-			this_mtree_m31 = MergerTree(n_steps, this_m31)
+			this_mtree_mw = MergerTree(n_steps, this_mw, sub_path)
+			this_mtree_m31 = MergerTree(n_steps, this_m31, sub_path)
 			trees_mw_cs.append(this_mtree_mw)
 			trees_m31_cs.append(this_mtree_m31)
 
@@ -118,15 +118,15 @@ except:
 	'Do nothing'
 
 if read_db == True:
-	f_trees_mw = open(out_trees_mw, 'w')
-	f_trees_m31 = open(out_trees_m31, 'w')
+	f_trees_mw = open(out_trees_mw, 'wb')
+	f_trees_m31 = open(out_trees_m31, 'wb')
 
 	pickle.dump(trees_mw_cs, f_trees_mw)
 	pickle.dump(trees_m31_cs, f_trees_m31)
 	print('Found %d valid, %d broken trees.' % (iValid, iBroken))
 else:
-	f_trees_mw = open(out_trees_mw, 'r')
-	f_trees_m31 = open(out_trees_m31, 'r')
+	f_trees_mw = open(out_trees_mw, 'rb')
+	f_trees_m31 = open(out_trees_m31, 'rb')
 	trees_mw_cs = pickle.load(f_trees_mw)
 	trees_m31_cs = pickle.load(f_trees_m31)
 	iValid = len(trees_mw_cs)
@@ -156,8 +156,8 @@ for i_n in range(0, n_steps):
 	
 # Save the "condensed" data
 print('Saving MAH random LCDM statistics to %s and %s' % (out_stat_mah, out_stat_time))
-f_mah = open(out_stat_mah, 'w')
-f_time = open(out_stat_time, 'w')
+f_mah = open(out_stat_mah, 'wb')
+f_time = open(out_stat_time, 'wb')
 
 pickle.dump(time_stats, f_time)
 pickle.dump(mah_avgs, f_mah)

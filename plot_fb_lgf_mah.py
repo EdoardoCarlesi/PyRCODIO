@@ -32,6 +32,7 @@ rand_mahs = pickle.load(rand_f_mah)
 cs_times = pickle.load(cs_f_time)
 cs_mahs = pickle.load(cs_f_mah)
 
+
 '''
 	GENERAL PLOT PROPERTIES
 '''

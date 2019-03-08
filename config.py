@@ -175,10 +175,10 @@ class Settings:
 		self.init_ascii()
 
 	def info(self):
-		print 'Home dir: ', self.home_dir
-		print 'Data dir: ', self.data_dir
-		print 'Lare out: ', self.file_lare_name
-		print 'Env type: ', self.env_type
+		print('Home dir: ', self.home_dir)
+		print('Data dir: ', self.data_dir)
+		print('Lare out: ', self.file_lare_name)
+		print('Env type: ', self.env_type)
 
 	def re_init(self):
 		self.init_paths()

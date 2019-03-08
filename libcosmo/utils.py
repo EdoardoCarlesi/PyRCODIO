@@ -1,9 +1,21 @@
 import random
 import math
 import numpy as np
-#import scipy.stats as sp
+import scipy.stats as sp
 import pickle
+from .halo import *
 from numpy import linalg as la
+
+
+def makeHaloDictionary(halos):
+    haloDict = dict()
+
+    iHalo = 0
+    for halo in halos:
+        haloDict[halo.ID] = iHalo
+        iHalo += 1
+
+    return haloDict 
 
 def distance(vec1, vec2):
 	dist = math.sqrt(pow((vec1[0] - vec2[0]), 2) + pow((vec1[1] - vec2[1]), 2) + pow((vec1[2] - vec2[2]), 2))

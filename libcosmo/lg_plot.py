@@ -4,12 +4,13 @@ import matplotlib.colors as colors
 from scipy.ndimage.filters import gaussian_filter
 
 from matplotlib import rc
+from .particles import *
 import time
 import numpy as np
 import math
 from libcosmo.utils import *
 from pygadgetreader import *
-from particles import *
+#from particles import *
 from scipy.stats import kde
 
 

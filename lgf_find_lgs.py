@@ -23,7 +23,7 @@ file_single0 = 'snapshot_054.z0.000.AHF_halos'
 file_single1 = 'snapshot_054.0000.z0.001.AHF_halos'
 
 # Search distance from the box center
-r_select = 7000.
+r_select = 8500.
 m_select = 5.e+11
 box_center = np.zeros((3))
 
@@ -31,8 +31,8 @@ for ix in range(0, 3):
 	box_center[ix] = box_size * 0.5
 
 # Local group selection parameters
-iso_radius = 2300.
-r_max = 1000.
+iso_radius = 2000.
+r_max = 1300.
 r_min = 350. 
 m_min = 5.e+11  
 m_max = 5.0e+12 
@@ -93,6 +93,6 @@ for i_dir in range(i_ini, i_end):
 			if n_lgs > 0:
 				n_tot_lgs += 1
 				out_lgs = 'saved/lgs_' + sub_path + '.pkl'
-				f_out_lgs = open(out_lgs, 'w')
+				f_out_lgs = open(out_lgs, 'wb')
 				print('Saving LGs of %s to file %s.' % (sub_path, out_lgs))
 				pickle.dump(all_lgs, f_out_lgs)

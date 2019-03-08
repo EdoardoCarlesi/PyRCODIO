@@ -202,7 +202,7 @@ def read_ahf(file_name):
 		
 		if n_col > 1:
 			# Read halo properties
-			idn = long(column[0])
+			idn = int(column[0])
 			mass = float(column[3])
 			pos = [float(column[5]), float(column[6]), float(column[7])]
 			vel = [float(column[8]), float(column[9]), float(column[10])]

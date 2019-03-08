@@ -31,7 +31,7 @@ cell = box / float(grid)
 
 half_grid = grid / 2
 
-print 'Opening file: ', name_wf, ', box: ', box, ', grid: ', grid, ', cell: ', cell
+print('Opening file: ', name_wf, ', box: ', box, ', grid: ', grid, ', cell: ', cell)
 
 file_wf = open(name_wf, 'r')
 data_wf = file_wf.read().splitlines()
@@ -48,18 +48,17 @@ for line_wf in data_wf:
 
 x_coord = np.zeros((grid))
 y_coord = np.zeros((grid))
-z_value = np.zeros((grid, grid))
+z_value = np.zeros((grid, grid, grid))
 
 for ix in range (0, grid):
 	x_coord[ix] = ix * cell - half_grid * cell
 	for iy in range(0, grid):
-		y_coord[iy] = iy * cell - half_grid * cell
-	
-		# Z axis is fixed 
-		iz = half_grid
+                y_coord[iy] = iy * cell - half_grid * cell
 
-		this_ind = ix + iy * grid + iz * grid * grid
-		z_value[ix][iy] = rhos_wf[this_ind]
+                for iz in range (0, grid):
+    	        	#this_ind = ix + iy * grid + iz * grid * grid
+                        this_ind = iz + iy * grid + ix * grid * grid
+                        z_value[ix][iy][iz] = rhos_wf[this_ind]
 
 if do_mock == False:
 	levels = [-5.0, -1.0, 0.0, 0.5, 1.0, 2.5, 5.0]
@@ -76,10 +75,10 @@ else:
 ax = plt.gca()
 ax.set_ylim([-limit, limit])
 ax.set_xlim([-limit, limit])
-plt.contourf(x_coord, y_coord, z_value, levels=levels, cmap="jet")
+plt.contourf(x_coord, y_coord, z_value[:][:][half_grid], levels=levels, cmap="jet")
 plt.title(root_wf)
 plt.colorbar(ticks=levels)
-plt.contour(x_coord, y_coord, z_value, colors='black', levels=level, linewidths=[0.5, 1.5, 1.0])
+#plt.contour(x_coord, y_coord, z_value, colors='black', levels=level, linewidths=[0.5, 1.5, 1.0])
 plt.tight_layout()
 plt.savefig(file_out)
 plt.clf()
