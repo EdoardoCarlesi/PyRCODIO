@@ -38,7 +38,7 @@ n_lgs = 1
 
 time_step = 0.25	# GYrs
 all_trees = []
-min_tree_size = 50
+min_tree_size = 40
 
 list_sub_sh = "cd " + base_path + "; ls -d ??_?? > " + list_tmp
 os.system(list_sub_sh)
@@ -87,9 +87,12 @@ for path in paths:
 
 	print('Merger tree stats for %d pairs, run = %s .' % (n_lgs, sub_path))
 
+        #for this_lg in all_lgs[0:10]:
 	for this_lg in all_lgs:
+		#this_mw = newSql.get_full_mtree(this_lg.LG1.ID)
+		#this_mw = newSql.get_full_mtree(this_lg.LG1.ID, columnReadPT)
 		this_mw = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
-		this_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)
+		this_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)#; print(this_m31)
 
 		valid_mw = np.where(this_mw > 0)
 		valid_m31 = np.where(this_m31 > 0)

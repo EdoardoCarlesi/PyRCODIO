@@ -3,9 +3,9 @@ import pickle
 import math 
 import sys
 from operator import *
-from .find_halos import *
-from .utils import *
-from .units import *
+#from .find_halos import *
+#from .utils import *
+#from .units import *
 
 class MergerTree:
     # Major merger
@@ -51,67 +51,63 @@ class MergerTree:
         # Automatically smooth the tree when reading in
         self.smooth_tree()
 
-        # We are assuming that N_Particles(z = 0) is the first element, nPart[0]
-        def last_major_merger(self, smooth):
-            MajorMerg = 0.1 
+    # We are assuming that N_Particles(z = 0) is the first element, nPart[0]
+    def last_major_merger(self, smooth):
+        MajorMerg = 0.1 
 
-            if smooth == True:
-                thesePart = self.nPartSmooth
-            else:
-                thesePart = self.nPartNorm
-
-
-            for iMM in range(0, self.nSteps-1):
-                nNP0 = thesePart[iMM]
-                nNP1 = thesePart[iMM+1]
-
-                dNP = abs(nNP1 - nNP0) / nNP1
-
-                if dNP > MajorMerg:
-                    return iMM
-
-        def formation_time(self, smooth):
-            mHalf = 0.5
-            mZero = 2.0
-
-            if smooth == True:
-                thesePart = self.nPartSmooth
-            else:
-                thesePart = self.nPartNorm
+        if smooth == True:
+            thesePart = self.nPartSmooth
+        else:
+            thesePart = self.nPartNorm
 
 
-            indexForm = np.where(thesePart < 0.5)
-            thisIndex = indexForm[0]
+        for iMM in range(0, self.nSteps-1):
+            nNP0 = thesePart[iMM]
+            nNP1 = thesePart[iMM+1]
 
-            return thisIndex[0]
+            dNP = abs(nNP1 - nNP0) / nNP1
 
-        def smooth_tree(self):
-            nPtsAvg = 2
+            if dNP > MajorMerg:
+                return iMM
 
-            for iPts in range(0, nPtsAvg):
-                self.nPartSmooth[iPts] = self.nPartNorm[iPts]
+    def formation_time(self, smooth):
+        mHalf = 0.5
+        mZero = 2.0
 
-            for iPts in range(0, nPtsAvg):
-                self.nPartSmooth[self.nSteps-iPts-1] = self.nPartNorm[self.nSteps-iPts-1]
+        if smooth == True:
+            thesePart = self.nPartSmooth
+        else:
+            thesePart = self.nPartNorm
 
-            for iPts in range(nPtsAvg, self.nSteps-nPtsAvg):
+        indexForm = np.where(thesePart < 0.5)
+        thisIndex = indexForm[0]
 
-                for iSmooth in range(iPts-nPtsAvg, iPts+nPtsAvg+1):
-                    if iSmooth < iPts-1:
-                        thisNorm = self.nPartSmooth[iSmooth] 
-                    else:
-                        thisNorm = self.nPartNorm[iSmooth] 
+        return thisIndex[0]
 
-                    if thisNorm > 1.0:
-                        self.nPartSmooth[iPts] += thisNorm * abs(1-0.75*(thisNorm - 1.0))
-                    else:
-                        self.nPartSmooth[iPts] += thisNorm
+    def smooth_tree(self):
+        nPtsAvg = 2
 
-                    self.nPartSmooth[iPts] /= float(2*nPtsAvg+1)
+        for iPts in range(0, nPtsAvg):
+            self.nPartSmooth[iPts] = self.nPartNorm[iPts]
 
-            return self.nPartSmooth
+        for iPts in range(0, nPtsAvg):
+            self.nPartSmooth[self.nSteps-iPts-1] = self.nPartNorm[self.nSteps-iPts-1]
 
-        def info(self):
-            print('MTree with: %d steps' % self.nSteps)
+        for iPts in range(nPtsAvg, self.nSteps-nPtsAvg):
+            for iSmooth in range(iPts-nPtsAvg, iPts+nPtsAvg+1):
+                if iSmooth < iPts-1:
+                    thisNorm = self.nPartSmooth[iSmooth] 
+                else:
+                    thisNorm = self.nPartNorm[iSmooth] 
 
+                if thisNorm > 1.0:
+                    self.nPartSmooth[iPts] += thisNorm * abs(1-0.75*(thisNorm - 1.0))
+                else:
+                    self.nPartSmooth[iPts] += thisNorm
 
+                self.nPartSmooth[iPts] /= float(2*nPtsAvg+1)
+
+        return self.nPartSmooth
+
+    def info(self):
+        print('MTree with: %d steps' % self.nSteps)

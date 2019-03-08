@@ -89,7 +89,7 @@ class SQL_IO:
 	def select_tree(self, ID, columnName):
 		try:
 			thisStr = self.dataframe.loc[self.dataframe['haloID'] == ID, columnName].values[0].split(", ")
-			nStr = len(thisStr)
+			nStr = len(thisStr)#; print(thisStr)
 
 			if columnName == 'allHaloIDs':
 				thisTree = np.zeros((nStr), dtype=np.ulonglong)
@@ -99,9 +99,9 @@ class SQL_IO:
 			iTree = 0
 
 			for iStr in thisStr:
+				#print(iTree, iStr) 
 				iStr.replace('u', '')
-				thisTree[iTree] = long(iStr)
-				#print iTree, iStr
+				thisTree[iTree] = int(iStr)
 				iTree += 1
 
 			return thisTree
@@ -126,7 +126,7 @@ class SQL_IO:
 	def get_full_mtree(self, ID):
 		mergerTree = MTree(self.nSnaps, ID)
 		
-		tree_line = self.select_tree(ID)
+		tree_line = self.select_tree(ID, 'allNumPart')
 		these_ids = tree_line[1].split()		
 		these_nps = tree_line[3].split()		
 		ids = []; nps = []; nPt = 0

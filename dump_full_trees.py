@@ -1,17 +1,7 @@
 from libio.read_ascii import *
 from libcosmo.halo import *
-import os
 import pickle
-
-'''
-class StrToBytes:
-    def __init__(self, fileobj):
-        self.fileobj = fileobj
-    def read(self, size):
-        return self.fileobj.read(size).encode()
-    def readline(self, size=-1):
-        return self.fileobj.readline(size).encode()
-'''
+import os
 
 # How many catalogs do we want to read
 iniSnaps = 50
@@ -27,13 +17,6 @@ suffAHF = '.AHF_halos'
 z_out = rootPath + '../output_z.txt'
 z_f = open(z_out, 'r')
 z_s = z_f.read().split()
-
-# MetroCPP mtree files are loaded with pickle
-
-# AHF halos are (pairwise) stored here
-idDescHalos = dict()
-idProgHalos = dict()
-idOrphHalos = dict()
 
 # List of halos without direct progenitor
 orphHalos = []
@@ -55,7 +38,7 @@ treeM31 = pickle.load(fileM31)
 descHalos = read_ahf(thisAHF)
 idDescHalos = makeHaloDictionary(descHalos)
 
-print(treeM31[0].info())
+#print(treeM31[0].info())
 
 # Loop on all the snapshots
 for jSnap in range(iniSnaps, endSnaps):
