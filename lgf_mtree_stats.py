@@ -59,6 +59,7 @@ trees_mw_cs = []
 trees_m31_cs = []
 
 read_db = True
+#read_db = False
 
 if read_db == False:
 	paths = []
@@ -85,22 +86,22 @@ for path in paths:
 			if n_lgs > 0:
 				print("LGF subpath %s" % (sub_path))
 
-	print('Merger tree stats for %d pairs, run = %s .' % (n_lgs, sub_path))
+	print('Merger tree stats for %d pairs, run = %s' % (n_lgs, sub_path))
 
-        #for this_lg in all_lgs[0:10]:
 	for this_lg in all_lgs:
-		#this_mw = newSql.get_full_mtree(this_lg.LG1.ID)
-		#this_mw = newSql.get_full_mtree(this_lg.LG1.ID, columnReadPT)
 		this_mw = newSql.select_tree(this_lg.LG1.ID, columnReadPT)
-		this_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)#; print(this_m31)
+		this_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadPT)
+		ids_mw = newSql.select_tree(this_lg.LG2.ID, columnReadID)
+		ids_m31 = newSql.select_tree(this_lg.LG2.ID, columnReadID) 
 
 		valid_mw = np.where(this_mw > 0)
 		valid_m31 = np.where(this_m31 > 0)
 
 		if valid_mw[0].size > min_tree_size and valid_m31[0].size > min_tree_size:
 			iValid += 1 
-			this_mtree_mw = MergerTree(n_steps, this_mw, sub_path)
-			this_mtree_m31 = MergerTree(n_steps, this_m31, sub_path)
+			this_mtree_mw = MergerTree(n_steps, this_mw, ids_mw, sub_path)
+			this_mtree_m31 = MergerTree(n_steps, this_m31, ids_m31, sub_path)
+
 			trees_mw_cs.append(this_mtree_mw)
 			trees_m31_cs.append(this_mtree_m31)
 

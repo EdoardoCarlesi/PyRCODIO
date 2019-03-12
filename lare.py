@@ -39,17 +39,12 @@ else:
 
 generate_lare='false'
 #generate_lare='true'
-<<<<<<< HEAD
-do_plots='false'
-#do_plots='true'
-=======
 
 do_plots='false'
 #do_plots='true'
 
 #find_virgo='false'
 find_virgo='true'
->>>>>>> 84bbbf49a5b0eb3df01d3a4d1959c7d502d8722f
 
 env_type="std"
 #eanv_type="512box100"
@@ -67,14 +62,9 @@ else:
 settings = Settings(home_dir, outp_dir, env_type, resolution, snapshot)
 
 # Factor rescaling the particle distribution in plots
-<<<<<<< HEAD
 rescale = 10
-
 #find_virgo='false'
 find_virgo='true'
-=======
-rescale = 5
->>>>>>> 84bbbf49a5b0eb3df01d3a4d1959c7d502d8722f
 
 # Max/min distance from Virgo in Mpc/h
 if unitMpc == True:
@@ -93,18 +83,10 @@ run_init = 0
 run_end = 1
 
 # If running on all seeds
-<<<<<<< HEAD
-ice_init= 70
-ice_end = 71
-
-gin_init = 0
-gin_end = 30
-=======
 ice_init = 0
 ice_end = 70
 gin_init = 0
 gin_end = 40
->>>>>>> 84bbbf49a5b0eb3df01d3a4d1959c7d502d8722f
 
 # Local group selection parameters
 center = [50000., 50000., 50000.]

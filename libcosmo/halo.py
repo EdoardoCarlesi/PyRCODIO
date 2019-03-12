@@ -19,10 +19,12 @@ class Halo:
 	nsub = 0
 	rsub = 0.0		# This is supposed to be Rvir but it can be slightly larger, to look for nearby bound halos
 	subhalos = [] 		# This one only contains all sub-halo IDs
-	progenitors = []	# Here we store the IDs (and maybe other properties, too) of the progenitors of the halo, based on particles and dynamics
+	progenitors = []	# Here we store the IDs (and maybe other properties, too) of the progenitors of the halo
+                                # based on particles and dynamics
 	npart = 0
 	contam = 0.0	# level of contamination 
 	vmax = 0.0
+	line = "" 
 
 	# Gas & star properties
 	m_dm = 0.0
@@ -44,6 +46,7 @@ class Halo:
 		self.vmax = 0.0
 		self.subhalos = []
 		self.progenitors = []
+		self.line = ""
 
 	def __getitem__(self, key):
 		if key == 0:

@@ -100,9 +100,11 @@ class SQL_IO:
 
 			for iStr in thisStr:
 				#print(iTree, iStr) 
-				iStr.replace('u', '')
-				thisTree[iTree] = int(iStr)
-				iTree += 1
+                                iStr.replace('u', '')
+                                if iStr != '':
+                                    thisTree[iTree] = int(iStr)
+
+                                iTree += 1
 
 			return thisTree
 		except:
@@ -136,7 +138,6 @@ class SQL_IO:
 			
 			try:
 				this_id = these_ids[nPt].replace(",", "")
-				this_np = these_nps[nPt].replace(",", "")
 			except:
 				'This tree breaks up before expected. Maybe it is a small halo, so lets just add token values to it.'
 	
@@ -148,7 +149,7 @@ class SQL_IO:
 	
 			ids.append(this_id)
 			nps.append(this_np)
-
+                
 		mergerTree.fill_mass_id(nps, ids)
 
 		return mergerTree

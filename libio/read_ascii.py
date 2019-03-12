@@ -195,8 +195,8 @@ def read_ahf(file_name):
 	count = 0
 	
 	while line:
-		line = file_ahf.readline()
-		line = line.strip()
+		full_line = file_ahf.readline()
+		line = full_line.strip()
 		column = line.split()
 		n_col = len(column)
 		
@@ -213,10 +213,10 @@ def read_ahf(file_name):
 			angmom = [float(column[21]), float(column[22]), float(column[23])]
 			contam = float(column[38])
 				
-			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000.
+			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
 
 			# Initialize and append halo to the list
-			halo = Halo()
+			halo = Halo(); halo.line = full_line
 			halo.initialize(idn, mass, pos, vel, rvir, nsub, npart)
 			halo.update_id_index(idn, count)
 			#halo.ID = idn

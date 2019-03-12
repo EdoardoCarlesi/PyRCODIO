@@ -23,32 +23,28 @@ class MergerTree:
     # Normalized to z=0
     nPartNorm = np.zeros((0))
 
-    # Normalized to z=0 
+    # Smoothed mah normalized to z=0 
     nPartSmooth = np.zeros((0))
+
+    # List all halo IDs of the main progenitor
+    IDs = []
 
     # Keep track of its original subdir
     subDir = ''
 
-    def __init__(self, nSteps, readPart, subDir):
+    def __init__(self, nSteps, readPart, readIDs, subDir):
         self.MM = 0
         self.FT = 0
+        self.IDs = []
         self.nSteps = nSteps
-        self.nPart = readPart #np.zeros((nSteps))
+        self.nPart = readPart 
         self.nPartNorm = np.zeros((nSteps))
         self.nPartSmooth = np.zeros((nSteps))
         self.subDir = subDir
 
-        nNorm = float(self.nPart[0])
-
-        iN = 0
-        for thisNPart in self.nPart:
-            try:
-                self.nPartNorm[iN] = (1.0 * thisNPart) / nNorm
-                iN += 1
-            except:
-                dummy = 0.0
-
-        # Automatically smooth the tree when reading in
+        # Initialize and compute additional tree properties
+        self.init_ids(readIDs)
+        self.norm_parts()
         self.smooth_tree()
 
     # We are assuming that N_Particles(z = 0) is the first element, nPart[0]
@@ -59,7 +55,6 @@ class MergerTree:
             thesePart = self.nPartSmooth
         else:
             thesePart = self.nPartNorm
-
 
         for iMM in range(0, self.nSteps-1):
             nNP0 = thesePart[iMM]
@@ -83,6 +78,20 @@ class MergerTree:
         thisIndex = indexForm[0]
 
         return thisIndex[0]
+
+    def init_ids(self, allIDs):
+        for thisID in allIDs:
+           self.IDs.append(thisID)
+
+    def norm_parts(self):
+        nNorm = float(self.nPart[0])
+        iN = 0
+        for thisNPart in self.nPart:
+            try:
+                self.nPartNorm[iN] = (1.0 * thisNPart) / nNorm
+                iN += 1
+            except:
+                dummy = 0.0
 
     def smooth_tree(self):
         nPtsAvg = 2
@@ -111,3 +120,4 @@ class MergerTree:
 
     def info(self):
         print('MTree with: %d steps' % self.nSteps)
+        print('DirCode   : %s' % self.subDir)
