@@ -12,7 +12,7 @@ def makeHaloDictionary(halos):
 
     iHalo = 0
     for halo in halos:
-        haloDict[halo.ID] = iHalo
+        haloDict[int(halo.ID)] = iHalo
         iHalo += 1
 
     return haloDict 

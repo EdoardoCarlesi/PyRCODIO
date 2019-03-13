@@ -140,6 +140,24 @@ def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
 
 
 
+def read_dwarf_list(file_name):
+    file_dw = open(file_name, 'r')
+    all_lines = file_dw.readlines() #.rstrip('\n')
+    dwarfIDs = []
+
+    iLine = 0
+    for line in all_lines:
+        if iLine > 0:
+            thisLine = line.strip().rstrip('\n').split()
+            thisID = thisLine[0]
+            dwarfIDs.append(int(thisID))
+
+        iLine += 1
+
+    return dwarfIDs
+
+
+
 def read_ahf_mass_range(file_name, m_max, m_min):
 	# Open file
 	file_ahf = open(file_name, 'r')
