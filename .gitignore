@@ -4,6 +4,7 @@
 *.tmp
 *.dat
 *.txt
-*.png
+*png
 *.pkl
+output/*
 COPY/

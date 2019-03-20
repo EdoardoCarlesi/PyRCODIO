@@ -599,101 +599,104 @@ class SubHalos():
 
 
 class LocalGroup:
-	code = '00_00_00'
-	ahf_file = 'this_file.AHF_halos'
-	vrad = -100.
-	r = 770.
-	d_cbox = 0.0
-	d_virgo = 0.0
-	rating = 0.0
-	com = [0.0] * 3
-	hubble = 0.67
+    code = '00_00_00'
+    ahf_file = 'this_file.AHF_halos'
+    vrad = -100.
+    r = 770.
+    d_cbox = 0.0
+    d_virgo = 0.0
+    rating = 0.0
+    com = [0.0] * 3
+    hubble = 0.67
 
+    LG1 = Halo()
+    LG2 = Halo()
 
-	LG1 = Halo()
-	LG2 = Halo()
+    def __init__(self, code):
+        self.code = code
+        self.com = []
+        self.LG1 = Halo()
+        self.LG2 = Halo()
 
-	def __init__(self, code):
-		self.code = code
-		self.com = []
-		self.LG1 = Halo()
-		self.LG2 = Halo()
+    def init_halos(self, lg1, lg2):
+        if lg1.m > lg2.m:
+            self.LG1 = lg1
+            self.LG2 = lg2
+        else:
+            self.LG1 = lg2
+            self.LG2 = lg1
 
-	def init_halos(self, lg1, lg2):
+        if lg1.x[0] != 0 and lg2.x != 0:
+            self.r = self.r_halos()
+            self.vrad = self.v_radial()
+            self.com = self.get_com()
 
-		if lg1.m > lg2.m:
-			self.LG1 = lg1
-			self.LG2 = lg2
-		else:
-			self.LG1 = lg2
-			self.LG2 = lg1
+    def rating(self):
+        self.rating = fh.rate_lg_pair(self.LG1, self.LG2)
 
-		if lg1.x[0] != 0 and lg2.x != 0:
-			self.r = self.r_halos()
-			self.vrad = self.v_radial()
-			self.com = self.get_com()
+    def geo_com(self):
+        geo_com = np.zeros((3))
 
-	def rating(self):
-		self.rating = fh.rate_lg_pair(self.LG1, self.LG2)
-
-	def geo_com(self):
-		geo_com = np.zeros((3))
-
-		for i in range(0, 3):
-			geo_com[i] = 0.5 * (self.LG1.x[i] + self.LG2.x[i])
+        for i in range(0, 3):
+            geo_com[i] = 0.5 * (self.LG1.x[i] + self.LG2.x[i])
 	
-		self.com = geo_com
-		return self.com 
+            self.com = geo_com
 
-	def get_com(self):
-		self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
-		return self.com 
+        return self.com 
 
-	def lg_member(self, n_member):
-		if n_member == 0:
-			return self.LG1
-		if n_member == 1:
-			return self.LG2
+    def get_com(self):
+        self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
+        return self.com 
 
-	def r_halos(self):
-		self.r = distance(self.LG1.x, self.LG2.x)
-		return self.r
+    def lg_member(self, n_member):
+        if n_member == 0:
+            return self.LG1
+        if n_member == 1:
+            return self.LG2
 
-	def v_radial(self):
-		self.vrad = vel_radial(self.LG1.x, self.LG2.x, self.LG1.v, self.LG2.v)
-		self.vrad += self.hubble * self.r * 0.1
-		return self.vrad
+    def r_halos(self):
+        self.r = distance(self.LG1.x, self.LG2.x)
+        return self.r
 
-	def m_ratio(self):
-		if self.LG1.m > self.LG2.m:
-			return (self.LG1.m / self.LG2.m)
-		else:
-			return (self.LG1.m / self.LG2.m)
+    def v_radial(self):
+        self.vrad = vel_radial(self.LG1.x, self.LG2.x, self.LG1.v, self.LG2.v)
+        self.vrad += self.hubble * self.r * 0.1
+        return self.vrad
 
-	def header(self):
-		n_head = 0
-		header = '#' 
-		header += ' SimuCode('+ str(n_head) +')' ; n_head = +1
-		header += ' ID_M31('+ str(n_head) +')' ; n_head = +1
-		header += ' ID_MW('+ str(n_head) +')' ; n_head = +1
-		header += ' R_MWM31('+ str(n_head) +')' ; n_head = +1
-		header += ' Vrad('+ str(n_head) +')' ; n_head = +1
-		header += ' Nsub_M31('+ str(n_head) +')' ; n_head = +1
-		header += ' Nsub_MW('+ str(n_head) +')' ; n_head = +1
-		header += ' X_com('+ str(n_head) +')' ; n_head = +1
-		header += ' Y_com('+ str(n_head) +')' ; n_head = +1
-		header += ' Z_com('+ str(n_head) +')' ; n_head = +1
-		#header += '\n'
+    def m_ratio(self):
+        if self.LG1.m > self.LG2.m:
+            return (self.LG1.m / self.LG2.m)
+        else:
+            return (self.LG1.m / self.LG2.m)
 
-		return header
+    def header(self):
+        n_head = 0
+        header = '#' 
+        header += ' SimuCode('+ str(n_head) +')' ; n_head = +1
+        header += ' ID_M31('+ str(n_head) +')' ; n_head = +1
+        header += ' ID_MW('+ str(n_head) +')' ; n_head = +1
+        header += ' R_MWM31('+ str(n_head) +')' ; n_head = +1
+        header += ' Vrad('+ str(n_head) +')' ; n_head = +1
+        header += ' Nsub_M31('+ str(n_head) +')' ; n_head = +1
+        header += ' Nsub_MW('+ str(n_head) +')' ; n_head = +1
+        header += ' X_com('+ str(n_head) +')' ; n_head = +1
+        header += ' Y_com('+ str(n_head) +')' ; n_head = +1
+        header += ' Z_com('+ str(n_head) +')' ; n_head = +1
 
-	def info(self):
-		h0 = self.hubble 
-		kpc = 1000.
-		file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f  %d  %d' % \
-			(self.code, self.LG1.ID, self.LG2.ID, self.LG1.m/h0, self.LG2.m/h0, self.r/h0, self.vrad, \
-				self.LG1.nsub, self.LG2.nsub, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc, \
-				self.LG1.npart, self.LG2.npart)
+        return header
 
-		return file_lg_line
+    def info(self):
+        h0 = self.hubble 
+        kpc = 1000.
+        file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f  %d  %d' % \
+		(self.code, self.LG1.ID, self.LG2.ID, self.LG1.m/h0, self.LG2.m/h0, self.r/h0, self.vrad, \
+			self.LG1.nsub, self.LG2.nsub, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc, \
+			self.LG1.npart, self.LG2.npart)
+
+        return file_lg_line
+
+    def m_tot(self):
+        return (self.LG1.m + self.LG2.m)
+
+
 

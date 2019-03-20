@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import random
 import math 
 import sys
 from operator import *
@@ -18,7 +19,7 @@ class MergerTree:
     nSteps = 0
 
     # Number of particles per step
-    nPart = np.zeros((0))
+    nPart = np.zeros((0), dtype=int)
 
     # Normalized to z=0
     nPartNorm = np.zeros((0))
@@ -37,47 +38,69 @@ class MergerTree:
         self.FT = 0
         self.IDs = []
         self.nSteps = nSteps
-        self.nPart = readPart 
+        self.nPart = np.zeros((nSteps), dtype=int)
         self.nPartNorm = np.zeros((nSteps))
         self.nPartSmooth = np.zeros((nSteps))
         self.subDir = subDir
 
         # Initialize and compute additional tree properties
+        self.init_parts(readPart)
         self.init_ids(readIDs)
         self.norm_parts()
         self.smooth_tree()
 
+    def init_parts(self, parts):
+        iN = 0
+        for part in parts:
+            self.nPart[iN] = int(part)
+            iN += 1
+
+
     # We are assuming that N_Particles(z = 0) is the first element, nPart[0]
     def last_major_merger(self, smooth):
-        MajorMerg = 0.1 
-
+        MajorMerg = 0.1
+    
         if smooth == True:
-            thesePart = self.nPartSmooth
+            self.smooth()
         else:
-            thesePart = self.nPartNorm
+            self.unsmooth()
+
+        #thesePart = self.nPartNorm
+        thesePart = self.nPart
+
+        #if smooth == True:
+        #    thesePart = self.nPartSmooth
+        #else:
 
         for iMM in range(0, self.nSteps-1):
-            nNP0 = thesePart[iMM]
-            nNP1 = thesePart[iMM+1]
+            nNP0 = float(thesePart[iMM])
+            nNP1 = float(thesePart[iMM+1])
 
-            dNP = abs(nNP1 - nNP0) / nNP1
+            dNP = abs(nNP1 - nNP0) / nNP0
+            #dNP = abs(nNP1 - nNP0) / nNP1
 
             if dNP > MajorMerg:
-                return iMM
+                #print(iMM, nNP1, nNP0)
+                return (iMM)
 
     def formation_time(self, smooth):
         mHalf = 0.5
-        mZero = 2.0
 
+        '''
         if smooth == True:
-            thesePart = self.nPartSmooth
+            self.smooth()
         else:
-            thesePart = self.nPartNorm
+            self.unsmooth()
+        '''
 
-        indexForm = np.where(thesePart < 0.5)
+        thesePart = self.nPartNorm
+
+        indexForm = np.where(thesePart < mHalf)
         thisIndex = indexForm[0]
 
-        return thisIndex[0]
+#        print(thisIndex, thesePart)
+
+        return (thisIndex[0])
 
     def init_ids(self, allIDs):
         for thisID in allIDs:
@@ -93,8 +116,51 @@ class MergerTree:
             except:
                 dummy = 0.0
 
+    def smooth(self):
+        iN = 1
+        for thisN in self.nPart[1:(self.nSteps-2)]:
+            self.nPart[iN] = int( (0.5 * self.nPart[iN-1] + thisN + 0.5 *self.nPart[iN+1])/2.0 )
+            #self.nPart[iN] = int( (self.nPart[iN-1] + thisN/2 ))
+            iN = iN + 1
+
+
+        '''
+        for thisN in self.nPart[0:(self.nSteps-1)]:
+            if self.nPart[iN+1] < thisN:
+                fact = 0.5 / (1.0 + np.sqrt(iN))
+                self.nPart[iN+1] += int(fact * (thisN - self.nPart[iN+1])) 
+                #self.nPart[iN+1] = self.nPart[iN+1]
+        '''
+        self.norm_parts()
+
+
+    def unsmooth(self):
+        np.random.seed()
+        thisN = 10; nextN = 0;        delta = -10
+
+        iN = 0
+        for thisN in self.nPart[0:(self.nSteps-1)]:
+            nextN = self.nPart[iN+1]
+            #extra = random.uniform(0, nextN)
+            #extra = np.random.normal(nextN, 10)
+            extra = np.random.randn() * np.sqrt(nextN)/1.25
+            #delta = int(abs(int(thisN) - int(nextN)) * thr)
+            #delta = int(abs(int(thisN) - int(nextN)) * 0.1)
+            #delta = abs(int(thisN) - int(nextN)) 
+            delta = abs(int(thisN) - int(nextN)) 
+            self.nPart[iN] -= int(delta/3) + int(extra) #int(extra/(1 + iN)))
+            #self.nPart[iN] = int((1.0 + thr) * thisN)
+            #if thisN > 10000000:
+            #print(iN, self.nPart[iN], self.nSteps) 
+            #print(iN, delta, thisN, nextN, self.nSteps)
+            #print(iN, thisN, nextN, delta, self.nSteps)
+            iN += 1
+        '''
+        '''
+        self.norm_parts()
+
     def smooth_tree(self):
-        nPtsAvg = 2
+        nPtsAvg = 1
 
         for iPts in range(0, nPtsAvg):
             self.nPartSmooth[iPts] = self.nPartNorm[iPts]
@@ -114,7 +180,7 @@ class MergerTree:
                 else:
                     self.nPartSmooth[iPts] += thisNorm
 
-                self.nPartSmooth[iPts] /= float(2*nPtsAvg+1)
+                self.nPartSmooth[iPts] = self.nPartSmooth[iPts] / float(2*nPtsAvg)
 
         return self.nPartSmooth
 

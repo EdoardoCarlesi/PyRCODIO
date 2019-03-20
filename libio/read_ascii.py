@@ -218,7 +218,7 @@ def read_ahf(file_name):
 		column = line.split()
 		n_col = len(column)
 		
-		if n_col > 1:
+		if n_col > 1 and line[0] != "#":
 			# Read halo properties
 			idn = int(column[0])
 			mass = float(column[3])
