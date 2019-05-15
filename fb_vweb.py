@@ -19,24 +19,29 @@ import matplotlib.pyplot as plt
 
 
 
-file_single='lcdm_grid64_box100_'
-file_suffix='.000064.Vweb-ascii'
+file_single='vweb_lgf_054.000064.Vweb-ascii'
 box_size = 100000.0
 grid_size = 64
-base_path = '/home/eduardo/CLUES/DATA/FullBox/vweb/'
+base_path = '/z/carlesi/CLUES/DATA/LGF/SNAPS/512/'
 
-sub_ini = 0
-sub_end = 1
+iini = 0
+iend = 1
+gini = 0
+gend = 10
 
 # Save all the selected merger trees to these files
 in_lgs = 'saved/rand_web_lgs_'
-out_vweb = 'saved/rand_vweb.pkl'
+out_ev1 = 'saved/lgf_e1.pkl'
+out_ev2 = 'saved/lgf_e2.pkl'
+out_ev3 = 'saved/lgf_e3.pkl'
 
 # Append all trees here - use ALL the DB!	
-vweb_ev = []
+ev1 = []; ev2 = []; ev3 = []
 
 # Loop on the different box realisations
-for i_sub in range(sub_ini, sub_end):
+for i_sub in range(iini, iend):
+    sub_path = '%02d' % i_sub	
+for i_sub in range(iini, iend):
     sub_path = '%02d' % i_sub	
 
     in_vweb = base_path + file_single + sub_path + file_suffix
