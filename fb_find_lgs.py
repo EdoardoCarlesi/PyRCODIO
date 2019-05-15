@@ -18,14 +18,25 @@ file_single='snapshot_054.z0.000.AHF_halos'
 box_size = 100000.0
 base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
 
-# Local group selection parameters: very generous. Select better afterwards.
+# Local group selection parameters: very generous.
 iso_radius = 2000.0
 r_max = 1500.0
 r_min = 250.0
-m_min = 1.0e+11  
+m_min = 5.0e+11 
+m_max = 5.0e+12 
+ratio_max = 5.0
+vrad_max = 0.0
+
+'''
+TEST PARAMETERS
+iso_radius = 2000.0
+r_max = 1500.0
+r_min = 250.0
+m_min = 1.0e+11 
 m_max = 5.0e+13 
 ratio_max = 20.0
 vrad_max = 1000.0
+'''
 
 i_ini = 0
 i_end = 5
@@ -56,6 +67,7 @@ for i_dir in range(i_ini, i_end):
         print('Found ', n_lgs)
 
         # Save all the identified LG pairs to a binary file
-        out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+#        out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
+        out_lgs = 'saved/rand_web_lgs_' + sub_path + '.pkl'
         f_out_lgs = open(out_lgs, 'wb')
         pickle.dump(all_lgs, f_out_lgs)

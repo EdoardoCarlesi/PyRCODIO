@@ -7,6 +7,74 @@ from .halo import *
 from numpy import linalg as la
 
 
+def KS_randBootstrap(sample1, n_boot, n_iter):
+    n1 = len(sample1) # Smaller sample
+    cdf1 = cdf(sample1)
+    n_stat = 0
+    
+    #print('SAMPLE1: ', sample1)
+
+    # Generate n_iter subsamples (bootstrapping)
+    for it in range(0, n_iter):
+        new_sample = np.zeros((n_boot))
+        
+        # Generate
+        for ip in range(0, n_boot):
+            new_index = random.randint(0, n_boot-1)
+            new_sample[ip] = sample1[new_index]
+
+        cdf2 = cdf(new_sample)               
+        kst = sp.ks_2samp(cdf1[0], cdf2[0])
+
+        #bmark = 2.4e-6
+        bmark = 0.05 #2.4e-6
+        thisks = kst[1] * n1
+
+        if thisks < bmark:
+            n_stat += 1
+
+        #print(it, kst, kst[1] * n1)
+
+    print('Bootstrap Stat: ', float(n_stat)/float(n_iter))
+
+
+def KS_randSubSample(sample1, sample2, n_iter):
+    n1 = len(sample1) # Smaller sample
+#    n1 = 300
+    n2 = len(sample2) # Larger sample
+    cdf1 = cdf(sample1)
+    n_stat = 0
+    
+    #print('SAMPLE1: ', sample1)
+
+    # Generate n_iter subsamples (bootstrapping)
+    for it in range(0, n_iter):
+        new_sample = np.zeros((n1))
+        
+        # Generate
+        for ip in range(0, n1):
+            new_index = random.randint(0, n2-1)
+            new_sample[ip] = sample2[new_index]
+
+        cdf2 = cdf(new_sample)               
+        kst = sp.ks_2samp(cdf1[0], cdf2[0])
+
+        bmark = 0.95
+        thisks = kst[1] * n1
+
+        if thisks > bmark:
+            n_stat += 1
+
+        #print(it, kst, kst[1] * n1)
+
+    #print('Stat: ', n_stat)
+    print('Bootstrap Stat: ', float(n_stat)/float(n_iter))
+
+def mahFit(z, a, b):
+        zb = np.power(1+z, b)
+        za = np.exp(-a * (np.sqrt(1 + z) - 1))
+        return (zb * za)
+
 def makeHaloDictionary(halos):
     haloDict = dict()
 

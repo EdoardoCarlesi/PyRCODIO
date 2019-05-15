@@ -1,6 +1,6 @@
 import math
 import numpy as np
-#from scipy import interpolate
+from scipy import interpolate
 
 def km2kpc():
 	km2kpc = 3.086e+16
@@ -13,7 +13,6 @@ def s2Myr():
 def Myr2z(time):
 	a_value = Myr2a(time)
 	z_value = (1.0 / a_value) - 1.0
-
 	return z_value
 
 def Myr2a(time):

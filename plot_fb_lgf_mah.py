@@ -1,10 +1,15 @@
 from libcosmo.utils import *
+from libcosmo.units import *
 import time
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
+from scipy.optimize import curve_fit
+
+# z values 
+z_file='/home/eduardo/CLUES/DATA/output_z.txt'
 
 # RANDOM LGs statistics
 #rand_stat_mah = 'saved/rand_out_stat_mah.pkl'
@@ -161,8 +166,27 @@ axs[0].fill_between(time, rand_mahs[mw_fb_id, :, 0], rand_mahs[mw_fb_id, :, 2], 
 axs[0].plot(time, cs_mahs[mw_cs_id, :, 1], color=col_cs)
 axs[0].fill_between(time, cs_mahs[mw_cs_id, :, 0], cs_mahs[mw_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
 
+a0 = 5.7
+b0 = 2.7
+
+z_time_inv = []; z_time = []
+z_in = open(z_file, 'r')
+data = z_in.read()
+for dat in data.split():
+    z_time_inv.append(float(dat))
+nz = len(z_time_inv)
+for it in range(0, nz):
+    zt = z_time_inv[nz - it - 1]
+    z_time.append(zt)
+
+print(z_time)
+output = curve_fit(mahFit, z_time, cs_mahs[mw_cs_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
+print('Fit MW CS:', output)
+output = curve_fit(mahFit, z_time, rand_mahs[mw_fb_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
+print('Fit MW FB:', output)
+
 # Axes and title
-#axs[0].set_title('MW')
+axs[0].set_title('MW')
 axs[0].set_xlabel('t [Gyr]')
 #axs[0].set_ylabel('M/M(z=0)')
 axs[0].set_ylabel('$M(z) / M(z=0)$')
@@ -177,8 +201,15 @@ axs[1].fill_between(time, rand_mahs[m31_fb_id, :, 0], rand_mahs[m31_fb_id, :, 2]
 axs[1].plot(time, cs_mahs[m31_cs_id, :, 1], color=col_cs)
 axs[1].fill_between(time, cs_mahs[m31_cs_id, :, 0], cs_mahs[m31_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
 
+print(z_time)
+output = curve_fit(mahFit, z_time, cs_mahs[m31_cs_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
+print('Fit M31 CS:', output)
+output = curve_fit(mahFit, z_time, rand_mahs[m31_fb_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
+print('Fit M31 FB:', output)
+
+
 # Axes and title
-#axs[1].set_title('M31')
+axs[1].set_title('M31')
 axs[1].set_xlabel('t [Gyr]')
 
 plt.tight_layout()
@@ -193,10 +224,10 @@ n_bins = n_bins_rand
 
 ticks = [0.0, 0.1, 0.2, 0.3, 0.4]
 
-#percent = [25, 50, 75]
-percent = [32, 64, 80]
+percent = [25, 50, 75]
+#percent = [32, 64, 80]
 
-x_min = 0; x_max = 12
+x_min = 0; x_max = 12.5
 y_min = 0; y_max = 0.41
 
 ################### FORMATION TIMES #########################
@@ -207,10 +238,13 @@ plt.hist(ft_cs[mw_cs_id], n_bins, facecolor=col_cs, normed=1, alpha=opaque)
 #plt.title('MW Formation Times')
 
 ax = plt.gca()
-ax.set_xlabel('t [Gyr]')
+ax.set_xlabel(' ')
+#ax.set_xlabel('t [Gyr]')
 ax.set_ylabel('$n(\\tau _F)$')
 ax.axis([x_min, x_max, y_min, y_max])
 #ax.set_ylabel('$n( < \\tau _F)$')
+plt.title('Formation time MW')
+plt.xticks([]) 
 plt.yticks(ticks)
 plt.tight_layout()
 plt.savefig(file_mw_ft_hist) 
@@ -223,8 +257,11 @@ plt.hist(ft_cs[m31_cs_id], n_bins, facecolor=col_cs, normed=1, alpha=opaque)
 #plt.title('M31 Formation Times')
 ax = plt.gca()
 ax.axis([x_min, x_max, y_min, y_max])
-ax.set_xlabel('t [Gyr]')
+ax.set_xlabel(' ')
+#ax.set_xlabel('t [Gyr]')
 #ax.set_ylabel('n(T)')
+plt.title('Formation time M31')
+plt.xticks([]) 
 plt.yticks([]) 
 plt.tight_layout()
 plt.savefig(file_m31_ft_hist) 
@@ -241,9 +278,12 @@ plt.hist(mmt_fb[mw_fb_id], n_bins, facecolor=col_fb, normed=1, alpha=1.0)
 plt.hist(mmt_cs[mw_cs_id], n_bins, facecolor=col_cs, normed=1, alpha=opaque)
 #plt.title('MW Last Major Merger Times')
 ax = plt.gca()
-ax.set_xlabel('t [Gyr]')
+#ax.set_xlabel('t [Gyr]')
+ax.set_xlabel(' ')
 ax.set_ylabel('$n( < \\tau _M)$')
 ax.axis([x_min, x_max, y_min, y_max])
+plt.title('Last major merger time MW')
+plt.xticks([]) 
 plt.yticks(ticks) 
 plt.tight_layout()
 plt.savefig(file_mw_mmt_hist) 
@@ -255,10 +295,13 @@ plt.hist(mmt_fb[m31_fb_id], n_bins, facecolor=col_fb, normed=1, alpha=1.0)
 plt.hist(mmt_cs[m31_cs_id], n_bins, facecolor=col_cs, normed=1, alpha=opaque)
 #plt.title('M31 Last Major Merger Times')
 ax.axis([x_min, x_max, y_min, y_max])
+plt.xticks([]) 
 plt.yticks([]) 
 ax = plt.gca()
-ax.set_xlabel('t [Gyr]')
-#ax.set_ylabel('n(T)')
+#ax.set_xlabel('t [Gyr]')
+ax.set_xlabel(' ')
+#ax.set_ylabel(' ')
+plt.title('Last major merger time M31')
 plt.tight_layout()
 plt.savefig(file_m31_mmt_hist) 
 plt.clf()
@@ -283,13 +326,30 @@ print(np.percentile(ft_cs[m31_cs_id], percent))
 
 y_min = 0; y_max = 1.01
 ticks = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+ksnorm = 314.0
 
 # LAST MAJOR MERGER
-
 cdf_fb = cdf(mmt_fb[mw_fb_id])
 cdf_cs = cdf(mmt_cs[mw_cs_id])
+
+KS_randSubSample(mmt_cs[mw_cs_id], mmt_fb[mw_fb_id], 10000)
+KS_randBootstrap(mmt_fb[mw_fb_id], 314, 10000)
+
+print('=== MMT MW  ===')
+pos05 = np.where(cdf_cs[0] == 6.75)
+print('CS, half: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 6.75)
+print('FB, half: ', 1.0 - cdf_fb[1][pos05[0][0]])
+pos05 = np.where(cdf_cs[0] == 10)
+print('CS, quart: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 10)
+print('FB, quart: ', 1.0 - cdf_fb[1][pos05[0][0]])
+
+
 kst = stats.ks_2samp(cdf_fb[0], cdf_cs[0])
 print(kst)
+print('KST confidence level = ', kst[0] * 16.48)
+print('KST confidence level = ', kst[1] * ksnorm)
 
 (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
@@ -309,8 +369,24 @@ plt.cla()
 cdf_fb = cdf(mmt_fb[m31_fb_id])
 cdf_cs = cdf(mmt_cs[m31_cs_id])
 
+
+print('=== MMT M31  ===')
+pos05 = np.where(cdf_cs[0] == 6.75)
+print('CS, half: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 6.75)
+print('FB, half: ', 1.0 - cdf_fb[1][pos05[0][0]])
+pos05 = np.where(cdf_cs[0] == 10)
+print('CS, quart: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 10)
+print('FB, quart: ', 1.0 - cdf_fb[1][pos05[0][0]])
+#print(cdf_cs[1])
+
+#print(stats.ks.test(cdf_fb[0], cff_cs[0]))
+
 kst = stats.ks_2samp(cdf_fb[0], cdf_cs[0])
 print(kst)
+print('KST confidence level = ', kst[0] * 16.48)
+print('KST confidence level = ', kst[1] * ksnorm)
 
 (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
@@ -322,9 +398,10 @@ axs.set_xlabel('t [Gyr]')
 #axs.set_ylabel('n(<T)$')
 #axs.set_ylabel('$n(< \\tau _M)$')
 #plt.title('M31 MMT Cumulative')
+#plt.xticks([]) 
+plt.yticks([]) 
 plt.tight_layout()
 plt.savefig(file_m31_mmt_kstest)
-plt.yticks([]) 
 plt.clf()
 plt.cla()
 
@@ -332,8 +409,24 @@ plt.cla()
 
 cdf_fb = cdf(ft_fb[mw_fb_id])
 cdf_cs = cdf(ft_cs[mw_cs_id])
+
+print('=== FT MW ===') 
+pos05 = np.where(cdf_cs[0] == 6.75)
+print('CS, half: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 6.75)
+print('FB, half: ', 1.0 - cdf_fb[1][pos05[0][0]])
+pos05 = np.where(cdf_cs[0] == 10)
+print('CS, quart: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 10)
+print('FB, quart: ', 1.0 - cdf_fb[1][pos05[0][0]])
+
+pos05 = np.where(cdf_fb[0] == 9)
+print('FB 9: ', 1.0 - cdf_fb[1][pos05[0][0]])
+
 kst = stats.ks_2samp(cdf_fb[0], cdf_cs[0])
 print(kst)
+print('KST confidence level = ', kst[0] * 16.48)
+print('KST confidence level = ', kst[1] * ksnorm)
 
 (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
@@ -354,19 +447,35 @@ plt.cla()
 cdf_fb = cdf(ft_fb[m31_fb_id])
 cdf_cs = cdf(ft_cs[m31_cs_id])
 
+print('=== FT M31 ===') 
+pos05 = np.where(cdf_cs[0] == 6.75)
+print('CS, half: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 6.75)
+print('FB, half: ', 1.0 - cdf_fb[1][pos05[0][0]])
+pos05 = np.where(cdf_cs[0] == 10)
+print('CS, quart: ', 1.0 - cdf_cs[1][pos05[0][0]])
+pos05 = np.where(cdf_fb[0] == 10)
+print('FB, quart: ', 1.0 - cdf_fb[1][pos05[0][0]])
+
+pos05 = np.where(cdf_fb[0] == 9)
+print('FB 9: ', 1.0 - cdf_fb[1][pos05[0][0]])
+
+
+
 kst = stats.ks_2samp(cdf_fb[0], cdf_cs[0])
 print(kst)
+print('KST confidence level = ', kst[0] * 16.48)
+print('KST confidence level = ', kst[1] * ksnorm)
 
 (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 
 axs.axis([x_min, x_max, y_min, y_max])
 axs.plot(cdf_fb[0], cdf_fb[1], color=col_fb)
 axs.plot(cdf_cs[0], cdf_cs[1], color=col_cs)
-
-axs.set_xlabel('t [Gyr]')
 #axs.set_ylabel('T_{F}(<T)$')
 #axs.set_ylabel('$n(< \\tau _F)$')
 #plt.title('M31 FT Cumulative')
+axs.set_xlabel('t [Gyr]')
 plt.yticks([]) 
 plt.tight_layout()
 plt.savefig(file_m31_ft_kstest)

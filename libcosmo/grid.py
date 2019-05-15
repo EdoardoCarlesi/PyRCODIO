@@ -43,7 +43,7 @@ class Grid:
 		i = ind % self.size
 		j = (ind / self.size) % self.size
 		k = (ind / (self.size * self.size) ) % self.size
-		return [i, j, k]
+		return [int(i), int(j), int(k)]
 
 	def index(self, i, j, k):
 		ind = i + self.size * j + self.size * self.size * k

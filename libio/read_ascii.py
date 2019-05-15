@@ -18,10 +18,10 @@ def read_vweb(file_name, size, box):
 	while line and index < tot_n:
 		line = file_web.readline()
 		line = line.strip()
-		column = line.split()
+		column = line.split()#; print(column[0])
 	
 		# Determine corresponding x, y, z in grid units
-		(ix, jy, kz) = grid.reverse_index(index)
+		(ix, jy, kz) = grid.reverse_index(index)#; print(ix, jy, kz)
 
 		# Density
 		grid.rho[ix, jy, kz] = float(column[0])
