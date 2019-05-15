@@ -180,10 +180,18 @@ for it in range(0, nz):
     z_time.append(zt)
 
 print(z_time)
-output = curve_fit(mahFit, z_time, cs_mahs[mw_cs_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
-print('Fit MW CS:', output)
-output = curve_fit(mahFit, z_time, rand_mahs[mw_fb_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
-print('Fit MW FB:', output)
+output1 = curve_fit(mahFit, z_time, cs_mahs[mw_cs_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
+output2 = curve_fit(mahFit, z_time, cs_mahs[mw_cs_id, :, 0], p0 = [a0, b0]) #, sigma = mw_cs_err)
+output3 = curve_fit(mahFit, z_time, cs_mahs[mw_cs_id, :, 2], p0 = [a0, b0]) #, sigma = mw_cs_err)
+print('1. Fit MW CS:', output1)
+print('2. Fit MW CS:', output2)
+print('3. Fit MW CS:', output3)
+output1 = curve_fit(mahFit, z_time, rand_mahs[mw_fb_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
+output2 = curve_fit(mahFit, z_time, rand_mahs[mw_fb_id, :, 0], p0 = [a0, b0]) #, sigma = mw_cs_err)
+output3 = curve_fit(mahFit, z_time, rand_mahs[mw_fb_id, :, 2], p0 = [a0, b0]) #, sigma = mw_cs_err)
+print('1. Fit MW FB:', output1)
+print('2. Fit MW FB:', output2)
+print('3. Fit MW FB:', output3)
 
 # Axes and title
 axs[0].set_title('MW')

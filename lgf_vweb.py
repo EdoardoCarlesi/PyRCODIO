@@ -17,8 +17,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
 file_single='lcdm_grid64_box100_'
 file_suffix='.000064.Vweb-ascii'
 box_size = 100000.0
@@ -55,7 +53,8 @@ for i_sub in range(sub_ini, sub_end):
     #print(vweb.evals[0, 1, 2, 3] )
 
     #norm = 4096.0
-    norm = 512.0
+    #norm = 512.0
+    norm = 1024.0
     #norm = 128.0
     ev1 = [];     ev2 = [];     ev3 = []
     print('Merger tree stats for %d pairs, run = %s .' % (n_lgs, sub_path))
