@@ -2,7 +2,7 @@ from libcosmo.track_halos import *
 from libcosmo.utils import *
 from libcosmo.mtree import *
 from libcosmo.units import *
-from libcosmo.halo import *
+from libcosmo.halos import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
 from libcosmo.lg_plot import *

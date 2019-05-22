@@ -16,7 +16,7 @@ import pickle
 from config import *
 from libio.read_ascii import *
 from libcosmo.utils import *
-from libcosmo.halo import *
+from libcosmo.halos import *
 from libcosmo.track_halos import *
 from libcosmo.find_halos import *
 from libcosmo.lg_plot import *
@@ -125,11 +125,11 @@ for run_j in range(run_init, run_end):
 				ids_sub.append(best_lg.LG1.ID)
 				ids_sub.append(best_lg.LG2.ID)
 				track_subs = True
-	
+	                        '''
 				# NOW DO THE FULL BLOWN IDENTIFICATION OF THE LGs and their satellites at all steps!
 				(mains, sats) = merger_tree(end_snap, ini_snap, min_common, main_halos, main_parts, \
 							main_ids, halos, settings, track_subs, ids_sub, fac_r)
-
+                                
 				file_mains = save_path + base_run + '_' + run_num + '_mains_all' + save_ext
 				file_sats = save_path + base_run + '_' + run_num + '_sats' + save_ext
 
@@ -138,4 +138,4 @@ for run_j in range(run_init, run_end):
 
 				pickle.dump(mains, filehand_mains)
 				pickle.dump(sats, filehand_sats)
-
+                                '''

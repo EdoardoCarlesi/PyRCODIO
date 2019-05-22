@@ -1,9 +1,14 @@
+'''
+#from scipy import interpolate
+from .find_halo import *
+from .utils import *
+from .units import *
+'''
+
 import math 
 import pickle
 import numpy as np
-#from .find_halos import find_halos as fh
 import sys
-#from scipy import interpolate
 from operator import *
 from .utils import *
 from .units import *
@@ -79,7 +84,7 @@ class Halo:
 
 	def sub_halos(self, all_halos, rsub):
 		self.rsub = rsub
-		subs = fh.find_halos_point(self.x, all_halos, self.rsub)
+		subs = find_halos_point(self.x, all_halos, self.rsub)
 		self.nsub = len(subs) - 1
 
 		# WARNING TODO this assumes that the first halo is the HOST halo
@@ -411,7 +416,7 @@ class LocalGroupModel:
 
 
 # Class for bulk properties of sub halo groups of a given halo - mass functions, spatial distribution, etc.
-class SubHalos():
+class SubHalos:
 	host = Halo()
 	header = ''
 	hubble = 1.0
@@ -632,7 +637,8 @@ class LocalGroup:
             self.com = self.get_com()
 
     def rating(self):
-        self.rating = fh.rate_lg_pair(self.LG1, self.LG2)
+        self.rating = rate_lg_pair(self.LG1, self.LG2)
+        return self.rating
 
     def geo_com(self):
         geo_com = np.zeros((3))
@@ -698,5 +704,53 @@ class LocalGroup:
     def m_tot(self):
         return (self.LG1.m + self.LG2.m)
 
+
+def rate_lg_pair(lg1, lg2):
+
+	# Benchmark (obs.) quantities
+	rhalo0 = 500.	# kpc/h
+	vrad0 = -100.
+	mass0 = 3.0e+12
+	ratio0 = 1.1
+	hubble0 = 67.0
+
+	npart = 512
+
+	com = center_of_mass([lg1.m, lg2.m], [lg1.x, lg2.x])
+	m12 = lg1.m + lg2.m
+
+	if lg1.m > lg2.m:
+		rm12 = lg1.m / lg2.m
+	else:
+		rm12 = lg2.m / lg1.m
+
+	rhalos = lg1.distance(lg2.x)
+	vrad = vel_radial(lg1.x, lg2.x, lg1.v, lg2.v)
+	vrad += hubble0 * rhalos/1000.
+
+	# Relative weights to estimate the relevance of each property relative to the "real" LG 
+	fac_rh = 1.0
+	fac_c = 0.25
+	fac_v = 0.25
+	fac_m = 1.5
+	fac_ra = 1.5
+
+	# How to compute the LG-likeliness factors
+	diff_rh = abs(rhalos - rhalo0) / rhalo0
+	diff_m = np.log10(m12 / mass0)
+	diff_v = abs(vrad0 - vrad) / abs(vrad0)
+	diff_ra = abs(rm12 - ratio0) / abs(ratio0)
+
+	lg_rate = diff_rh * fac_rh + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
+	
+	# Get a penalty for positive vrad
+	if vrad > 5.0:
+		lg_rate += 10.
+
+	#contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
+	#print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
+	print('LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart))
+
+	return lg_rate
 
 

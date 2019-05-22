@@ -1,7 +1,7 @@
 from libcosmo.track_halos import *
 from libcosmo.utils import *
 from libcosmo.units import *
-from libcosmo.halo import *
+from libcosmo.halos import *
 from libcosmo.find_halos import *
 from libcosmo.particles import *
 from libcosmo.lg_plot import *
@@ -39,7 +39,7 @@ vrad_max = 1000.0
 '''
 
 i_ini = 0
-i_end = 5
+i_end = 10
 
 for i_dir in range(i_ini, i_end):
         sub_path = '%02d' % i_dir

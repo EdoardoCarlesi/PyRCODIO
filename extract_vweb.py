@@ -4,7 +4,8 @@ import numpy as np
 import os
 
 # Root path for the vweb files
-dirBase='/z/carlesi/CLUES/DATA/LGF/SNAPS/512/'
+#dirBase='/z/carlesi/CLUES/DATA/LGF/SNAPS/512/'
+dirBase='/work2/eduardo/DATA/512/VWEB/'
 fileWeb='vweb_lgf_054.000064.Vweb-ascii'
 
 # Do a loop
@@ -31,7 +32,7 @@ for iRun in range(iSta, iEnd):
 
 	# Sub loop
 	for gRun in range(gSta, gEnd):
-		gRunStr = '%02d' % gSta
+		gRunStr = '%02d' % gRun
 		
 		subRunStr = iRunStr + '_' + gRunStr
 		thisFileWeb = dirBase + subRunStr + '/' + fileWeb
@@ -43,7 +44,7 @@ for iRun in range(iSta, iEnd):
 		if exists:
 			print(thisFileWeb, ' found.')
 			thisGrid = read_vweb(thisFileWeb, gridSize, boxSize)
-			print(thisGrid.evals[:, 32, 32, 32])			
+#			print(thisGrid.evals[:, 32, 32, 32])			
 
 			for dx in range(0, nSubGrid):
 				ix = gridSize / 2 - nSubGrid / 2 + dx
@@ -54,8 +55,8 @@ for iRun in range(iSta, iEnd):
 					for dz in range(0, nSubGrid):
 						iz = gridSize / 2 - nSubGrid / 2 + dz
 						subGrid[:, dx, dy, dz] = thisGrid.evals[:, ix, iy, iz]
-			
-			
-			print(subGrid)
-
-
+	
+			this_vweb_out = 'saved/lgf_web_' + subRunStr + '.pkl'			
+			print('Saving to vweb: ', this_vweb_out)		
+			f_vweb_out = open(this_vweb_out, 'wb')
+			pickle.dump(subGrid, f_vweb_out)

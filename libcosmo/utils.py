@@ -3,8 +3,42 @@ import math
 import numpy as np
 import scipy.stats as sp
 import pickle
-from .halo import *
+#from .halos import *
+#from halos import *
 from numpy import linalg as la
+from pygadgetreader import *
+
+
+def readgadget(f_snap, read_type, p_type, n_files):
+    if n_files == 1:
+        parts = readsnap(f_snap, read_type, p_type)
+    else:
+        
+        parts = np.zeros((1, 3), dtype=float)
+        size_part = 0
+        for i_file in range(0, n_files):
+            f_tmp = f_snap + '.' + str(i_file)
+            parts_tmp = readsnap(f_tmp, read_type, p_type)
+
+#            print(size_part, len(parts_tmp[:, :]), np.shape(parts_tmp), np.shape(parts))
+            old_size = size_part
+            size_part += len(parts_tmp)
+            #np.resize(parts, (size_part, 3))
+            parts.resize((size_part, 3))
+#            print(size_part, len(parts_tmp[:, :]), np.shape(parts_tmp), np.shape(parts))
+            
+            for i_part in range(0, len(parts_tmp)):
+                parts[old_size + i_part, :] = parts_tmp[i_part][:]
+#                i_x = 2
+#                print(parts_tmp[i_part][i_x])
+#                print(parts[old_size + i_part][i_x])
+#                for i_x in range(0, 3):
+#                    parts[old_size + i_part, i_x] = parts_tmp[i_part][i_x]
+                    #print(parts_tmp[i_part][i_x])
+                    #print(parts[old_size + i_part][i_x])
+ 
+    print('Found a total of ', np.shape(parts), ' particles.')
+    return parts
 
 
 def KS_randBootstrap(sample1, n_boot, n_iter):

@@ -6,5 +6,6 @@
 *.txt
 *png
 *.pkl
+*.bak
 output/*
 COPY/

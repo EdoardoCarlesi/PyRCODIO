@@ -1,21 +1,20 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.colors as colors
-from scipy.ndimage.filters import gaussian_filter
-
-from matplotlib import rc
-from .particles import *
-import time
 import numpy as np
+import time
 import math
+
+from .particles import *
+from matplotlib import rc
+from scipy.ndimage.filters import gaussian_filter
 from libcosmo.utils import *
 from pygadgetreader import *
-#from particles import *
 from scipy.stats import kde
 
 
 
-def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
+def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units, n_files):
 	print('Plotting density slices for snapshot: ', f_snap)
 
 	# Plot properties
@@ -37,14 +36,7 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units):
 	axis_label = []
 	axis_label.append('SGX')
 	axis_label.append('SGY')
-	axis_label.append('SGZ')
-
-	# Read the particles
-	parts1 = readsnap(f_snap, 'pos', 1)
-	#parts2 = readsnap(f_snap, 'pos', 2)
-	#parts3 = readsnap(f_snap, 'pos', 3)
-	#parts4 = readsnap(f_snap, 'pos', 4)
-
+	axis_label.append('SGZ'); parts1 = readgadget(f_snap, 'pos', 1, n_files)
 	parts2 = []
 	parts3 = []
 	parts4 = []

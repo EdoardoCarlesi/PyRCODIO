@@ -6,7 +6,7 @@ import os
 from config import *
 from libio.read_ascii import *
 from libcosmo.utils import *
-from libcosmo.halo import *
+from libcosmo.halos import *
 from libcosmo.find_halos import *
 from libcosmo.lg_plot import *
 
@@ -173,5 +173,4 @@ for run_j in range(run_init, run_end):
 					del y_mf1; 	del y_mf2
 					n_mf = 0
 
-			'''
 

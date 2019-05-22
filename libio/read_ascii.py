@@ -1,12 +1,17 @@
-import sys
-sys.path.append('../libcosmo/')
-from libcosmo.halo import *
-from libcosmo.grid import *
-import os
 import numpy
+import sys
+import os
+#sys.path.append('../libcosmo/')
+#sys.path.append('..')
+
+from libcosmo.grid import *
+#from libcosmo.porcodio import * 
+from libcosmo.halos import Halo
+
 
 
 def read_vweb(file_name, size, box):
+
 	file_web = open(file_name, 'r')
 	grid = VWeb(size, box)
 
@@ -205,7 +210,6 @@ def read_ahf_mass_range(file_name, m_max, m_min):
 
 
 def read_ahf(file_name):
-	# Open file
 	file_ahf = open(file_name, 'r')
 
 	line = file_ahf.readline()
@@ -233,15 +237,15 @@ def read_ahf(file_name):
 				
 			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
 
-			# Initialize and append halo to the list
-			halo = Halo(); halo.line = full_line
-			halo.initialize(idn, mass, pos, vel, rvir, nsub, npart)
-			halo.update_id_index(idn, count)
-			#halo.ID = idn
-			halo.l = angmom
-			halo.contam = contam
-			halo.vmax = vmax
-			halos_ahf.append(halo)
+			# Initialize and append hl to the list
+			hl = Halo(); hl.line = full_line
+			hl.initialize(idn, mass, pos, vel, rvir, nsub, npart)
+			hl.update_id_index(idn, count)
+			#hl.ID = idn
+			hl.l = angmom
+			hl.contam = contam
+			hl.vmax = vmax
+			halos_ahf.append(hl)
 			count += 1
 
 	n_lines = count

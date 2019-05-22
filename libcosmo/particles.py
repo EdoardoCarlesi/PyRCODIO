@@ -1,6 +1,6 @@
 from .utils import *
 from .units import *
-from .halo import *
+from .halos import *
 import math
 import numpy as np
 

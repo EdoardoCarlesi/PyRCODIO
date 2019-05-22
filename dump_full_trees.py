@@ -1,5 +1,5 @@
 from libio.read_ascii import *
-from libcosmo.halo import *
+from libcosmo.halos import *
 from libcosmo.mtree import *
 from libSQL.sqllib import *
 from libSQL.mtree import *

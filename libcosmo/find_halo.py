@@ -1,14 +1,12 @@
-from .halo import * 
-#halo as hl
-#import halo as hl
+from .halos import * 
 from .utils import *
 from .particles import *
-
 import numpy as np 
 import sys
-sys.path.append('../libio/')
-from libio.find_files import *
-from libio.read_ascii import *
+
+#sys.path.append('../libio/')
+#from libio.find_files import *
+#from libio.read_ascii import *
 
 # Returns an array of all the haloes whose com is located within a given radius from a given halo
 def find_halos(halo_c, halo_all, radius):
@@ -169,55 +167,6 @@ def find_lg(halos, lgmod):
 					n_all_lgs += 1
 
 	return lgs
-
-
-def rate_lg_pair(lg1, lg2):
-
-	# Benchmark (obs.) quantities
-	rhalo0 = 500.	# kpc/h
-	vrad0 = -100.
-	mass0 = 3.0e+12
-	ratio0 = 1.1
-	hubble0 = 67.0
-
-	npart = 512
-
-	com = center_of_mass([lg1.m, lg2.m], [lg1.x, lg2.x])
-	m12 = lg1.m + lg2.m
-
-	if lg1.m > lg2.m:
-		rm12 = lg1.m / lg2.m
-	else:
-		rm12 = lg2.m / lg1.m
-
-	rhalos = lg1.distance(lg2.x)
-	vrad = vel_radial(lg1.x, lg2.x, lg1.v, lg2.v)
-	vrad += hubble0 * rhalos/1000.
-
-	# Relative weights to estimate the relevance of each property relative to the "real" LG 
-	fac_rh = 1.0
-	fac_c = 0.25
-	fac_v = 0.25
-	fac_m = 1.5
-	fac_ra = 1.5
-
-	# How to compute the LG-likeliness factors
-	diff_rh = abs(rhalos - rhalo0) / rhalo0
-	diff_m = np.log10(m12 / mass0)
-	diff_v = abs(vrad0 - vrad) / abs(vrad0)
-	diff_ra = abs(rm12 - ratio0) / abs(ratio0)
-
-	lg_rate = diff_rh * fac_rh + diff_m * fac_m + diff_ra * fac_ra + fac_v * diff_v
-	
-	# Get a penalty for positive vrad
-	if vrad > 5.0:
-		lg_rate += 10.
-
-	#contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
-	#print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
-	print('LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart))
-
-	return lg_rate
 
 
 def locate_virgo(ahf_all):

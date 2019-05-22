@@ -8,7 +8,7 @@ import os
 from libio.read_ascii import *
 from config import *
 from libcosmo.utils import *
-from libcosmo.halo import *
+from libcosmo.halos import *
 from libcosmo.find_halos import *
 from libcosmo.lg_plot import *
 import pickle
