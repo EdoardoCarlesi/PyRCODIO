@@ -19,9 +19,10 @@ import os.path
 base_path='/home/eduardo/CLUES/DATA/'
 
 ini_num=0
-end_num=1
+end_num=10
 
 nbins = 2048
+#nbins = 2048
 f_rescale = 1.0 / 1024.0
 
 #all_lg_base = simu_runs()
