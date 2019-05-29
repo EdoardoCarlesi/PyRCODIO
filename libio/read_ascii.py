@@ -234,8 +234,8 @@ def read_ahf(file_name):
 			vmax = float(column[16])
 			angmom = [float(column[21]), float(column[22]), float(column[23])]
 			contam = float(column[38])
-                        mgas = float(column[45])
-                        mstar = float(column[65])
+                        mgas = float(column[44])
+                        mstar = float(column[64])
 
 			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
 
