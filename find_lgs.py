@@ -18,10 +18,10 @@ from libcosmo.track_halos import *
 from libcosmo.find_halo import *
 from libcosmo.lg_plot import *
 
-#resolution='2048'
-resolution='4096'
+resolution='2048'
+#resolution='4096'
 
-run_init = 9
+run_init = 0
 run_end = 10
 
 subrun_init = 0
@@ -53,10 +53,11 @@ settings = Settings(base_path, outp_path, env_type, resolution, snap_base)
 settings.box_center = center
 
 # Subhalo identification criterion
-fac_r = 1.2     # This is used for the global R around the LG as well as for Rvir around each halo
+fac_r = 1.5     # This is used for the global R around the LG as well as for Rvir around each halo
 min_common = 15
 part_min = 1000.
-mmin = 1.e+8    # Track haloes above this threshold at z=0
+mmin = 1.e+6    # Track haloes above this threshold at z=0
+mcut = 0.5e+10
 
 n_lg_good = 0
 
@@ -67,6 +68,11 @@ for run_j in range(run_init, run_end):
     lg_model = all_lg_models[this_run]
 
     print(base_run)
+
+    # Print halos and their distances from the center of LG / MW / M31
+    fname_lg  = out_base + resolution + '_' + base_run + '_subs_LG.txt';
+    fname_mw  = out_base + resolution + '_' + base_run + '_subs_MW.txt';
+    fname_m31 = out_base + resolution + '_' + base_run + '_subs_M31.txt';
 
     # Loop on the different small scale realisations of the LGs
     for subrun_i in range(subrun_init, subrun_end):
@@ -81,7 +87,7 @@ for run_j in range(run_init, run_end):
         this_task = 0
         good_lgs = 0
         ids_sub = []
-        main_ids =[]; this_file_halo = base_path + '/' + base_run + '/' + run_num + '/snapshot_054.0000.z0.000.AHF_halos'
+        main_ids = []; this_file_halo = base_path + '/' + base_run + '/' + run_num + '/snapshot_054.0000.z0.000.AHF_halos'
         #(this_file_part, this_file_halo) = settings.get_ahf_files(snap_last, this_task)
 
         print('Reading files: ', this_file_halo)
@@ -108,22 +114,24 @@ for run_j in range(run_init, run_end):
             if good_lgs > 0:
                 print('Best LG: ', best_lg.info());
                 n_lg_good += 1;
+
+                # Write the just-found local group
                 fname_out = out_base + resolution + '_' + base_run + '_' + run_num + '.pkl';
                 f_out = open(fname_out, 'wb');
                 pickle.dump(best_lg, f_out)
 
                 # Identify the main halos to be tracked at all zs
                 com = best_lg.get_com()
-                rad = best_lg.r_halos() * fac_r
-                main_halos = find_halos_mass_radius(com, halos, rad, mmin)
-
-                    # Select only the two main LG candidates to keep track of all the satellites
-                    #ids_sub.append(best_lg.LG1.ID)
-                    #ids_sub.append(best_lg.LG2.ID)
-        #else:
-     #   print('-----------------------------------------')
-      #  print('-----> No LGs found for: ', this_file_halo)
-       # print('-----------------------------------------')
-
+                rad_lg  = best_lg.r_halos() * fac_r
+                rad_mw  = best_lg.LG1.r * fac_r
+                rad_m31 = best_lg.LG2.r * fac_r
+                lg_halos  = find_halos_mass_radius(com, halos, rad_lg, mmin)
+                mw_halos  = find_halos_mass_radius(best_lg.LG1.x, halos, rad_mw, mmin)
+                m31_halos = find_halos_mass_radius(best_lg.LG2.x, halos, rad_m31, mmin)
+                
+                # Print the subhalo list
+                #print_subhalos(com, 10. * mcut, lg_halos,  run_num, fname_lg)
+                print_subhalos(best_lg.LG1.x, mcut, mw_halos,  run_num, fname_mw)
+                print_subhalos(best_lg.LG2.x, mcut, m31_halos, run_num, fname_m31)
 
 print('Found ', n_lg_good, 'viable local group pairs.')

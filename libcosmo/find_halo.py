@@ -333,6 +333,19 @@ def locate_clusters(ahf_all, box_center, runcode):
 	return (ahf_x, ahf_m, cluster_name)
 
 
+
+def print_subhalos(com, mcut, lg_halos,  run_num, fname_lg):
+
+    for halo in lg_halos:
+        if halo.m > mcut:
+            this_d = halo.distance(com)
+
+            if this_d > 10.0:
+                print('Mass: %e distance: %f' % (halo.m, this_d))
+            elif this_d == 0.0:
+                print('Host: %e' % (halo.m))
+
+
 '''
 # Find the best match for each halo, ahf_now contains all the haloes we want to trace at z and ahf_back all the possible candidates at z+1
 def match_progenitors(ahf_now, ahf_back):

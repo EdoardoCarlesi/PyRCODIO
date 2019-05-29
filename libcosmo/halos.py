@@ -33,8 +33,8 @@ class Halo:
 
 	# Gas & star properties
 	m_dm = 0.0
-	m_gas = 0.0
-	m_star = 0.0
+	mgas = 0.0
+	mstar = 0.0
 
 	id_index = dict()
 
