@@ -1,18 +1,24 @@
-from libcosmo.track_halos import *
-from libcosmo.utils import *
-from libcosmo.units import *
 from libcosmo.halos import *
-from libcosmo.find_halos import *
-from libcosmo.particles import *
-from libcosmo.lg_plot import *
 from libio.read_ascii import *
-from libio.find_files import *
 from pygadgetreader import *
-from config import *
-import time
-import pickle
-from libcosmo.grid import *
 
+import pynbody as pyn
+import pickle
+
+snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
+ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+
+ahf_file = pyn.load(ahf_path)
+halos = pyn.halo.AHFCatalogue(f)
+
+snap_file = pyn.load(ahf_file)
+
+
+
+
+
+
+'''
 f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 
 halos = read_ahf(f_ahf)
@@ -22,7 +28,6 @@ for ih in range (0, len(halos)):
 	mass = halos[ih].m/1e+8
 	print  mass, ' ', halos[ih].vmax
 
-'''
 #fname = 'saved/dyn_stats_MW_00_06_01.pkl'
 #fname='saved/web_00_06_01.pkl'
 #filesub = open(fname, 'r')
