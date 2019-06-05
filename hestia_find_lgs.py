@@ -19,30 +19,34 @@ from libcosmo.find_halo import *
 #from libcosmo.lg_plot import *
 
 hubble = 0.67
+
 # Local group selection parameters
 center = [50000., 50000., 50000.]
 
 # Allocate LG Models
 #resolution = '2048'
 resolution = '4096'
+
 #this_code = '00_06'
+#this_code = '01_12'
+this_code = '08_11'
 #this_code = '37_11'
 #this_code = '09_18'
-this_code = '45_17'
+#this_code = '45_17'
 lg_dummy = LocalGroup(this_code)
 
 base_path = '/z/carlesi/HestiaNoam/RE_SIMS/'+resolution+'/GAL_FOR/'+this_code+'/AHF_output/'
 
-#snap_file = 'HESTIA_100Mpc'+this_code+'_127.z0.000.AHF_halos'
+#snap_file = 'HESTIA_'+this_code+'_127.z0.000.AHF_halos'
 snap_file = 'HESTIA_100Mpc_'+resolution+'_'+this_code+'.127.z0.000.AHF_halos'
 
 # Subhalo identification criterion
-fac_r = 1.5     # This is used for the global R around the LG as well as for Rvir around each halo
+fac_r = 1.25     # This is used for the global R around the LG as well as for Rvir around each halo
 min_common = 15
 part_min = 1000.
 r_select = 7500.
 mmin = 1.e+6    # Track haloes above this threshold at z=0
-mcut = 0.5e+10
+mcut = 0.5e+7
 
 n_lg_good = 0
 main_ids =[]; this_file_halo = base_path + '/' + snap_file
@@ -72,7 +76,7 @@ if n_lgs > 0:
             best_lg = lg
 
         if good_lgs > 0:
-            print('Best LG: ', best_lg.info());
+#            print('Best LG: ', best_lg.info());
             n_lg_good += 1;
 	    run_num = this_code
 
@@ -86,11 +90,11 @@ if n_lgs > 0:
             m31_halos = find_halos_mass_radius(best_lg.LG2.x, halos, rad_m31, mmin)
                 
             # Print the subhalo list
-	    fname_mw = '_MW_'
-	    fname_m31 = '_M31_'
-	    fname_lg = '_LG_'
-            print_subhalos(com, 10. * mcut, lg_halos,  run_num, fname_lg)
-            print_subhalos(best_lg.LG1.x, mcut, mw_halos,  run_num, fname_mw)
-            print_subhalos(best_lg.LG2.x, mcut, m31_halos, run_num, fname_m31)
+	    fname_mw = 'dw_MW_' + run_num + '.txt'
+	    fname_m31 = 'dw_M31_' + run_num + '.txt'
+	    fname_lg = 'dw_LG_' + run_num + '.txt'
+            print_subhalos(com, mcut, lg_halos,  fname_lg)
+            print_subhalos(best_lg.LG1.x, mcut, mw_halos,  fname_mw)
+            print_subhalos(best_lg.LG2.x, mcut, m31_halos, fname_m31)
 
 print('Found ', n_lg_good, 'viable local group pairs.')

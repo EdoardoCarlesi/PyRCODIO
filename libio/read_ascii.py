@@ -234,7 +234,9 @@ def read_ahf(file_name):
 			vmax = float(column[16])
 			angmom = [float(column[21]), float(column[22]), float(column[23])]
 			contam = float(column[38])
+                        ngas = int(column[43])
                         mgas = float(column[44])
+                        nstar = int(column[63])
                         mstar = float(column[64])
 
 			#pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
@@ -250,6 +252,8 @@ def read_ahf(file_name):
                         hl.m_star = mstar
                         hl.m_gas = mgas
                         hl.m_dm = mass - mstar - mgas
+                        hl.nstar = nstar
+                        hl.ngas = ngas
 			halos_ahf.append(hl)
 			count += 1
 
