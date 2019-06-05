@@ -104,6 +104,14 @@ def lg_models():
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
+        this_model = '08_11'
+        r_iso = 1500.; r_max = 2000.; r_min = 200.; m_min = 5.0e+11; m_max = 3.0e+12; ratio_max = 2; vrad_max = 100.0	# 08_11
+        lg_model = LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+
+
         return (all_lg_models, model_index)
 
 class Settings:

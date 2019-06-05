@@ -35,6 +35,8 @@ class Halo:
 	m_dm = 0.0
 	mgas = 0.0
 	mstar = 0.0
+	ngas = 0
+	nstar = 0
 
 	id_index = dict()
 
@@ -48,6 +50,8 @@ class Halo:
 		self.r = 0.0
 		self.nsub = 0
 		self.npart = 0
+		self.ngas = 0
+		self.nstar = 0
 		self.vmax = 0.0
 		self.subhalos = []
 		self.progenitors = []

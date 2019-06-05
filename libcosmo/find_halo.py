@@ -345,9 +345,9 @@ def print_subhalos(com, mcut, lg_halos, fname_lg):
 
             if this_d > 10.0:
             #    print('Mass: %e distance: %f' % (halo.m, this_d))
-                f_out.write('%s\n', (halo.ID))
+                f_out.write('%s\n' % (halo.ID))
             elif this_d == 0.0:
-                f_out.write('# Host ID %s\n', (halo.ID))
+                f_out.write('# Host ID %s\n' % (halo.ID))
             #    print('Host: %e' % (halo.m))
 
     f_out.close()
