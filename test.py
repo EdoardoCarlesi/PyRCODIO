@@ -1,5 +1,5 @@
 from libcosmo.halos import *
-from libio.read_ascii import *
+#from libio.read_ascii import *
 from pygadgetreader import *
 
 import pynbody as pyn
@@ -8,10 +8,10 @@ import pickle
 snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
 ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 
-ahf_file = pyn.load(ahf_path)
-halos = pyn.halo.AHFCatalogue(f)
+#ahf_file = pyn.load(ahf_path)
+#halos = pyn.halo.AHFCatalogue(ahf_path)
 
-snap_file = pyn.load(ahf_file)
+snap_file = pyn.load(snap_path)
 
 
 
