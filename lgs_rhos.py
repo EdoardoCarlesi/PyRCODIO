@@ -21,9 +21,10 @@ base_path='/home/eduardo/CLUES/DATA/'
 ini_num=0
 end_num=10
 
-nbins = 2048
+
 #nbins = 2048
-f_rescale = 1.0 / 1024.0
+nbins = 512
+f_rescale = 1.0 / 2048.0
 
 #all_lg_base = simu_runs()
 
@@ -38,13 +39,23 @@ all_lg_base=['37_11']
 #lg_base='55_02'
 #lg_base='64_14'
 
-box = '100'; resolution = '4096'; n_files = 8
-#box = '100'; resolution = '2048'; n_files = 1
-box_size = 100.0; plot_side = 1.75; thickn = 3.0; units = 'Mpc'
+#box = '100'; resolution = '4096'; n_files = 1
+box = '100'; resolution = '2048'; n_files = 1
+#box_size = 100.0; plot_side = 1.75; thickn = 3.0; units = 'Mpc'
 #box_size = 100.0; plot_side = 1.5; thickn = 3.0; units = 'Mpc'
+box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 1.5e+3; units = 'kpc'
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 5000.0; units = 'kpc'
-snap_name='snapshot_054'
+#snap_name='snapshot_054'
+#snap_name='snapshot_054'
+snap_name='ic_arepo_2048_100.000_37_11_00.0'
+#base_path = '/home/eduardo/CLUES/DATA/4096/37_11/00/'
 
+f_out = 'test_lg_gas'
+box_center = [46600, 50750, 47800]
+#box_center = [46600, 50750, 47800]
+plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
+
+'''
 for lg_base in all_lg_base:
 
         # Just choose one LG center to plot all the other sims - 04 is a good average choice
@@ -70,9 +81,9 @@ for lg_base in all_lg_base:
 
 		else:
 			print('File not found: ', base_dir + snap_name)
-
+'''
 	
-	'''
+'''
 	This (older) version loops over all the LGs and finds each time all the LGs
 	
 	subrun = '%02d' % run_num
@@ -100,4 +111,4 @@ for lg_base in all_lg_base:
 	else:
 		print 'File not found: ', pkl_name
 
-	'''
+'''
