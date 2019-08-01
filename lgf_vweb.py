@@ -5,9 +5,10 @@ import os
 
 # Root path for the vweb files
 #dirBase='/z/carlesi/CLUES/DATA/LGF/SNAPS/512/'
-dirBase='/work2/eduardo/DATA/512/VWEB/'
-fileWeb='vweb_lgf_054.000064.Vweb-ascii'
+#dirBase='/work2/eduardo/DATA/512/VWEB/'
+#fileWeb='vweb_lgf_054.000064.Vweb-ascii'
 fileLGs='saved/lgs_'
+fileWeb='saved/lgf_'
 
 fileEV='saved/lgs_evs.pkl'
 
@@ -16,8 +17,6 @@ fileSelectedLGs='saved/lgs_select.pkl'
 
 #fileEV='saved/lgs_evs_all.pkl'
 #fileSelectedLGs='saved/lgs_select_all.pkl'
-
-
 
 # Do a loop
 iSta=0
@@ -43,7 +42,8 @@ for iRun in range(iSta, iEnd):
 		gRunStr = '%02d' % gRun
 		
 		subRunStr = iRunStr + '_' + gRunStr
-		thisFileWeb = dirBase + subRunStr + '/' + fileWeb
+		#thisFileWeb = dirBase + subRunStr + '/' + fileWeb
+		thisFileWeb = fileWeb + subRunStr + '.pkl'
 		thisFileLGs = fileLGs + subRunStr + '.pkl'
 		
 		# Check if files exist
@@ -52,8 +52,9 @@ for iRun in range(iSta, iEnd):
 		
 		# If they do then read the vweb and the lg
 		if exist1 and exist2:
-                    thisWeb = read_vweb(thisFileWeb, gridSize, boxSize)
+                    #thisWeb = read_vweb(thisFileWeb, gridSize, boxSize)
                     f_lg = open(thisFileLGs, 'rb')
+                    f_web = open(thisFileWeb, 'rb')
                     thisLG = pickle.load(f_lg)
                         
                     for lg in thisLG:
@@ -83,7 +84,7 @@ f_evs = open(fileEV, 'wb')
 pickle.dump(evs, f_evs)
 
 f_lgs = open(fileSelectedLGs, 'wb')
-pickle.dump(evs, f_lgs)
+pickle.dump(lgs, f_lgs)
 
 
 
