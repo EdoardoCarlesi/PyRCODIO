@@ -1,22 +1,45 @@
+from libpynbody.read_ahf import *
 from libcosmo.halos import *
 #from libio.read_ascii import *
 from pygadgetreader import *
+import gadfly as gdf
 
+import numpy as np
 import pynbody as pyn
 import pickle
 
-snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
-ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 
+snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
+sim = gdf.Simulation(snap_path)
+snap = sim.load_snapshot('_054')
+
+#snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
+#snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
+#snap_path='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/70_00/snapshot_127'
+#ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+#ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_'
+#ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.AHF_halos'
+#snap_path='/home/eduardo/CLUES/pynbody/testdata/g15784.lr.01024.gz'
 #ahf_file = pyn.load(ahf_path)
-#halos = pyn.halo.AHFCatalogue(ahf_path)
-
-snap_file = pyn.load(snap_path)
-
-
-
-
-
+#snap_path='/home/eduardo/CLUES/DATA/CF2P5/59050/snapshot_019'
+#s = pyn.load(snap_path)
+#s.physical_units()
+#h = s.halos() 
+#print(s.families())
+#for i in range(0, 5):
+#    print(i, h[i].properties['halo_id'], h[i].properties['Mvir'])
+#pyn.analysis.halo.center(h[1], mode='hyb')
+#pyn.plot.sph.image(s, qty="rho", units="rho", width=100, cmap="Greys")
+#halos = pyn.halo.ahf.AHFCatalogue._load_ahf_halos(s, ahf_path)
+#halos = pyn.halo.ahf.AHFCatalogue(s, pathname=ahf_path)
+#halos = pyn.halo.AHFCatalogue(s)
+#halos._load_ahf_halos(ahf_path+'halos')
+#h = s.halos(ahf_basename=ahf_path)
+#h = pyn.load(ahf_path)
+#print('gas=%d, dark=%d' % (len(s.gas), len(s.dark)))
+#h = pyn.halo.ahf.AHFCatalogue('sim', ahf_basename=ahf_path)
+#h = pyn.halo.ahf.AHFCatalogue(s, ahf_basename=ahf_path)
+#h = pyn.halo.ahf.AHFCatalogue('sim', ahf_path)
 
 '''
 f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'

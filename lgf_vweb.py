@@ -8,12 +8,20 @@ import os
 dirBase='/work2/eduardo/DATA/512/VWEB/'
 fileWeb='vweb_lgf_054.000064.Vweb-ascii'
 fileLGs='saved/lgs_'
-#fileEV='saved/lgs_evs.pkl'
-fileEV='saved/lgs_evs_all.pkl'
+
+fileEV='saved/lgs_evs.pkl'
+
+# The LGs used for the v-web will be attached here
+fileSelectedLGs='saved/lgs_select.pkl'
+
+#fileEV='saved/lgs_evs_all.pkl'
+#fileSelectedLGs='saved/lgs_select_all.pkl'
+
+
 
 # Do a loop
 iSta=0
-iEnd=80
+iEnd=10
 gSta=0
 gEnd=30
 
@@ -23,6 +31,8 @@ gridSize=64
 
 norm = 512.0
 ev1 = []; ev2 = []; ev3 = []
+lgs = []
+
 
 # Main loop
 for iRun in range(iSta, iEnd):
@@ -61,16 +71,19 @@ for iRun in range(iSta, iEnd):
                         else:
                             norm = 1.0
 
-
                         if (thisEV[0] * norm > 0.00  and thisEV[2] < 0.035):
                             print(thisEV[0] * norm, thisEV[1] * norm, thisEV[2] * norm)
                             ev1.append(thisEV[0] * norm)
                             ev2.append(thisEV[1] * norm)
                             ev3.append(thisEV[2] * norm)
+                            lgs.append(thisLG)
                                                 
 evs = [ev1, ev2, ev3]
 f_evs = open(fileEV, 'wb')
 pickle.dump(evs, f_evs)
+
+f_lgs = open(fileSelectedLGs, 'wb')
+pickle.dump(evs, f_lgs)
 
 
 

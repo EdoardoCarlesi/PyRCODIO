@@ -9,8 +9,8 @@ import pickle
 import os
 
 # How many catalogs do we want to read
-endSnaps = 127
-totSnaps = 126
+endSnaps = 126
+totSnaps = 127
 iniSnaps = endSnaps - totSnaps
 nSnaps = endSnaps - iniSnaps
 

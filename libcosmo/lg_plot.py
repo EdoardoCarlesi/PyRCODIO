@@ -140,8 +140,8 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units, 
 			data_xy[0, ip] = (this_x[ip] - center[ixp1])/facMpc
 			data_xy[1, ip] = (this_y[ip] - center[ixp2])/facMpc
 	
-		colorscale = 'inferno'
-		#colorscale = 'rainbow'
+		#colorscale = 'inferno'
+		colorscale = 'rainbow'
 		#(counts, xbins, ybins) = np.histogram2d(data_xy[0, :], data_xy[1, :], bins=nbins)
 		#(counts, xbins, ybins, image) = plt.hist2d(data_xy[0, :], data_xy[1, :], bins=nbins) #, cmap=plt.cm.BuGn_r)
 		
@@ -153,7 +153,8 @@ def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units, 
 		#plt.pcolormesh(xbins, ybins, smoothed, cmap=plt.cm.BuGn_r)
 		#plt.pcolormesh(xbins, ybins, smoothed, norm=colors.LogNorm(vmin=smoothed.min(), vmax=smoothed.max()), cmap=plt.cm.viridis)
 		#plt.pcolormesh(xbins, ybins, smoothed, norm=colors.LogNorm(vmin=smoothed.min(), vmax=smoothed.max()), cmap=plt.cm.rainbow)
-		plt.hexbin(data_xy[0, :], data_xy[1, :], gridsize=nbins, cmap=colorscale, bins='log') #, bins=nbins) #, cmap=plt.cm.BuGn_r)
+		plt.hexbin(data_xy[0, :], data_xy[1, :], gridsize=nbins, cmap=colorscale, bins='log') 
+                #, bins=nbins) #, cmap=plt.cm.BuGn_r)
 
 		'''
 		print 'Estimating gaussian kernel... '
