@@ -30,6 +30,9 @@ class MergerTree:
     # List all halo IDs of the main progenitor
     IDs = []
 
+    # Vmax 
+    Vmax = []
+
     # Keep track of its original subdir
     subDir = ''
 
@@ -37,6 +40,7 @@ class MergerTree:
         self.MM = 0
         self.FT = 0
         self.IDs = []
+        self.Vmax = []
         self.nSteps = nSteps
         self.nPart = np.zeros((nSteps), dtype=int)
         self.nPartNorm = np.zeros((nSteps))
