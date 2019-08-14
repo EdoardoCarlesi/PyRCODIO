@@ -1,18 +1,60 @@
-from libpynbody.read_ahf import *
+#from libpynbody.read_ahf import *
 from libcosmo.halos import *
 #from libio.read_ascii import *
 from pygadgetreader import *
-import gadfly as gdf
+#import gadfly as gdf
 
 import numpy as np
 import pynbody as pyn
+import pynbody.plot.sph as sph
+import matplotlib.pylab as plt
 import pickle
 
+snap_path='/home/eduardo/CLUES/DATA/CF2P5/57252/snapshot_019'
+#snap_path='/home/eduardo/CLUES/DATA/01/snapshot_035'
+#snap_path='/home/eduardo/CLUES/DATA/HESTIA/2048/37_11/snapshot_127'
+#snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
+#sim = gdf.Simulation(snap_path)
+#snap = sim.load_snapshot('_054')
 
-snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
-sim = gdf.Simulation(snap_path)
-snap = sim.load_snapshot('_054')
+s = pyn.load(snap_path)
+s.physical_units()
+h = s.halos() 
 
+#print(s._block_list)
+
+mw = h[2]
+#mw = h[160]
+
+#print(mw['pos'][0])
+print(mw.properties['n_gas'])
+print(mw.properties['n_star'])
+print(mw.properties['mass']/1.e+12)
+print(mw.properties['M_star']/1.e+12)
+
+plt.ioff()
+#pyn.analysis.angmom.faceon(mw)
+#cen = pyn.analysis.halo.center(mw, mode='hyb', retcen=True)
+#sph.image(mw.g,qty="rho",units="g cm^-3",width=100,cmap="Greys")
+#pyn.plot.image(s.d[pyn.filt.Sphere('10 Mpc')], width='30 Mpc', units = 'Msol kpc^-2', cmap='Greys');
+pyn.plot.image(s.d[pyn.filt.Sphere('2000 kpc')], width='10000 kpc', units = 'Msol kpc^-2', cmap='Greys');
+
+#print(mw.g)
+#print(mw.g[0].properties)
+#pyn.plot.image(mw.g, width=100, cmap='Blues')
+
+plt.draw()
+plt.savefig('test.png')
+
+
+#f, axs = plt.subplots(1,2,figsize=(14,6))
+#sph.velocity_image(mw.g, vector_color="cyan", qty="temp",width=50,cmap="YlOrRd",
+#                   denoise=True,approximate_fast=False, subplot=axs[0], show_cbar = False)
+#sph.image(mw.g,qty="rho",width=50,cmap="YlOrRd", denoise=True,approximate_fast=False)
+#pyn.analysis.angmom.sideon(mw)
+#pyn.plot.stars.render(s,width='20 kpc')
+#pyn.plot.image(mw.g, width=100, cmap='Blues', threaded=False)
+#pyn.plot.image(s.d[pynbody.filt.Sphere('10 Mpc')], width='10 Mpc', units = 'Msol kpc^-2', cmap='Greys');
 #snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
 #snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054'
 #snap_path='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/70_00/snapshot_127'
@@ -22,9 +64,7 @@ snap = sim.load_snapshot('_054')
 #snap_path='/home/eduardo/CLUES/pynbody/testdata/g15784.lr.01024.gz'
 #ahf_file = pyn.load(ahf_path)
 #snap_path='/home/eduardo/CLUES/DATA/CF2P5/59050/snapshot_019'
-#s = pyn.load(snap_path)
 #s.physical_units()
-#h = s.halos() 
 #print(s.families())
 #for i in range(0, 5):
 #    print(i, h[i].properties['halo_id'], h[i].properties['Mvir'])
@@ -43,20 +83,15 @@ snap = sim.load_snapshot('_054')
 
 '''
 f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
-
 halos = read_ahf(f_ahf)
-
-
 for ih in range (0, len(halos)):
 	mass = halos[ih].m/1e+8
 	print  mass, ' ', halos[ih].vmax
-
 #fname = 'saved/dyn_stats_MW_00_06_01.pkl'
 #fname='saved/web_00_06_01.pkl'
 #filesub = open(fname, 'r')
 #sats = pickle.load(filesub)
 #print sats
-
 #random_table_triaxialities(10, 1000, False)
 
 for npts in range(3, 200):

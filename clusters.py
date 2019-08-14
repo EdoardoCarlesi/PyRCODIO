@@ -16,6 +16,7 @@ import time
 import pickle
 import os.path
 
+'/home/eduardo/CLUES/DATA/CF2P5/670/512/00'
 base_path='/home/eduardo/CLUES/DATA/'
 #sub_dir='TEST'
 sub_dir='CF3'
@@ -49,10 +50,12 @@ box = '670'; num = '512'; box_size=670.0e+3
 #box = '500'; num = '256'; box_size=500.0e+3
 #box = '600'; num = '256'; box_size=600.0e+3
 
+kpc=1.0e+3
 #plot_side = 150.0e+3; thickn = 5000.0; units = 'kpc'
 #plot_side = 100.0; thickn = 10.0; units = 'Mpc'
 #box_size = 670.0; plot_side = 335.0; thickn = 7.5; units = 'Mpc'
-box_size = 670.0; plot_side = 335.0; thickn = 7.5; units = 'kpc'
+#box_size = 670.0; plot_side = 335.0; thickn = 7.5; units = 'kpc'
+box_size = 670.0 * kpc; plot_side = 335.0 * kpc; thickn = 7.5 * kpc; units = 'kpc'
 
 #ahf_name='snapshot_054.AHF_halos'; snap_name='snapshot_054'
 #ahf_name='snapshot_127.AHF_halos'; snap_name='snapshot_127'

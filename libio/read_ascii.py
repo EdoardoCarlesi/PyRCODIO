@@ -9,9 +9,37 @@ from libcosmo.grid import *
 from libcosmo.halos import Halo
 
 
+def read_grid(file_name, size, box):
+    file_web = open(file_name, 'r')
+    grid = Grid(size, box)
+
+    # Read header
+    line = file_web.readline()
+    tot_n = size * size * size
+    index = 0
+
+    while line and index < tot_n:
+        line = file_web.readline()
+        line = line.strip()
+        column = line.split()#; print(column[0])
+
+        # Determine corresponding x, y, z in grid units
+        (ix, jy, kz) = grid.reverse_index(index)#; print(ix, jy, kz)
+
+        # Density
+        grid.rho[ix, jy, kz] = float(column[0])
+
+        # Velocities
+        grid.vel[:, ix, jy, kz] = [float(column[1]), float(column[2]), float(column[3])]
+
+        # Increase line index
+        index += 1
+
+    return grid
+
+
 
 def read_vweb(file_name, size, box):
-
     file_web = open(file_name, 'r')
     grid = VWeb(size, box)
 
