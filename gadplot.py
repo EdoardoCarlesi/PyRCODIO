@@ -3,6 +3,7 @@ import numpy as np
 import yt.units as units
 import pylab
 from lenstools.simulations import Gadget2Snapshot
+import matplotlib
 from matplotlib import ticker, cm
 from libcosmo.grid import *
 from libcosmo.lg_plot import *
@@ -11,34 +12,51 @@ import pickle
 import seaborn as sns
 
 # Should we read the GADGET original file or not?
-loadFile=True
-#loadFile=False
+#loadFile=True
+loadFile=False
 
+#simname='_LG_'
+#base_dir='/home/eduardo/CLUES/DATA/01/'; snapname='snapshot_035'; kpcU=1.0; c = 50.0 * kpcU; n_files=1
+
+#simname='_YH_'
 #code='59050';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
 #code='58151';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
 #code='57252';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
-code='56353';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
-code='55454';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
-
-#code='70_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
-#code='71_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
-#code='72_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='56353';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
+#code='55454';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
 
 #code='70_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_v4/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
 #code='71_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_v4/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
 #code='72_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_v4/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
 #code='73_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_v4/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
 #code='74_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_v4/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
-#base_dir='/home/eduardo/CLUES/DATA/01/'; snapname='snapshot_035'; kpcU=1.0; c = 50.0 * kpcU; n_files=1
+
+#code='70_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='71_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='72_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+
+#simname='_RG_'
+#code='70_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_RG_1500/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='71_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_RG_1500/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='72_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_RG_1500/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+
+#simname='_RG1000_'
+#code='70_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_RG_1000/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='71_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_RG_1000/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+#code='72_00';base_dir='/home/eduardo/CLUES/DATA/CF3/500/CF3_RG_1000/'+code+'/';snapname='snapshot_127';kpcU=1.0;c=250.0*kpcU;n_files=8
+
+simname = '_LGss_'
+code='00';base_dir='/home/eduardo/CLUES/DATA/1024/'+code+'/';snapname='snapshot_054';kpcU=1.0;c=50.0*kpcU;n_files=4
+
 
 snap=base_dir + snapname
 
 # take one out of reduce_fac particles
-#reduce_fac = 16    
-reduce_fac = 32    
 #reduce_fac = 128
 #reduce_fac = 64   
-#reduce_fac = ''
+reduce_fac = 32    
+#reduce_fac = 16    
+#reduce_fac = 8
 
 slab_x_fname = base_dir + 'slab_x_fac'+str(reduce_fac)+'.pkl'
 slab_y_fname = base_dir + 'slab_y_fac'+str(reduce_fac)+'.pkl'
@@ -51,13 +69,15 @@ slab_y_fname = base_dir + 'slab_y_fac'+str(reduce_fac)+'.pkl'
 gridSize = 128
 #gridSize = 64
 #gridSize = 32
-#smooth = 0.085
 smooth = 0.05
+#smooth = 0.1
 
 thickn = 5.0 * kpcU
 
 # Only plot a sub-square of the full slide
-side = 200.0
+#side = 200.0
+#side = 150.0
+side = 2.5
 #side = c / kpcU
 
 doBar=False
@@ -73,7 +93,8 @@ contour = np.logspace(-6.5, -4.0, num=8)
 #print(contour)
 
 
-center=[c, c, c]; 
+#center=[c, c, c]; 
+center=[47, 50, 47]; 
 units='kpc'
 
 data_x = []; data_y = []
@@ -127,10 +148,12 @@ else:
 
     print('Done. Selected ', len(data_x), ' particles out of ', len(all_data_x))
 
+figname=snapname+simname+'_'+code+'_' + str(gridSize) + '_sm' + str(smooth) + '_fac' + str(reduce_fac) + '_side' + str(side) + '.png'
+
+plt.figure(figsize=(20, 20))
+matplotlib.rcParams.update({'font.size': 30})
 plt.ylabel("SGY (Mpc/h)")
 plt.xlabel("SGX (Mpc/h)")
-
-figname=snapname + '_' + code + '_' + str(gridSize) + '_sm' + str(smooth) + '_fac' + str(reduce_fac) + '_side' + str(side) + '.png'
 
 print('Smoothing out plot on a ', gridSize, ' grid with a ', smooth, ' Gaussian kernel.')
 sns.kdeplot(data_x, data_y, cmap="coolwarm", shade=True, shade_lowest=True, gridsize=gridSize,
@@ -141,7 +164,6 @@ sns.kdeplot(data_x, data_y, cmap="coolwarm", shade=True, shade_lowest=True, grid
 # SCATTERPLOT just in case
 #plt.plot(data_x, data_y, linestyle='', marker='o', markersize=0.1)
 #plt.savefig('test_scatter.png', dpi=100)
-
 plt.tight_layout()
 print('Saving output to file: ', figname)
-plt.savefig(figname, dpi=200)
+plt.savefig(figname, dpi=300)

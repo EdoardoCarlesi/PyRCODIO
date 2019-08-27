@@ -7,14 +7,15 @@ from libio.read_ascii import *
 from config import *
 from libcosmo.utils import *
 from libcosmo.halos import *
-from libcosmo.find_halos import *
+from libcosmo.find_halo import *
 from libcosmo.lg_plot import *
 import pickle
 
 
 sub_ini = 0
 sub_end = 10
-simuruns = simu_runs()
+#simuruns = simu_runs()
+simuruns = ['37_11']
 n_subrun = 10
 snap_end = 54
 snap_init = 0
@@ -42,8 +43,8 @@ for i_simu in range(sub_ini, sub_end):
 			main = pickle.load(hand_main)
 			sats = pickle.load(hand_sats)
 
-			print 'Found: ', s_fname
-			print 'Found: ', m_fname
+			print('Found: ', s_fname)
+			print('Found: ', m_fname)
 			#print main[0].halo
 			n_main = len(main)
 			#print n_main
@@ -51,7 +52,7 @@ for i_simu in range(sub_ini, sub_end):
 			n_lg = 2
 			n_simu += 1
 		except:	
-			print '' #Nothing found'
+			print('Found nothing') #Nothing found'
 
 		masses_max = []; 	masses_z0 = [];		
 		lg_masses_max = []; 	lg_masses_z0 = [];		
@@ -92,7 +93,7 @@ for i_simu in range(sub_ini, sub_end):
 		# Mass function for the full local group
 		mflg_z0_x.append(lg_mfz0_x); 		mflg_z0_y.append(lg_mfz0_y) 
 		mflg_max_x.append(lg_mfmax_x); 		mflg_max_y.append(lg_mfmax_y) 
-		print 'This mf LG z0 has ', len(lg_mfz0_x), ' elements.'
+		print('This mf LG z0 has ', len(lg_mfz0_x), ' elements.')
 
 		for i_lg in range(0, n_main):
 			this_lg = main[i_lg]
@@ -138,7 +139,7 @@ for i_simu in range(sub_ini, sub_end):
 				mfm31_z0_x.append(this_mfz0_x); 	mfm31_z0_y.append(this_mfz0_y) 
 				mfm31_max_x.append(this_mfmax_x); 	mfm31_max_y.append(this_mfmax_y) 
 
-	print 'Loop on ', simu, ' finished. Computing mass functions...'
+	print('Loop on ', simu, ' finished. Computing mass functions...')
 
 	n_bins = 17
 	f_mwz0 = simu + '_mf_z0_MW.png'

@@ -10,10 +10,11 @@ import pynbody.plot.sph as sph
 import matplotlib.pylab as plt
 import pickle
 
-snap_path='/home/eduardo/CLUES/DATA/CF2P5/57252/snapshot_019'
+#snap_path='/home/eduardo/CLUES/DATA/CF2P5/57252/snapshot_019'
 #snap_path='/home/eduardo/CLUES/DATA/01/snapshot_035'
 #snap_path='/home/eduardo/CLUES/DATA/HESTIA/2048/37_11/snapshot_127'
-#snap_path='/home/eduardo/CLUES/DATA/2048/00_06/00/'
+snap_path='/home/eduardo/CLUES/DATA/1024/00/snapshot_054'
+ahf_path='/home/eduardo/CLUES/DATA/1024/00/snapshot_054.z0.000.AHF_halos'
 #sim = gdf.Simulation(snap_path)
 #snap = sim.load_snapshot('_054')
 
@@ -23,8 +24,8 @@ h = s.halos()
 
 #print(s._block_list)
 
-mw = h[2]
-#mw = h[160]
+#mw = h[2]
+mw = h[151]
 
 #print(mw['pos'][0])
 print(mw.properties['n_gas'])
@@ -36,8 +37,8 @@ plt.ioff()
 #pyn.analysis.angmom.faceon(mw)
 #cen = pyn.analysis.halo.center(mw, mode='hyb', retcen=True)
 #sph.image(mw.g,qty="rho",units="g cm^-3",width=100,cmap="Greys")
-#pyn.plot.image(s.d[pyn.filt.Sphere('10 Mpc')], width='30 Mpc', units = 'Msol kpc^-2', cmap='Greys');
-pyn.plot.image(s.d[pyn.filt.Sphere('2000 kpc')], width='10000 kpc', units = 'Msol kpc^-2', cmap='Greys');
+pyn.plot.image(s.d[pyn.filt.Sphere('10 Mpc')], width='30 Mpc', units = 'Msol kpc^-2', cmap='Greys');
+#pyn.plot.image(s.d[pyn.filt.Sphere('2000 kpc')], width='10000 kpc', units = 'Msol kpc^-2', cmap='Greys');
 
 #print(mw.g)
 #print(mw.g[0].properties)
