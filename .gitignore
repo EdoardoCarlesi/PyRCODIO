@@ -9,3 +9,5 @@
 *.bak
 output/*
 COPY/
+ProjectsPlots
+ProjectsPlots/
