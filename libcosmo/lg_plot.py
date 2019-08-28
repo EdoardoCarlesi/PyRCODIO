@@ -115,13 +115,14 @@ def simple_plot_rho(center, side_size, f_out, nbins, f_rescale, thickn, units, s
     plt.ylabel(axis_label[1]+' '+axis_units)
 
     if ptype == 0:
-        plt.title('Gas + Stars')
-#        plt.title('Gas')
+#        plt.title('Gas + Stars')
+        plt.title('Gas')
         colorscale = 'rainbow'
         #colorscale = 'viridis'
         plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=colorscale, shading='gouraud') 
-        plt.scatter(datas_x, datas_y, s=0.005, color='black', alpha=0.05) 
-        f_out = f_out + '_gas_stars.png'
+#        plt.scatter(datas_x, datas_y, s=0.005, color='black', alpha=0.05) 
+#        f_out = f_out + '_gas_stars.png'
+        f_out = f_out + '_gas.png'
 
     elif ptype == 1:
         plt.title('DM')

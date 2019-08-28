@@ -11,6 +11,7 @@ from pygadgetreader import *
 
 def readgadget(f_snap, read_type, p_type, n_files):
     if n_files == 1:
+        print('Read snap: ', f_snap, ' read type: ', read_type, ' ptype: ', p_type)
         parts = readsnap(f_snap, read_type, p_type)
     else:
         parts = np.zeros((1, 3), dtype=float)
