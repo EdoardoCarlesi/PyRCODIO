@@ -12,9 +12,9 @@ import pickle
 
 #snap_path='/home/eduardo/CLUES/DATA/CF2P5/57252/snapshot_019'
 #snap_path='/home/eduardo/CLUES/DATA/01/snapshot_035'
-#snap_path='/home/eduardo/CLUES/DATA/HESTIA/2048/37_11/snapshot_127'
-snap_path='/home/eduardo/CLUES/DATA/1024/00/snapshot_054'
-ahf_path='/home/eduardo/CLUES/DATA/1024/00/snapshot_054.z0.000.AHF_halos'
+snap_path='/home/eduardo/CLUES/DATA/HESTIA/2048/37_11/snapshot_127'
+#snap_path='/home/eduardo/CLUES/DATA/1024/00/snapshot_054'
+#ahf_path='/home/eduardo/CLUES/DATA/1024/00/snapshot_054.z0.000.AHF_halos'
 #sim = gdf.Simulation(snap_path)
 #snap = sim.load_snapshot('_054')
 
@@ -37,7 +37,7 @@ plt.ioff()
 #pyn.analysis.angmom.faceon(mw)
 #cen = pyn.analysis.halo.center(mw, mode='hyb', retcen=True)
 #sph.image(mw.g,qty="rho",units="g cm^-3",width=100,cmap="Greys")
-pyn.plot.image(s.d[pyn.filt.Sphere('10 Mpc')], width='30 Mpc', units = 'Msol kpc^-2', cmap='Greys');
+#pyn.plot.image(s.d[pyn.filt.Sphere('10 Mpc')], width='30 Mpc', units = 'Msol kpc^-2', cmap='Greys');
 #pyn.plot.image(s.d[pyn.filt.Sphere('2000 kpc')], width='10000 kpc', units = 'Msol kpc^-2', cmap='Greys');
 
 #print(mw.g)

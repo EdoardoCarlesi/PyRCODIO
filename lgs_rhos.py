@@ -21,11 +21,27 @@ base_path='/home/eduardo/CLUES/DATA/'
 ini_num=0
 end_num=1
 
-nbins = 10000
+# Should we read the gadget file and export the particles, or just read the already exported particles?
+#doReadSlab = True
+doReadSlab = False
+
+# Plot properties
+#nbins = 64
+#nbins = 128
+nbins = 256
 #nbins = 512
-f_rescale = 1.0 / 128.0
+
+f_rescale = 1.0 
+#f_rescale = 4.0 
+#f_rescale = 16.0 
+
+bw_smooth = 0.075
 
 #all_lg_base = simu_runs()
+#subrun = '00'
+#subrun = '04'
+#subrun = '03'
+subrun = '06'
 
 #all_lg_base=['00_06']
 all_lg_base=['37_11']
@@ -45,74 +61,66 @@ box = '100'; resolution = '1024'; n_files = 4
 #box_size = 100.0; plot_side = 1.5; thickn = 3.0; units = 'Mpc'
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 1.5e+3; units = 'kpc'
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 5000.0; units = 'kpc'
-box_size = 100.0; plot_side = 1.25; thickn = 2.5; units = 'Mpc'
+box_size = 100.0; plot_side = 0.75; thickn = 2.5; units = 'Mpc'
 
 #snap_name='snapshot_054'
 snap_name='snapshot_054'
 #snap_name='ic_arepo_2048_100.000_37_11_00.0'
-base_path = '/home/eduardo/CLUES/DATA/1024/00/'
+base_path = '/home/eduardo/CLUES/DATA/1024/' + subrun + '/'
 
-f_out = 'test_lg_gas'
-box_center = [46.6, 50.7, 47.8]
+f_out = 'lg_rhos_' + all_lg_base[0] + '_' + subrun + '_grid' + str(nbins)
+
+fn_lg = 'saved/lgs_00.pkl'
+f_lg = open(fn_lg, 'rb')
+this_lg = pickle.load(f_lg)
+
+#print(this_lg[0].geo_com())
+#box_center = [46.6, 50.7, 47.8]
+box_center= this_lg[0].geo_com()
+
+for ip in range(0, 3): 
+    box_center[ip] = box_center[ip] / 1000.0
+
+print(box_center)
 #box_center = [46600, 50750, 47800]
 #plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
 #plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
-#plot_rho_slice(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
 
-'''
-for lg_base in all_lg_base:
+# File Names for the output slabs
+fn_0 = base_path + 'slab_xy0_' + str(f_rescale) + '.pkl'
+fn_1 = base_path + 'slab_xy1_' + str(f_rescale) + '.pkl'
+fn_4 = base_path + 'slab_xy4.pkl'
+    
+if doReadSlab == True:
+    # Double the side of the slab just in case
+    plot_side = plot_side * 2
 
-        # Just choose one LG center to plot all the other sims - 04 is a good average choice
-	pkl_name = 'saved/lgs_' + resolution + '_' + lg_base + '_04.pkl'	
-	pkl_file = open(pkl_name, 'rb')
-	this_lg = pickle.load(pkl_file)
-	box_center = this_lg.geo_com()
+    [x0, y0] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 0)
+    [x1, y1] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 1)
 
-	for i in range(0, 3):
-		box_center[i] = box_center[i] * 1.e-3
+    # Never rescale star particles
+    [x4, y4] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, 1.0, units, 4)
 
-	for run_num in range(ini_num, end_num):
-	
-		subrun = '%02d' % run_num
-		lg_tag = lg_base + '_' + subrun
-		f_out = 'lg_plot_' + resolution + '_' + lg_tag +'_LG.png'
-		base_dir = base_path + '/' + resolution + '/' + lg_base + '/' + subrun + '/'
+    f_0 = open(fn_0, 'wb')
+    pickle.dump([x0, y0], f_0)
+    f_1 = open(fn_1, 'wb')
+    pickle.dump([x1, y1], f_1)
+    f_4 = open(fn_4, 'wb')
+    pickle.dump([x4, y4], f_4)
 
-		print('N = ', lg_tag, ' - ', f_out)
+    print('Dumping to files: ', fn_0, fn_1, fn_4)
 
-		if os.path.isfile(base_dir + snap_name) or os.path.isfile(base_dir + snap_name + '.0'):
-			plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
+    f_0.close()
+    f_1.close()
+    f_4.close()
 
-		else:
-			print('File not found: ', base_dir + snap_name)
-'''
-	
-'''
-	This (older) version loops over all the LGs and finds each time all the LGs
-	
-	subrun = '%02d' % run_num
-	lg_tag = lg_base + '_' + subrun
-	pkl_name = 'saved/lg_' + lg_tag + '.pkl'	
-	f_out='plot_'+snap_name+'_'+lg_tag+'_LG.png'
-	print 'N = ', lg_tag, ' - ', f_out
+else:
+    # DM, Gas and Stars
+#    slab = [fn_1]; ptype = 1
+#    bw_smooth = 0.25; nbins = 750
+#    simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
 
-	if os.path.isfile(pkl_name):
-		pkl_file = open(pkl_name, 'r')
-
-		this_lg = pickle.load(pkl_file)
-		base_dir=base_path+'/'+num+'/'+lg_base+'/'+subrun+'/'
-		box_center = this_lg.geo_com()
-		
-		for i in range(0, 3):
-			box_center[i] = box_center[i] * 1.e-3
-		
-		print box_center
-
-		if os.path.isfile(base_dir + snap_name):
-			print base_dir + snap_name
-			plot_rho(base_dir + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units)
-
-	else:
-		print 'File not found: ', pkl_name
-
-'''
+    slab = [fn_0, fn_4]; ptype = 0
+    #bw_smooth = 0.025; nbins = 256
+    bw_smooth = 0.025; nbins = 256
+    simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)

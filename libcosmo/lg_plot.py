@@ -13,217 +13,135 @@ from pygadgetreader import *
 from scipy.stats import kde
 
 
-def return_slab(f_snap, slab_z, center, side_size, thickn, n_files, reduce_fac, units):
-    parts1 = readgadget(f_snap, 'pos', 1, n_files)
+def return_slab(f_snap, slab_z, center, side_size, thickn, n_files, reduce_fac, units, ptype):
+    parts1 = readgadget(f_snap, 'pos', ptype, n_files)
     minx = center[0] - side_size;   miny = center[1] - side_size;   minz = center[2] - side_size
     minima = [minx, miny, minz];    #print minima
     (x_tmp, y_tmp) = find_slab(parts1, slab_z, center, minima, side_size, thickn, reduce_fac, units)
 
     return [x_tmp, y_tmp]
 
-def plot_rho_slice(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units, n_files):
-    print('Plotting density slices for snapshot: ', f_snap)
+
+
+
+def simple_plot_rho(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype):
+    print('Plotting density slices for snapshot: ', slab, ' particle type= ', ptype)
 
     # Plot properties
-    ptsize_lv = 2.0
-    col_lv = 'red'
-    plot_col = 3
-    plot_row = 1
-
-    npt_lg_min = 100
     axis_margins = 1
     axis_size = 12
+    
+    # Select factor margin: select particles slightly outside of the side_size restriction, for nicer binning
+    sf = 1.1
 
     if units == 'Mpc':
         axis_units = 'Mpc/h'; facMpc = 1.
     elif units == 'kpc':
         axis_units = 'Mpc/h'; facMpc = 1000.
-        #axis_units = 'kpc/h'; facMpc = 1000.
 
-    axis_label = []
-    axis_label.append('SGX')
-    axis_label.append('SGY')
-    axis_label.append('SGZ');
-    parts1 = readgadget(f_snap, 'pos', 1, n_files)
-    parts2 = []
-    parts3 = []
-    parts4 = []
+    axis_label = ['SGX', 'SGY']
+    minx = center[0] - side_size;   miny = center[1] - side_size;   minima = [minx, miny] 
+    maxx = center[0] - side_size;   maxy = center[1] - side_size;   maxima = [minx, miny] 
 
-    #parts = [parts0, parts1, parts2]
-    #print parts.max()
-    #print parts.min()
+    xi, yi = np.mgrid[minx:maxx:nbins*1j, miny:maxy:nbins*1j]
 
-    # Identify the particles belonging to the different objects
-    i_type = 0
+    f_slab = open(slab[0], 'rb')
+    (x_plot, y_plot) = pickle.load(f_slab)
 
-    x_plotlv = [[] for ix in range(0, 3)]
-    y_plotlv = [[] for ix in range(0, 3)]
+    # Overplot stars to gas
+    if ptype == 0:
+        f_slab4 = open(slab[1], 'rb')
+        x_s, y_s = pickle.load(f_slab4)
+        print(f_slab4, ' has ', len(x_s), ' star particles.')
 
-    minx = center[0] - side_size;   miny = center[1] - side_size;   minz = center[2] - side_size
-    minima = [minx, miny, minz];    #print minima
+    n_x = len(x_plot)
+    print('N Part in slab: ', n_x)
+    print('Slab (%s, %s) with %d particles found.' % (axis_label[0], axis_label[1], n_x))
 
-    # Find slab of thickness +/- thickn around the axes
-    for ix in range(0, 3):
-        ixp1 = (ix+1) % 3
-        ixp2 = (ix+2) % 3
-
-        t1 = time.clock()
-        (x_plot_tmp1, y_plot_tmp1) = find_slab(parts1, ix, center, minima, side_size, thickn, f_rescale * 512.0, units)
-        (x_plot_tmp2, y_plot_tmp2) = find_slab(parts2, ix, center, minima, side_size, thickn, f_rescale * 64.0, units)
-        n_tmp1 = len(x_plot_tmp1);              n_tmp2 = len(x_plot_tmp2)
-
-        print('N Part1 in slab: ', n_tmp1)
-        print('N Part2 in slab: ', n_tmp2)
-
-        for ijk in range(0, n_tmp1):
-            x_plotlv[ixp1].append(x_plot_tmp1[ijk])
-            y_plotlv[ixp2].append(y_plot_tmp1[ijk])
-
-        for ijk in range(0, n_tmp2):
-            x_plotlv[ixp1].append(x_plot_tmp2[ijk])
-            y_plotlv[ixp2].append(y_plot_tmp2[ijk])
-
-        if (units == 'Mpc' and side_size > 4.0) or (units == 'kpc' and side_size > 4000.0):
-            print('Selecting additional slabs')
-            (x_plot_tmp3, y_plot_tmp3) = find_slab(parts3, ix, center, minima, side_size, thickn, f_rescale * 8.0, units)
-            (x_plot_tmp4, y_plot_tmp4) = find_slab(parts4, ix, center, minima, side_size, thickn, f_rescale * 1.0, units)
-            n_tmp3 = len(x_plot_tmp3);              n_tmp4 = len(x_plot_tmp4)
-
-            for ijk in range(0, n_tmp3):
-                x_plotlv[ixp1].append(x_plot_tmp3[ijk])
-                y_plotlv[ixp2].append(y_plot_tmp3[ijk])
-
-            for ijk in range(0, n_tmp4):
-                x_plotlv[ixp1].append(x_plot_tmp4[ijk])
-                y_plotlv[ixp2].append(y_plot_tmp4[ijk])
-        else:
-            print('Zoom mode')
-            x_plot_tmp3 = []; x_plot_tmp4 = [];
-            n_tmp3 = 0; n_tmp4 = 0;
-
-        t2 = time.clock()
-
-        print('Slab (%s, %s) with found in %.3f s.' % (axis_label[ixp1], axis_label[ixp2], (t2-t1)))
-        print('Selected a total of ', n_tmp1 + n_tmp2 + n_tmp3 + n_tmp4, ' particles.')
-        plt.ylabel(axis_label[ixp2]+' '+axis_units)
+    plt.xlabel(axis_label[0]+' '+axis_units)
+    plt.ylabel(axis_label[1]+' '+axis_units)
 
     # General plot settings
-    plt.figure(figsize=(24,8))
+    plt.figure(figsize=(8,8))
     plt.rc('xtick', labelsize=axis_size)
     plt.rc('ytick', labelsize=axis_size)
     plt.rc('axes',  labelsize=axis_size)
     plt.margins(axis_margins)
 
-    #fig, axes = plt.subplots(ncols=6, nrows=1, figsize=(21, 5))
+    x_min = -side_size; x_max = side_size
+    y_min = -side_size; y_max = side_size
 
-    for ix in range(0, 3):
-        ixp1 = (ix+1) % 3
-        ixp2 = (ix+2) % 3
+    # These plots are in Mpc/h not kpc/h
+    x_min /= facMpc
+    x_max /= facMpc
+    y_min /= facMpc
+    y_max /= facMpc
 
-        x_min = -side_size; x_max = side_size
-        y_min = -side_size; y_max = side_size
+    print('XMin: ', x_min, ' XMax: ', x_max)
+    print('New particles number: ', n_x, ' n bins: ', nbins)
+    data_x = [];     data_y = []
+    datas_x = [];     datas_y = []
+    
+    if ptype == 0:
+        for iss in range(0, len(x_s)):
+            xs = (x_s[iss] - center[0])/facMpc
+            ys = (y_s[iss] - center[1])/facMpc
+            datas_x.append(xs)
+            datas_y.append(ys)
 
-        # These plots are in Mpc/h not kpc/h
-        x_min /= facMpc
-        x_max /= facMpc
-        y_min /= facMpc
-        y_max /= facMpc
 
-        print('XMin: ', x_min, ' XMax: ', x_max)
+    for ip in range(0, n_x):
+        x = (x_plot[ip] - center[0])/facMpc
+        y = (y_plot[ip] - center[1])/facMpc
 
-        # Plot settings for each subplot
-        plt.subplot(plot_row, plot_col, ix+1)
-        plt.axis([x_min, x_max, y_min, y_max])
-        plt.xlabel(axis_label[ixp1]+' '+axis_units)
-        plt.ylabel(axis_label[ixp2]+' '+axis_units)
+        # Select only particles within the area
+        if (x > x_min*sf and x < x_max*sf and y > y_min*sf and y < y_max*sf):
+            data_x.append(x) 
+            data_y.append(y) 
 
-        this_x = x_plotlv[ixp1][:]
-        this_y = y_plotlv[ixp2][:]
+    data = np.zeros((len(data_x), 2), dtype='float')
+    for ip in range (0, len(data_x)):
+            data[ip, 0] = data_x[ip]
+            data[ip, 1] = data_y[ip]
 
-        n_x = len(x_plotlv[ixp1])
-        data_xy = np.zeros((2, n_x), dtype='float')
-
-        # Convert units to Mpc
-        for ip in range(0, len(this_x)):
-            data_xy[0, ip] = (this_x[ip] - center[ixp1])/facMpc
-            data_xy[1, ip] = (this_y[ip] - center[ixp2])/facMpc
-
-        #colorscale = 'inferno'
-        colorscale = 'rainbow'
-        #(counts, xbins, ybins) = np.histogram2d(data_xy[0, :], data_xy[1, :], bins=nbins)
-        #(counts, xbins, ybins, image) = plt.hist2d(data_xy[0, :], data_xy[1, :], bins=nbins) #, cmap=plt.cm.BuGn_r)
-
-        #print counts
-        #print this_x
-
-        #smoothed = gaussian_filter(counts, sigma=2)
-        #print smoothed
-        #plt.pcolormesh(xbins, ybins, smoothed, cmap=plt.cm.BuGn_r)
-        #plt.pcolormesh(xbins, ybins, smoothed, norm=colors.LogNorm(vmin=smoothed.min(), vmax=smoothed.max()), cmap=plt.cm.viridis)
-        #plt.pcolormesh(xbins, ybins, smoothed, norm=colors.LogNorm(vmin=smoothed.min(), vmax=smoothed.max()), cmap=plt.cm.rainbow)
-        plt.hexbin(data_xy[0, :], data_xy[1, :], gridsize=nbins, cmap=colorscale, bins='log')
-        #, bins=nbins) #, cmap=plt.cm.BuGn_r)
-
-        '''
-        print 'Estimating gaussian kernel... '
-        k = kde.gaussian_kde(data_xy)
-        xi, yi = np.mgrid[data_xy[0].min():data_xy[0].max():nbins*1j, data_xy[1].min():data_xy[1].max():nbins*1j]
+    # Smooth gas density
+    if ptype == 0:
+        xi, yi = np.mgrid[min(data_x):max(data_x):nbins*1j, min(data_y):max(data_y):nbins*1j]
+        k = kde.gaussian_kde(data.T, bw_method=bw_smooth)
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
-        print 'Done.'
 
-        # plot a density
-        #axes[3].set_title('Calculate Gaussian KDE')
-        #plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.BuGn_r)
-        #axes[3].pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=plt.cm.BuGn_r)
+    plt.axis([x_min, x_max, y_min, y_max])
+    plt.xlabel(axis_label[0]+' '+axis_units)
+    plt.ylabel(axis_label[1]+' '+axis_units)
 
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap=plt.cm.BuGn_r)
-        plt.contour(xi, yi, zi.reshape(xi.shape) )
+    if ptype == 0:
+        plt.title('Gas + Stars')
+#        plt.title('Gas')
+        colorscale = 'rainbow'
+        #colorscale = 'viridis'
+        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=colorscale, shading='gouraud') 
+        plt.scatter(datas_x, datas_y, s=0.005, color='black', alpha=0.05) 
+        f_out = f_out + '_gas_stars.png'
 
-        #axes[2].set_title('2D Histogram')
-        #(counts, ybins, xbins, image) = hist2d(this_x, this_y, nbins)
-        #(counts, xbins, ybins, image) = plt.hist2d(this_x, this_y) #, bins=nbins, cmap=plt.cm.BuGn_r)
-        #(counts, ybins, xbins, image) = plt.hist2d(this_x, this_y, gridsize=nbins, bins='log', cmap=plt.cm.BuGn_r)
+    elif ptype == 1:
+        plt.title('DM')
+        colorscale = 'inferno'
+        plt.hexbin(data_x, data_y, gridsize=nbins, cmap=colorscale, bins='log')
+        #plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=colorscale) #, shading='gouraud')
+        f_out = f_out + '_dm.png'
 
-        xv = [];        yv = [];        zv = []
-
-        # Set up a regular grid of interpolation points
-        #xi, yi = np.linspace(x_min, x_max, nbins), np.linspace(y_min, y_max, n_bins)
-        #xi, yi = np.meshgrid(xi, yi)
-
-        # Interpolate; there's also method='cubic' for 2-D data such as here
-        #zi = scipy.interpolate.griddata((x, y), rho, (xi, yi), method='linear')
-
-        for ib in range(0, len(counts)):
-                new_x = 0.5 * (xbins[ib] + xbins[ib+1])
-                new_y = 0.5 * (ybins[ib] + ybins[ib+1])
-                new_z = counts[ib]
-
-                if (new_x < x_max) and (new_x > x_min) and (new_y < y_max) and (new_y > y_min):
-                        xv.append(new_x)
-                        yv.append(new_y)
-                        zv.append(new_z)
-
-        #print len(counts)
-        #print xv, yv
-        print len(xv)
-        print len(yv)
-        print len(zv)
-
-        plt.imshow(zv, extent=[x_min, x_max, y_min, y_max])
-
-        '''
-
-        #locations = [0.1, 0.5, 1.0, 5.0, 10.0, 15.0, 20.0]
-        #plt.contour(xv, yv, np.transpose(zv), 5, fontsize=5, colors='black')#, manual=locations)
-        #plt.contour(xv, yv, zv, 5, fontsize=5, colors='black')
-
-        # plot a density
-        #plt.pcolormesh(xv, yv, zv, cmap=plt.cm.BuGn_r)
-        #print 'Plot edges: %.3f, %.3f, %.3f, %.3f\n' % (x_min, x_max, y_min, y_max)
+    '''
+    elif ptype == 4:
+        plt.title('')
+        colorscale = 'hot'
+        plt.scatter(data_x, data_y, s=0.15, color='black') 
+        f_out = f_out + '_stars.png'
+    '''
 
     # Save to file
     plt.tight_layout()
     plt.savefig(f_out)
+
 
 
 def plot_rho(f_snap, center, side_size, f_out, nbins, f_rescale, thickn, units, n_files):
@@ -1062,8 +980,10 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
             n_thresh = 3
 
         if len(y_bins[km]) > n_thresh:
-            nmax0 = np.percentile(y_bins[km], 80)
-            nmin0 = np.percentile(y_bins[km], 20)
+            nmax0 = np.percentile(y_bins[km], 100)
+            nmin0 = np.percentile(y_bins[km], 0)
+            #nmax0 = np.percentile(y_bins[km], 80)
+            #nmin0 = np.percentile(y_bins[km], 20)
             nmed0 = np.mean(y_bins[km])
 
             if km == 0:
