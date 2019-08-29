@@ -753,7 +753,7 @@ def rate_lg_pair(lg1, lg2):
 
 	#contamin = abs_val((lg1.m/lg1.npart) - simu_pmass(box, npart))/simu_pmass(box, npart)
 	#print 'LG rating: %.3f, Npart: %d & %d,  Res.Factor: %.3f \n' % (lg_rate, lg1.npart, lg2.npart, contamin)
-	print('LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart))
+	#print('LG rating: %.3f, Npart: %d & %d\n' % (lg_rate, lg1.npart, lg2.npart))
 
 	return lg_rate
 

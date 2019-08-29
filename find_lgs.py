@@ -60,6 +60,10 @@ mmin = 1.e+6    # Track haloes above this threshold at z=0
 mcut = 0.5e+10
 
 n_lg_good = 0
+all_subs = np.zeros((run_end - run_init, 2,subrun_end - subrun_init), dtype='int')
+all_host = np.zeros((run_end - run_init, 2,subrun_end - subrun_init), dtype='float')
+fname_subs = 'saved/all_subs_' + '_' + resolution + '.pkl' 
+fname_host = 'saved/all_host_' + '_' + resolution + '.pkl' 
 
 # Loop on the different base - realisations, i.e. different LGs
 for run_j in range(run_init, run_end):
@@ -90,13 +94,13 @@ for run_j in range(run_init, run_end):
         main_ids = []; this_file_halo = base_path + '/' + base_run + '/' + run_num + '/snapshot_054.0000.z0.000.AHF_halos'
         #(this_file_part, this_file_halo) = settings.get_ahf_files(snap_last, this_task)
 
-        print('Reading files: ', this_file_halo)
+#        print('Reading files: ', this_file_halo)
         halos = read_ahf(this_file_halo)
 
         this_lg = find_lg(halos, lg_model)
         n_lgs = int(len(this_lg))
 
-        print('Found a total of %d LG pairs.' % (n_lgs))
+#        print('Found a total of %d LG pairs.' % (n_lgs))
 
         if n_lgs > 0:
             # If there are more candidates we need to find the right one
@@ -128,10 +132,22 @@ for run_j in range(run_init, run_end):
                 lg_halos  = find_halos_mass_radius(com, halos, rad_lg, mmin)
                 mw_halos  = find_halos_mass_radius(best_lg.LG1.x, halos, rad_mw, mmin)
                 m31_halos = find_halos_mass_radius(best_lg.LG2.x, halos, rad_m31, mmin)
-                
+
+                all_subs[run_j, 0, subrun_i] = best_lg.LG1.nsub
+                all_subs[run_j, 1, subrun_i] = best_lg.LG2.nsub
+                all_host[run_j, 0, subrun_i] = best_lg.LG1.m
+                all_host[run_j, 1, subrun_i] = best_lg.LG2.m
+
                 # Print the subhalo list
                 #print_subhalos(com, 10. * mcut, lg_halos,  run_num, fname_lg)
-                print_subhalos(best_lg.LG1.x, mcut, mw_halos,  run_num, fname_mw)
-                print_subhalos(best_lg.LG2.x, mcut, m31_halos, run_num, fname_m31)
+                #print_subhalos(best_lg.LG1.x, mcut, mw_halos,  run_num, fname_mw)
+                #print_subhalos(best_lg.LG2.x, mcut, m31_halos, run_num, fname_m31)
+
+f_subs = open(fname_subs, 'wb')
+f_host = open(fname_host, 'wb')
+
+pickle.dump(all_subs, f_subs)
+pickle.dump(all_host, f_host)
 
 print('Found ', n_lg_good, 'viable local group pairs.')
+print('Data saved to: ', fname_subs, fname_host)
