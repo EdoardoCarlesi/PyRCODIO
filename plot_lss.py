@@ -1,8 +1,8 @@
-import yt
+#import yt
+#import yt.units as units
+#from lenstools.simulations import Gadget2Snapshot
 import numpy as np
-import yt.units as units
 import pylab
-from lenstools.simulations import Gadget2Snapshot
 import matplotlib
 from matplotlib import ticker, cm
 from libcosmo.grid import *
@@ -12,11 +12,12 @@ import pickle
 import seaborn as sns
 
 # Should we read the GADGET original file or not?
-#loadFile=True
-loadFile=False
+loadFile=True
+#loadFile=False
 
-#simname='_LG_'
+simname='_LG_'
 #base_dir='/home/eduardo/CLUES/DATA/01/'; snapname='snapshot_035'; kpcU=1.0; c = 50.0 * kpcU; n_files=1
+base_dir='/home/oem/CLUES/DATA/1024/37_11/00/'; snapname='snapshot_054'; kpcU=1.0; c = 50.0 * kpcU; n_files=4
 
 #simname='_YH_'
 #code='59050';base_dir='/home/eduardo/CLUES/DATA/CF2P5/670/512/'+code+'/';snapname='snapshot_019';kpcU=1.e+3;c=335.0*kpcU;n_files=8
@@ -77,7 +78,7 @@ thickn = 5.0 * kpcU
 # Only plot a sub-square of the full slide
 #side = 200.0
 #side = 150.0
-side = 2.5
+side = 50.0
 #side = c / kpcU
 
 doBar=False

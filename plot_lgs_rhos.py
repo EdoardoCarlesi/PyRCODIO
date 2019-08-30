@@ -16,10 +16,8 @@ import time
 import pickle
 import os.path
 
-base_path='/home/eduardo/CLUES/DATA/'
-
 ini_num=0
-end_num=1
+end_num=0
 
 # Should we read the gadget file and export the particles, or just read the already exported particles?
 #doReadSlab = True
@@ -38,10 +36,11 @@ f_rescale = 4.0
 bw_smooth = 0.075
 
 #all_lg_base = simu_runs()
-#subruns = ['01']
+subruns = ['00']
 
-subruns = []; 
-for isub in range(0, 10):
+max_range=0
+
+for isub in range(0, max_range):
     sub_str = '%02d' % isub
     subruns.append(sub_str)
 
@@ -59,24 +58,16 @@ all_lg_base=['37_11']
 #lg_base='64_14'
 
 #box = '500'; resolution = '512'; n_files = 8; withGas = False
-box = '100'; resolution = '4096'; n_files = 1; withGas = False
+#box = '100'; resolution = '4096'; n_files = 1; withGas = False
 #box = '100'; resolution = '2048'; n_files = 1; withGas = False
-#box = '100'; resolution = '1024'; n_files = 4; withGas = True
-#box_size = 100.0; plot_side = 1.75; thickn = 3.0; units = 'Mpc'
-#box_size = 100.0; plot_side = 1.5; thickn = 3.0; units = 'Mpc'
-#box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 1.5e+3; units = 'kpc'
+box = '100'; resolution = '1024'; n_files = 1; withGas = True
+
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 5000.0; units = 'kpc'
 box_size = 100.0; plot_side = 0.75; thickn = 2.5; units = 'Mpc'
 
 #snap_name='snapshot_054'
 snap_name='snapshot_054'
 #snap_name='ic_arepo_2048_100.000_37_11_00.0'
-#base_path = '/home/eduardo/CLUES/DATA/1024/' + subrun + '/'
-#base_path = '/home/eduardo/CLUES/DATA/2048/' + subrun + '/'
-#base_path = '/home/eduardo/CLUES/DATA/2048/' + subrun + '/'
-
-#base_path = '/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+subrun+'/'
-
 
 fn_lg = 'saved/lgs_00.pkl'
 f_lg = open(fn_lg, 'rb')
@@ -96,7 +87,8 @@ print(box_center)
 
 
 for subrun in subruns:
-    base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
+    #base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
+    base_path = '/home/oem/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
 
     # File Names for the output slabs
     fn_0 = base_path + 'slab_xy0_' + str(f_rescale) + '.pkl'
@@ -107,6 +99,8 @@ for subrun in subruns:
     if doReadSlab == True:
         # Double the side of the slab just in case
         plot_side = plot_side * 2
+
+        print(base_path + snap_name)
 
         if withGas:
             [x0, y0] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 0)
@@ -134,11 +128,11 @@ for subrun in subruns:
         # DM
         slab = [fn_1]; ptype = 1
         bw_smooth = 0.25; nbins = 750
-        simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
+        #simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
 
         # gas and stars
         if withGas:
             slab = [fn_0, fn_4]; ptype = 0
             #bw_smooth = 0.025; nbins = 256
-            bw_smooth = 0.1; nbins = 128
+            bw_smooth = 0.1; nbins = 64
             simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)

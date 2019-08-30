@@ -22,6 +22,93 @@ def return_slab(f_snap, slab_z, center, side_size, thickn, n_files, reduce_fac, 
     return [x_tmp, y_tmp]
 
 
+def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth):
+    print('Plotting density slices for snapshot: ', slab)
+
+    # Plot properties
+    axis_margins = 1
+    axis_size = 12
+    
+    # Select factor margin: select particles slightly outside of the side_size restriction, for nicer binning
+    sf = 1.1
+
+    if units == 'Mpc':
+        axis_units = 'Mpc/h'; facMpc = 1.
+    elif units == 'kpc':
+        axis_units = 'Mpc/h'; facMpc = 1000.
+
+    axis_label = ['SGX', 'SGY']
+    minx = center[0] - side_size;   miny = center[1] - side_size;   minima = [minx, miny] 
+    maxx = center[0] - side_size;   maxy = center[1] - side_size;   maxima = [minx, miny] 
+
+    xi, yi = np.mgrid[minx:maxx:nbins*1j, miny:maxy:nbins*1j]
+
+    f_slab = open(slab[0], 'rb')
+    (x_plot, y_plot) = pickle.load(f_slab)
+
+    n_x = len(x_plot)
+    print('N Part in slab: ', n_x)
+    print('Slab (%s, %s) with %d particles found.' % (axis_label[0], axis_label[1], n_x))
+
+    plt.xlabel(axis_label[0]+' '+axis_units)
+    plt.ylabel(axis_label[1]+' '+axis_units)
+
+    # General plot settings
+    plt.figure(figsize=(8,8))
+    plt.rc('xtick', labelsize=axis_size)
+    plt.rc('ytick', labelsize=axis_size)
+    plt.rc('axes',  labelsize=axis_size)
+    plt.margins(axis_margins)
+
+    x_min = -side_size; x_max = side_size
+    y_min = -side_size; y_max = side_size
+
+    # These plots are in Mpc/h not kpc/h
+    x_min /= facMpc
+    x_max /= facMpc
+    y_min /= facMpc
+    y_max /= facMpc
+
+    print('XMin: ', x_min, ' XMax: ', x_max)
+    print('New particles number: ', n_x, ' n bins: ', nbins)
+    data_x = [];     data_y = []
+    datas_x = [];     datas_y = []
+    
+    for ip in range(0, n_x):
+        x = (x_plot[ip] - center[0])/facMpc
+        y = (y_plot[ip] - center[1])/facMpc
+
+        # Select only particles within the area
+        if (x > x_min*sf and x < x_max*sf and y > y_min*sf and y < y_max*sf):
+            data_x.append(x) 
+            data_y.append(y) 
+
+    data = np.zeros((len(data_x), 2), dtype='float')
+    for ip in range (0, len(data_x)):
+            data[ip, 0] = data_x[ip]
+            data[ip, 1] = data_y[ip]
+
+    xi, yi = np.mgrid[min(data_x):max(data_x):nbins*1j, min(data_y):max(data_y):nbins*1j]
+    k = kde.gaussian_kde(data.T, bw_method=bw_smooth)
+    zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+
+    plt.axis([x_min, x_max, y_min, y_max])
+    plt.xlabel(axis_label[0]+' '+axis_units)
+    plt.ylabel(axis_label[1]+' '+axis_units)
+
+    plt.title('DM')
+    #colorscale = 'rainbow'
+    colorscale = 'viridis'
+    plt.contour(xi, yi, zi.reshape(xi.shape), levels=[1.0, 2.0, 5.0], linewidth=10.0, colors='black')
+    plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=colorscale, shading='gouraud') 
+    f_out = f_out + '_dm.png'
+
+    # Save to file
+    plt.tight_layout()
+    plt.savefig(f_out)
+
+
+
 
 
 def simple_plot_rho(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype):
@@ -119,9 +206,9 @@ def simple_plot_rho(center, side_size, f_out, nbins, f_rescale, thickn, units, s
         plt.title('Gas')
         colorscale = 'rainbow'
         #colorscale = 'viridis'
+        #plt.contour(xi, yi, zi.reshape(xi.shape)) #, levels=[1.0])
         plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=colorscale, shading='gouraud') 
-#        plt.scatter(datas_x, datas_y, s=0.005, color='black', alpha=0.05) 
-#        f_out = f_out + '_gas_stars.png'
+        plt.contour(xi, yi, zi.reshape(xi.shape), levels=[1.0, 2.0, 5.0], linewidth=10.0, colors='black')
         f_out = f_out + '_gas.png'
 
     elif ptype == 1:
