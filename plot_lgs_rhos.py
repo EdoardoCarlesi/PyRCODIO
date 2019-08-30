@@ -38,10 +38,14 @@ f_rescale = 4.0
 bw_smooth = 0.075
 
 #all_lg_base = simu_runs()
-subrun = '00'
-#subrun = '04'
-#subrun = '03'
-#subrun = '06'
+#subruns = ['01']
+
+subruns = []; 
+for isub in range(0, 10):
+    sub_str = '%02d' % isub
+    subruns.append(sub_str)
+
+print(subruns)
 
 #all_lg_base=['00_06']
 all_lg_base=['37_11']
@@ -54,8 +58,9 @@ all_lg_base=['37_11']
 #lg_base='55_02'
 #lg_base='64_14'
 
-#box = '100'; resolution = '4096'; n_files = 1; withGas = False
-box = '100'; resolution = '2048'; n_files = 1; withGas = False
+#box = '500'; resolution = '512'; n_files = 8; withGas = False
+box = '100'; resolution = '4096'; n_files = 1; withGas = False
+#box = '100'; resolution = '2048'; n_files = 1; withGas = False
 #box = '100'; resolution = '1024'; n_files = 4; withGas = True
 #box_size = 100.0; plot_side = 1.75; thickn = 3.0; units = 'Mpc'
 #box_size = 100.0; plot_side = 1.5; thickn = 3.0; units = 'Mpc'
@@ -68,9 +73,10 @@ snap_name='snapshot_054'
 #snap_name='ic_arepo_2048_100.000_37_11_00.0'
 #base_path = '/home/eduardo/CLUES/DATA/1024/' + subrun + '/'
 #base_path = '/home/eduardo/CLUES/DATA/2048/' + subrun + '/'
-base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
+#base_path = '/home/eduardo/CLUES/DATA/2048/' + subrun + '/'
 
-f_out = 'lg_rhos_' + resolution + '_' + all_lg_base[0] + '_' + subrun + '_grid' + str(nbins)
+#base_path = '/home/eduardo/CLUES/DATA/CF3/500/CF3_YH_h78/'+subrun+'/'
+
 
 fn_lg = 'saved/lgs_00.pkl'
 f_lg = open(fn_lg, 'rb')
@@ -88,47 +94,51 @@ print(box_center)
 #plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
 #plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
 
-# File Names for the output slabs
-fn_0 = base_path + 'slab_xy0_' + str(f_rescale) + '.pkl'
-fn_1 = base_path + 'slab_xy1_' + str(f_rescale) + '.pkl'
-fn_4 = base_path + 'slab_xy4.pkl'
-    
-if doReadSlab == True:
-    # Double the side of the slab just in case
-    plot_side = plot_side * 2
 
-    if withGas:
-        [x0, y0] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 0)
-        # Never rescale star particles
-        [x4, y4] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, 1.0, units, 4)
+for subrun in subruns:
+    base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
 
-    [x1, y1] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 1)
-    f_1 = open(fn_1, 'wb')
-    pickle.dump([x1, y1], f_1)
+    # File Names for the output slabs
+    fn_0 = base_path + 'slab_xy0_' + str(f_rescale) + '.pkl'
+    fn_1 = base_path + 'slab_xy1_' + str(f_rescale) + '.pkl'
+    fn_4 = base_path + 'slab_xy4.pkl'
+    f_out = 'lg_rhos_' + resolution + '_' + all_lg_base[0] + '_' + subrun + '_grid' + str(nbins)
 
-    if withGas:
-        f_0 = open(fn_0, 'wb')
-        pickle.dump([x0, y0], f_0)
-        f_4 = open(fn_4, 'wb')
-        pickle.dump([x4, y4], f_4)
+    if doReadSlab == True:
+        # Double the side of the slab just in case
+        plot_side = plot_side * 2
 
-    print('Dumping to files: ', fn_0, fn_1, fn_4)
+        if withGas:
+            [x0, y0] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 0)
+            # Never rescale star particles
+            [x4, y4] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, 1.0, units, 4)
+            f_0 = open(fn_0, 'wb')
+            pickle.dump([x0, y0], f_0)
+            f_4 = open(fn_4, 'wb')
+            pickle.dump([x4, y4], f_4)
+            print('Dumping to files: ', fn_0, fn_4)
 
-    f_1.close()
+        [x1, y1] = return_slab(base_path + snap_name, 2, box_center, plot_side, thickn, n_files, f_rescale, units, 1)
+        f_1 = open(fn_1, 'wb')
+        pickle.dump([x1, y1], f_1)
 
-    if withGas:
-        f_0.close()
-        f_4.close()
+        print('Dumping to files: ', fn_0, fn_1, fn_4)
 
-else:
-    # DM
-    slab = [fn_1]; ptype = 1
-    bw_smooth = 0.25; nbins = 750
-    simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
+        f_1.close()
 
-    # gas and stars
-    if withGas:
-        slab = [fn_0, fn_4]; ptype = 0
-        #bw_smooth = 0.025; nbins = 256
-        bw_smooth = 0.1; nbins = 128
+        if withGas:
+            f_0.close()
+            f_4.close()
+
+    else:
+        # DM
+        slab = [fn_1]; ptype = 1
+        bw_smooth = 0.25; nbins = 750
         simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
+
+        # gas and stars
+        if withGas:
+            slab = [fn_0, fn_4]; ptype = 0
+            #bw_smooth = 0.025; nbins = 256
+            bw_smooth = 0.1; nbins = 128
+            simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
