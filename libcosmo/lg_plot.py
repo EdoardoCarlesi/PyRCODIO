@@ -32,17 +32,19 @@ def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, sl
     # Select factor margin: select particles slightly outside of the side_size restriction, for nicer binning
     sf = 1.1
 
-    if units == 'Mpc':
-        axis_units = 'Mpc/h'; facMpc = 1.
-    elif units == 'kpc':
-        axis_units = 'Mpc/h'; facMpc = 1000.
-
+    axis_units = 'Mpc/h'; 
+    facMpc = 1000.
     axis_label = ['SGX', 'SGY']
-    minx = center[0] - side_size;   miny = center[1] - side_size;   minima = [minx, miny] 
-    maxx = center[0] - side_size;   maxy = center[1] - side_size;   maxima = [minx, miny] 
 
-    xi, yi = np.mgrid[minx:maxx:nbins*1j, miny:maxy:nbins*1j]
+    kpcOrMpc = 1.e+4
 
+    if center[0] > kpcOrMpc:
+        center[0] = center[0] / facMpc
+        center[1] = center[1] / facMpc
+        center[2] = center[2] / facMpc
+    
+    if side_size > kpcOrMpc:
+        side_size = side_size / facMpc
 
     if slab_type == 1:
         f_slab = open(slab[0], 'rb')
@@ -57,6 +59,7 @@ def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, sl
     n_x = len(x_plot)
     print('N Part in slab: ', n_x)
     print('Slab (%s, %s) with %d particles found.' % (axis_label[0], axis_label[1], n_x))
+    print('X Plot max min', max(x_plot), min(x_plot))
 
     plt.xlabel(axis_label[0]+' '+axis_units)
     plt.ylabel(axis_label[1]+' '+axis_units)
@@ -71,45 +74,63 @@ def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, sl
     x_min = -side_size; x_max = side_size
     y_min = -side_size; y_max = side_size
 
-    # These plots are in Mpc/h not kpc/h
-    x_min /= facMpc
-    x_max /= facMpc
-    y_min /= facMpc
-    y_max /= facMpc
-
     print('XMin: ', x_min, ' XMax: ', x_max)
-    print('New particles number: ', n_x, ' n bins: ', nbins)
+    print(center)
+    print(side_size)
     data_x = [];     data_y = []
-    datas_x = [];     datas_y = []
-    
+
+    if max(x_plot) > kpcOrMpc:
+        facNorm = 1.e+3
+        print('Auto reducing to Mpc units')
+    else:
+        facNorm = 1.0
+
     for ip in range(0, n_x):
-        x = (x_plot[ip] - center[0])/facMpc
-        y = (y_plot[ip] - center[1])/facMpc
+        if x_min > 0:
+            x = (x_plot[ip]/facNorm - center[0])
+            y = (y_plot[ip]/facNorm - center[1])
+        else:
+            x = (x_plot[ip]/facNorm) 
+            y = (y_plot[ip]/facNorm)
 
         # Select only particles within the area
         if (x > x_min*sf and x < x_max*sf and y > y_min*sf and y < y_max*sf):
             data_x.append(x) 
             data_y.append(y) 
+            #print(ip, x)
+
+    print('New particles number: ', len(data_x), ' n bins: ', nbins)
+    print('New maxmin: ', max(data_x), min(data_x))
 
     data = np.zeros((len(data_x), 2), dtype='float')
     for ip in range (0, len(data_x)):
             data[ip, 0] = data_x[ip]
             data[ip, 1] = data_y[ip]
-
+    
+    print('Smoothing on a ', nbins, ' grid...')
     xi, yi = np.mgrid[min(data_x):max(data_x):nbins*1j, min(data_y):max(data_y):nbins*1j]
     k = kde.gaussian_kde(data.T, bw_method=bw_smooth)
     zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+    print('Done.')
 
     plt.axis([x_min, x_max, y_min, y_max])
     plt.xlabel(axis_label[0]+' '+axis_units)
     plt.ylabel(axis_label[1]+' '+axis_units)
 
     plt.title('DM')
-    #colorscale = 'rainbow'
-    colorscale = 'viridis'
-    plt.contour(xi, yi, zi.reshape(xi.shape), levels=[1.0, 2.0, 5.0], linewidth=10.0, colors='black')
+    colorscale = 'rainbow'
+    #colorscale = 'viridis'
+    #print(max(zi), min(zi))
+    #levels = [np.percentile(zi, 5), np.percentile(zi, 7), np.percentile(zi, 10)]
+    #levels = [np.percentile(zi, 25)] #, np.percentile(zi, 7), np.percentile(zi, 10)]
+
+    levels = [np.percentile(zi, 75), np.percentile(zi, 90), np.percentile(zi, 99)]
+
+    print('Printing contour and color mesh on ', len(levels), ' levels ...')
     plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=colorscale, shading='gouraud') 
+    plt.contour(xi, yi, zi.reshape(xi.shape), levels=levels, linewidth=[10.0], colors='black')
     f_out = f_out + '_dm.png'
+    print('Done.')
 
     # Save to file
     plt.tight_layout()
@@ -135,10 +156,6 @@ def simple_plot_rho(center, side_size, f_out, nbins, f_rescale, thickn, units, s
         axis_units = 'Mpc/h'; facMpc = 1000.
 
     axis_label = ['SGX', 'SGY']
-    minx = center[0] - side_size;   miny = center[1] - side_size;   minima = [minx, miny] 
-    maxx = center[0] - side_size;   maxy = center[1] - side_size;   maxima = [minx, miny] 
-
-    xi, yi = np.mgrid[minx:maxx:nbins*1j, miny:maxy:nbins*1j]
 
     f_slab = open(slab[0], 'rb')
     (x_plot, y_plot) = pickle.load(f_slab)
