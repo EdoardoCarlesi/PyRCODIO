@@ -22,7 +22,7 @@ def return_slab(f_snap, slab_z, center, side_size, thickn, n_files, reduce_fac, 
     return [x_tmp, y_tmp]
 
 
-def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth):
+def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, slab_type):
     print('Plotting density slices for snapshot: ', slab)
 
     # Plot properties
@@ -43,8 +43,16 @@ def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, sl
 
     xi, yi = np.mgrid[minx:maxx:nbins*1j, miny:maxy:nbins*1j]
 
-    f_slab = open(slab[0], 'rb')
-    (x_plot, y_plot) = pickle.load(f_slab)
+
+    if slab_type == 1:
+        f_slab = open(slab[0], 'rb')
+        (x_plot, y_plot) = pickle.load(f_slab)
+
+    elif slab_type == 2:
+        f_slab0 = open(slab[0], 'rb')
+        f_slab1 = open(slab[1], 'rb')
+        (x_plot) = pickle.load(f_slab0)
+        (y_plot) = pickle.load(f_slab1)
 
     n_x = len(x_plot)
     print('N Part in slab: ', n_x)
