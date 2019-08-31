@@ -82,6 +82,61 @@ plt.savefig('test.png')
 #h = pyn.halo.ahf.AHFCatalogue(s, ahf_basename=ahf_path)
 #h = pyn.halo.ahf.AHFCatalogue('sim', ahf_path)
 
+
+
+'''
+# THIS ARE THE OLD PLOTTING ROUTINES THAT USE SEABORN
+elif oldLoad:
+
+    doBar=False
+    #doBar=True
+    n_levels = 10
+
+    # Small box settings
+    #contour = np.logspace(-6.0, -1.0, num=20)
+
+    # Full box
+    contour = np.logspace(-6.5, -4.0, num=8)
+
+    print(snap)
+    print('Loading files: ', slab_x_fname)
+    x_out = open(slab_x_fname, 'rb')
+    y_out = open(slab_y_fname, 'rb')
+    all_data_x = pickle.load(x_out)
+    all_data_y = pickle.load(y_out)
+
+    data_x = [];     data_y = []
+
+    for ix in range(0, len(all_data_x)):
+        dx = all_data_x[ix]
+        dy = all_data_y[ix]
+
+        if abs(dx) < side and abs(dy) < side:
+            data_x.append(dx)
+            data_y.append(dy)
+
+    print('Done. Selected ', len(data_x), ' particles out of ', len(all_data_x))
+    figname=snapname+simname+'_'+code+'_' + str(gridSize) + '_sm' + str(smooth) + '_fac' + str(reduce_fac) + '_side' + str(side) + '.png'
+
+    plt.figure(figsize=(20, 20))
+    matplotlib.rcParams.update({'font.size': 30})
+    plt.ylabel("SGY (Mpc/h)")
+    plt.xlabel("SGX (Mpc/h)")
+
+    print('Smoothing out plot on a ', gridSize, ' grid with a ', smooth, ' Gaussian kernel.')
+    sns.kdeplot(data_x, data_y, cmap="coolwarm", shade=True, shade_lowest=True, gridsize=gridSize,
+        bw=smooth, levels=n_levels, cbar=doBar)
+    # SCATTERPLOT just in case
+    #plt.plot(data_x, data_y, linestyle='', marker='o', markersize=0.1)
+    #plt.savefig('test_scatter.png', dpi=100)
+    plt.tight_layout()
+    print('Saving output to file: ', figname)
+    plt.savefig(figname, dpi=300)
+
+'''
+
+
+
 '''
 f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 halos = read_ahf(f_ahf)
