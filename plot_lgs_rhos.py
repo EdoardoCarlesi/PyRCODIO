@@ -23,19 +23,17 @@ end_num=0
 #doReadSlab = True
 doReadSlab = False
 
-# Plot properties
-#nbins = 64
-#nbins = 128
-#nbins = 256
-nbins = 512
-
+# When reading and storing particle data, reduce by this factor
 #f_rescale = 1.0 
 f_rescale = 4.0 
 #f_rescale = 16.0 
 
-bw_smooth = 0.075
-
 #all_lg_base = simu_runs()
+#all_lg_base=['00_06']
+#all_lg_base=['17_10']
+#all_lg_base=['34_13']
+all_lg_base=['09_18']
+
 #subruns = ['00']
 subruns = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09']
 
@@ -45,32 +43,18 @@ for isub in range(0, max_range):
     sub_str = '%02d' % isub
     subruns.append(sub_str)
 
-print(subruns)
-
-#all_lg_base=['00_06']
-#all_lg_base=['37_11']
-#lg_base='17_10'
-#lg_base='17_13'
-#lg_base='01_12'
-lg_base='09_18'
-#lg_base='34_13'
-#lg_base='45_17'
-#lg_base='55_02'
-#lg_base='64_14'
-
 #box = '500'; resolution = '512'; n_files = 8; withGas = False
 #box = '100'; resolution = '4096'; n_files = 1; withGas = False
-#box = '100'; resolution = '2048'; n_files = 1; withGas = False
-box = '100'; resolution = '1024'; n_files = 1; withGas = True
+box = '100'; resolution = '2048'; n_files = 1; withGas = False
+#box = '100'; resolution = '1024'; n_files = 1; withGas = True
 
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 5000.0; units = 'kpc'
-box_size = 100.0; plot_side = 0.75; thickn = 2.5; units = 'Mpc'
+box_size = 100.0; plot_side = 1.00; thickn = 2.5; units = 'Mpc'
 
-#snap_name='snapshot_054'
 snap_name='snapshot_054'
-#snap_name='ic_arepo_2048_100.000_37_11_00.0'
 
-fn_lg = 'saved/lgs_00.pkl'
+#fn_lg = 'saved/lgs_00.pkl'
+fn_lg = 'saved/lgs_'+resolution+'_'+all_lg_base[0]+'_00.pkl'
 f_lg = open(fn_lg, 'rb')
 this_lg = pickle.load(f_lg)
 
@@ -82,26 +66,21 @@ box_center= this_lg.geo_com()
 for ip in range(0, 3): 
     box_center[ip] = box_center[ip] / 1000.0
 
-print(box_center)
-#box_center = [46600, 50750, 47800]
-#plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
-#plot_rho(base_path + snap_name, box_center, plot_side, f_out, nbins, f_rescale, thickn, units, n_files)
+print('Rescaling the plot around the LG position: ', box_center)
 
 
 for subrun in subruns:
-    #base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
-    base_path = '/home/oem/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
+    base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
+    #base_path = '/home/oem/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'
 
     # File Names for the output slabs
     fn_0 = base_path + 'slab_xy0_' + str(f_rescale) + '.pkl'
     fn_1 = base_path + 'slab_xy1_' + str(f_rescale) + '.pkl'
     fn_4 = base_path + 'slab_xy4.pkl'
-    f_out = 'lg_rhos_' + resolution + '_' + all_lg_base[0] + '_' + subrun + '_grid' + str(nbins)
 
     if doReadSlab == True:
         # Double the side of the slab just in case
         plot_side = plot_side * 2
-
         print(base_path + snap_name)
 
         if withGas:
@@ -130,6 +109,7 @@ for subrun in subruns:
         # DM
         slab = [fn_1]; ptype = 1
         bw_smooth = 0.25; nbins = 750
+        f_out = 'ProjectsPlots/lg_rhos_' + resolution + '_' + all_lg_base[0] + '_' + subrun + '_grid' + str(nbins)
         simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
 
         # gas and stars

@@ -3,7 +3,6 @@
                 - Find an LG candidate at each step including nearby satellites
                 - For each halo (main LGs and satellites) trace its merging history
                 - At each step, re-identify the subhalos for each candidate (simply taking all the halos within a factor * Rvir)
-                - Use the subhalo distribution at each step to re-compute the anisotropy & inertia tensor eigenvalues
                 - Do not do any plot, simply dump all the stuff to .txt - the analysis will be done separately
 '''
 
@@ -27,6 +26,7 @@ run_end = 10
 subrun_init = 0
 subrun_end = 10
 out_base = 'saved/lgs_'
+out_subs = 'saved/sub_'
 
 base_path = '/home/eduardo/CLUES/DATA/' + resolution + '/'
 outp_path = 'output/'
@@ -121,8 +121,11 @@ for run_j in range(run_init, run_end):
 
                 # Write the just-found local group
                 fname_out = out_base + resolution + '_' + base_run + '_' + run_num + '.pkl';
+                fsubs_out = out_subs + resolution + '_' + base_run + '_' + run_num + '.pkl';
                 f_out = open(fname_out, 'wb');
                 pickle.dump(best_lg, f_out)
+                f_out.close()
+
 
                 # Identify the main halos to be tracked at all zs
                 com = best_lg.get_com()
@@ -132,6 +135,10 @@ for run_j in range(run_init, run_end):
                 lg_halos  = find_halos_mass_radius(com, halos, rad_lg, mmin)
                 mw_halos  = find_halos_mass_radius(best_lg.LG1.x, halos, rad_mw, mmin)
                 m31_halos = find_halos_mass_radius(best_lg.LG2.x, halos, rad_m31, mmin)
+
+                f_subs = open(fsubs_out, 'wb');
+                pickle.dump([lg_halos, mw_halos, m31_halos], f_subs)
+                f_subs.close()
 
                 all_subs[run_j, 0, subrun_i] = best_lg.LG1.nsub
                 all_subs[run_j, 1, subrun_i] = best_lg.LG2.nsub

@@ -9,21 +9,22 @@ from libio.read_ascii import *
 import pickle
 
 # First read the original GADGET file then 
-loadFile=True
-#loadFile=False
+#loadFile=True
+loadFile=False
 
+'''
 simutype='CF3'
 
-codes = ['70_00','71_00','72_00']
+#codes = ['70_00','71_00','72_00']
+codes = ['70_00']
 simnames = ['CF3_YH_h78', 'CF3_RG_1500', 'CF3_RG_1000', 'CF3_YH_v4']
 snapname='snapshot_127'; kpcU=1.0; c=250.0*kpcU; n_files=8; box = '500'
 
 '''
 simutype='CF2P5'
-codes = ['CF2P5_YH']
+simnames = ['CF2P5_YH']
 codes = ['59050', '58151', '57252', '56353', '55454']
 snapname='snapshot_019'; kpcU=1.e+3; c=335.0*kpcU; n_files=8; box = '670'
-'''
 
 # Compress information: take one out of reduce_fac particles
 #reduce_fac = 32    
@@ -33,8 +34,8 @@ reduce_fac = 16
 # Plot Properties
 #gridSize = 512
 #gridSize = 256
-#gridSize = 128
-gridSize = 64
+gridSize = 128
+#gridSize = 64
 #gridSize = 32
 
 # Smoothing length
@@ -110,8 +111,8 @@ else:
         for simname in simnames:
 
             print('Looping on ', code, simname)
+            base_dir = '/home/eduardo/CLUES/DATA/' + simutype + '/' + box + '/' + simname + '/' + code + '/'
             
-            base_dir = '/home/eduardo/CLUES/DATA/CF3/500/' + simname + '/' + code + '/'
             slab_x_fname = base_dir + 'slab_x_fac' + str(reduce_fac) + '.pkl'
             slab_y_fname = base_dir + 'slab_y_fac' + str(reduce_fac) + '.pkl'
             snap = base_dir + snapname
