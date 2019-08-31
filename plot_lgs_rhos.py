@@ -36,7 +36,8 @@ f_rescale = 4.0
 bw_smooth = 0.075
 
 #all_lg_base = simu_runs()
-subruns = ['00']
+#subruns = ['00']
+subruns = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09']
 
 max_range=0
 
@@ -47,11 +48,11 @@ for isub in range(0, max_range):
 print(subruns)
 
 #all_lg_base=['00_06']
-all_lg_base=['37_11']
+#all_lg_base=['37_11']
 #lg_base='17_10'
 #lg_base='17_13'
 #lg_base='01_12'
-#lg_base='09_18'
+lg_base='09_18'
 #lg_base='34_13'
 #lg_base='45_17'
 #lg_base='55_02'
@@ -75,7 +76,8 @@ this_lg = pickle.load(f_lg)
 
 #print(this_lg[0].geo_com())
 #box_center = [46.6, 50.7, 47.8]
-box_center= this_lg[0].geo_com()
+#box_center= this_lg[0].geo_com()
+box_center= this_lg.geo_com()
 
 for ip in range(0, 3): 
     box_center[ip] = box_center[ip] / 1000.0
@@ -128,7 +130,7 @@ for subrun in subruns:
         # DM
         slab = [fn_1]; ptype = 1
         bw_smooth = 0.25; nbins = 750
-        #simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
+        simple_plot_rho(box_center, plot_side, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, ptype)
 
         # gas and stars
         if withGas:
