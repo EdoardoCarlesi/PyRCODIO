@@ -32,7 +32,10 @@ f_rescale = 4.0
 #all_lg_base=['00_06']
 #all_lg_base=['17_10']
 #all_lg_base=['34_13']
+#all_lg_base=['55_02']
 all_lg_base=['09_18']
+#all_lg_base=['01_12']
+#all_lg_base=['17_13']
 
 #subruns = ['00']
 subruns = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09']
@@ -49,7 +52,7 @@ box = '100'; resolution = '2048'; n_files = 1; withGas = False
 #box = '100'; resolution = '1024'; n_files = 1; withGas = True
 
 #box_size = 100.0e+3; plot_side = 10.0e+3; thickn = 5000.0; units = 'kpc'
-box_size = 100.0; plot_side = 1.00; thickn = 2.5; units = 'Mpc'
+box_size = 100.0; plot_side = 0.35; thickn = 1.5; units = 'Mpc'
 
 snap_name='snapshot_054'
 
@@ -67,7 +70,6 @@ for ip in range(0, 3):
     box_center[ip] = box_center[ip] / 1000.0
 
 print('Rescaling the plot around the LG position: ', box_center)
-
 
 for subrun in subruns:
     base_path = '/home/eduardo/CLUES/DATA/'+resolution+'/'+all_lg_base[0]+'/' + subrun + '/'

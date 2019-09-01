@@ -1138,10 +1138,11 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
     (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
 
     plt.rc({'text.usetex': True})
-    plt.xlabel('$log_{10}M_{\odot} h^{-1}$')
+    plt.xlabel(r'$log_{10}M_{\odot} h^{-1}$')
 
     #plt.ylabel('$N(>M)$')
-    axs.set_yscale('log'); plt.ylabel('$log_{10}N(>M)$'); y_min=1.0
+    axs.set_yscale('log'); 
+    plt.ylabel(r'$log_{10}N(>5\times 10^8 M_{\odot})$'); y_min=1.0
 
     axs.axis([x_min, x_max, y_min, y_max])
 

@@ -9,8 +9,8 @@ from libio.read_ascii import *
 import pickle
 
 # First read the original GADGET file then 
-#loadFile=True
-loadFile=False
+loadFile=True
+#loadFile=False
 
 '''
 simutype='CF3'
@@ -20,16 +20,22 @@ codes = ['70_00']
 simnames = ['CF3_YH_h78', 'CF3_RG_1500', 'CF3_RG_1000', 'CF3_YH_v4']
 snapname='snapshot_127'; kpcU=1.0; c=250.0*kpcU; n_files=8; box = '500'
 
-'''
+
 simutype='CF2P5'
 simnames = ['CF2P5_YH']
 codes = ['59050', '58151', '57252', '56353', '55454']
 snapname='snapshot_019'; kpcU=1.e+3; c=335.0*kpcU; n_files=8; box = '670'
+'''
+
+simutype='CF3'
+simnames = ['CF3_YH_BGc']
+codes = ['59050']
+snapname='snapshot_019'; kpcU=1.e+3; c=500.0*kpcU; n_files=8; box = '1000'
 
 # Compress information: take one out of reduce_fac particles
 #reduce_fac = 32    
-reduce_fac = 16    
-#reduce_fac = 8
+#reduce_fac = 16    
+reduce_fac = 4
 
 # Plot Properties
 #gridSize = 512
