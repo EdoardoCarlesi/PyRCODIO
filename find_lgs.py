@@ -17,7 +17,8 @@ from libcosmo.track_halos import *
 from libcosmo.find_halo import *
 from libcosmo.lg_plot import *
 
-resolution='2048'
+resolution='1024'; snapname = 'snapshot_054.z0.000.AHF_halos'
+#resolution='2048'; snapname = 'snapshot_054.0000.z0.000.AHF_halos'
 #resolution='4096'
 
 run_init = 0
@@ -91,14 +92,18 @@ for run_j in range(run_init, run_end):
         this_task = 0
         good_lgs = 0
         ids_sub = []
-        main_ids = []; this_file_halo = base_path + '/' + base_run + '/' + run_num + '/snapshot_054.0000.z0.000.AHF_halos'
-        #(this_file_part, this_file_halo) = settings.get_ahf_files(snap_last, this_task)
+        #main_ids = []; this_file_halo = base_path + '/' + base_run + '/' + run_num + '/snapshot_054.0000.z0.000.AHF_halos'
+        main_ids = []; this_file_halo = base_path + '/' + base_run + '/' + run_num + '/' + snapname 
 
-#        print('Reading files: ', this_file_halo)
-        halos = read_ahf(this_file_halo)
-
-        this_lg = find_lg(halos, lg_model)
-        n_lgs = int(len(this_lg))
+        if os.path.exists(this_file_halo):
+            print('Looking for LGs in file: ', this_file_halo)
+            all_halos = read_ahf(this_file_halo)
+            halos = find_halos_point(center, all_halos, 10.0e+3)
+            this_lg = find_lg(halos, lg_model)
+            n_lgs = int(len(this_lg))
+            #print('Found: ', this_lg)
+        else:
+            n_lgs = 0
 
 #        print('Found a total of %d LG pairs.' % (n_lgs))
 
