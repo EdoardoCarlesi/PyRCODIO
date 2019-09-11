@@ -3,10 +3,10 @@ import pickle
 import numpy as np
 import os
 
-# Root path for the vweb files
-#dirBase='/z/carlesi/CLUES/DATA/LGF/SNAPS/512/'
-dirBase='/work2/eduardo/DATA/512/VWEB/'
-fileWeb='vweb_lgf_054.000064.Vweb-ascii'
+gridSize = 48
+
+dirBase = '/z/carlesi/STORE/SmallScaleVariance/vweb/'
+fileWeb = 'vweb_2048.0000'+str(gridSize)+'.Vweb-ascii'
 
 # Do a loop
 iSta=0
@@ -15,8 +15,8 @@ gSta=0
 gEnd=30
 
 # Main web parameters
-boxSize=100.0
-gridSize=64
+boxSize = 100.0
+n_half = int(gridSize / 2)
 
 # Subgrid parameters: only store a subcube of sizeSave size
 sizeSave=20.0
@@ -44,7 +44,7 @@ for iRun in range(iSta, iEnd):
 		if exists:
 			print(thisFileWeb, ' found.')
 			thisGrid = read_vweb(thisFileWeb, gridSize, boxSize)
-#			print(thisGrid.evals[:, 32, 32, 32])			
+			print(thisGrid.evals[:, n_half, n_half, n_half])			
 
 			for dx in range(0, nSubGrid):
 				ix = gridSize / 2 - nSubGrid / 2 + dx

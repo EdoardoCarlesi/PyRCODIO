@@ -9,7 +9,7 @@ from scipy import stats
 from scipy.optimize import curve_fit
 
 # z values 
-z_file='/home/eduardo/CLUES/DATA/output_z.txt'
+z_file='/home/eduardo/CLUES/DATA/output/output_z.txt'
 
 # RANDOM LGs statistics
 #rand_stat_mah = 'saved/rand_out_stat_mah.pkl'
@@ -63,10 +63,12 @@ file_ft_mw_m31 = out_dir + '2d_ft.png'
 file_mmt_mw_m31 = out_dir + '2d_mmt.png'
 
 file_m31_mah = out_dir + 'mah_m31.png'
+file_m31_mah_ratio = out_dir + 'mah_m31_ratio.png'
 file_m31_ft_hist = out_dir + 'histo_ft_m31.png'
 file_m31_mmt_hist = out_dir + 'histo_mmt_m31.png'
 
 file_mw_mah = out_dir + 'mah_mw.png'
+file_mw_mah_ratio = out_dir + 'mah_mw_ratio.png'
 file_mw_ft_hist = out_dir + 'histo_ft_mw.png'
 file_mw_mmt_hist = out_dir + 'histo_mmt_mw.png'
 
@@ -195,13 +197,14 @@ print('3. Fit MW FB:', output3)
 
 # Axes and title
 axs[0].set_title('MW')
-axs[0].set_xlabel('t [Gyr]')
+#axs[0].set_xlabel('t [Gyr]')
 #axs[0].set_ylabel('M/M(z=0)')
 axs[0].set_ylabel('$M(z) / M(z=0)$')
 
 #plt.subplot(2, 1, 1)
 #axs[1].yaxis.set_ticks_position('none') 
 #plt.rc('ytick', labelsize=0)
+plt.xticks([])
 plt.yticks([])
 axs[1].axis([x_min, x_max, y_min, y_max])
 axs[1].plot(time, rand_mahs[m31_fb_id, :, 1], color=col_fb)
@@ -226,7 +229,23 @@ plt.clf()
 plt.cla()
 
 
-############################   1D HISTOGRAMS
+# Plot ratios
+
+ratio = []; unity = []
+for i in range(0, len(time)):
+	v_rand = rand_mahs[m31_fb_id, i, 1]
+	v_cs = cs_mahs[m31_fb_id, i, 1]
+	ratio.append(v_cs / v_rand)
+	ratio.append(1.0)
+
+plt.plot(time, ratio, color='blue')
+plt.plot(time, unity, color='red')
+plt.tight_layout()
+plt.savefig(file_m31_mah_ratio)
+plt.clf()
+plt.cla()
+
+###########################   1D HISTOGRAMS
 n_bins = n_bins_rand
 (fig, ax) = plt.subplots(ncols=1, nrows=1, figsize=(4, 4))
 

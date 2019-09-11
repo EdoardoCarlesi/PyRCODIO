@@ -21,7 +21,7 @@ def read_grid(file_name, size, box):
     while line and index < tot_n:
         line = file_web.readline()
         line = line.strip()
-        column = line.split()#; print(column[0])
+        column = line.split(); print(column[0])
 
         # Determine corresponding x, y, z in grid units
         (ix, jy, kz) = grid.reverse_index(index)#; print(ix, jy, kz)
@@ -56,24 +56,25 @@ def read_vweb(file_name, size, box):
         # Determine corresponding x, y, z in grid units
         (ix, jy, kz) = grid.reverse_index(index)#; print(ix, jy, kz)
 
-        # Density
-        grid.rho[ix, jy, kz] = float(column[0])
+	if len(column) > 1:
+	        # Density
+        	grid.rho[ix, jy, kz] = float(column[0])
 
-        # Velocities
-        grid.vel[:, ix, jy, kz] = [float(column[1]), float(column[2]), float(column[3])]
+        	# Velocities
+       		grid.vel[:, ix, jy, kz] = [float(column[1]), float(column[2]), float(column[3])]
 
-        # Eigenvalues
-        grid.evals[0, ix, jy, kz] = float(column[4])
-        grid.evals[1, ix, jy, kz] = float(column[5])
-        grid.evals[2, ix, jy, kz] = float(column[6])
+	        # Eigenvalues
+        	grid.evals[0, ix, jy, kz] = float(column[4])
+        	grid.evals[1, ix, jy, kz] = float(column[5])
+        	grid.evals[2, ix, jy, kz] = float(column[6])
 
-        # Eigenvectors
-        grid.evecs[0, :, ix, jy, kz] = [float(column[7]), float(column[8]), float(column[9])]
-        grid.evecs[1, :, ix, jy, kz] = [float(column[10]), float(column[11]), float(column[12])]
-        grid.evecs[2, :, ix, jy, kz] = [float(column[13]), float(column[14]), float(column[15])]
+        	# Eigenvectors
+        	grid.evecs[0, :, ix, jy, kz] = [float(column[7]), float(column[8]), float(column[9])]
+        	grid.evecs[1, :, ix, jy, kz] = [float(column[10]), float(column[11]), float(column[12])]
+        	grid.evecs[2, :, ix, jy, kz] = [float(column[13]), float(column[14]), float(column[15])]
 
-        # Increase line index
-        index += 1
+        	# Increase line index
+        	index += 1
 
     return grid
 
