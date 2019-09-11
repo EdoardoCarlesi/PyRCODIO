@@ -25,9 +25,9 @@ extra_tag='CF3_BGc_256'
 #extra_tag='CF3_Brent_v0'
 
 ini_num=0
-end_num=1
+end_num=4
 
-seeds = ['59050', '58141', '57232', '56343']
+seeds = ['59050', '58151', '57252', '56353']
 
 nbins = 50
 #f_rescale = 1

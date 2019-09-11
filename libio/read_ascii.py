@@ -262,11 +262,17 @@ def read_ahf(file_name):
             vmax = float(column[16])
             angmom = [float(column[21]), float(column[22]), float(column[23])]
             contam = float(column[38])
-            ngas = int(column[43])
-            mgas = float(column[44])
-            nstar = int(column[63])
-            mstar = float(column[64])
 
+            if len(column) > 43: 
+                ngas = int(column[43])
+                mgas = float(column[44])
+                nstar = int(column[63])
+                mstar = float(column[64])
+            else:
+                ngas = 0
+                mgas = 0
+                nstar = 0
+                mstar = 0
             #pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
 
             # Initialize and append hl to the list

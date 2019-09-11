@@ -26,20 +26,3 @@ Tools to analyze AREPO - GADGET simulations of the Local Group and the local env
     test.py is used to test new routines as they are written
 
     data/ contains tables of P(k) and z(t) to be used for interpolation
-
-TODO (ShortTerm):
-	
-	- Histograms of LG differences
-	- Vweb at each Lg point
-	- mtree for full box simulations	
-
-TODO (LongTerm):
-
-    Include the C libraries and bash scripts for grid generation & LagrangianRegion identification & the Fortran code for Mask generation inside a separate library within this code to make it self-consistent
-
-    Add SQL functionalities - gather all the LG data within a database to be updated each time a new run or series of simulations runs have been finished, write some libs to access and edit it with python
-
-	Include mpi4py and parallelize some of the routines (especially the merger tree!)
-
-
-

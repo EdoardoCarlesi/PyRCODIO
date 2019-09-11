@@ -2,7 +2,7 @@ from libcosmo.track_halos import *
 from libcosmo.utils import *
 from libcosmo.units import *
 from libcosmo.halos import *
-from libcosmo.find_halos import *
+from libcosmo.find_halo import *
 from libcosmo.particles import *
 from libcosmo.lg_plot import *
 from libio.read_ascii import *
@@ -24,8 +24,8 @@ r_max = 1500.0
 r_min = 250.0
 m_min = 5.0e+11 
 m_max = 5.0e+12 
-ratio_max = 5.0
-vrad_max = 0.0
+ratio_max = 4.0
+vrad_max = 10.0
 
 '''
 TEST PARAMETERS
