@@ -152,7 +152,7 @@ plt.cla()
 #       mah_avgs = np.zeros((2, n_steps, 3))    ---> This contains median and percentiles
 
 # General properties
-x_min = 0.0; x_max = 13.0
+x_min = 0.0; x_max = 12.0
 y_min = 0.01; y_max = 1.1
 n_snaps = 54; t_step = 0.25
 
@@ -161,66 +161,63 @@ time = np.zeros((n_snaps))
 for i in range(0, n_snaps):
     time[i] = i * t_step
 
-gs = gridspec.GridSpec(2,2, height_ratios=[3,1])
-(fig, axs) = plt.subplots(ncols=2, nrows=2, figsize=(12, 10))
+plt.figure(0)
 
-plt.xticks([])
-plt.yticks([])
-axs[0,0].axis([x_min, x_max, y_min, y_max])
-axs[0,0].plot(time, rand_mahs[mw_fb_id, :, 1], color=col_fb)
-axs[0,0].fill_between(time, rand_mahs[mw_fb_id, :, 0], rand_mahs[mw_fb_id, :, 2], facecolor=col_fb, alpha=0.2)
-axs[0,0].plot(time, cs_mahs[mw_cs_id, :, 1], color=col_cs)
-axs[0,0].fill_between(time, cs_mahs[mw_cs_id, :, 0], cs_mahs[mw_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
+axs0 = plt.subplot2grid((5, 8), (0, 0), rowspan=4, colspan=4)
+axs1 = plt.subplot2grid((5, 8), (0, 4), rowspan=4, colspan=4)
+axs2 = plt.subplot2grid((5, 8), (4, 0), rowspan=1, colspan=4)
+axs3 = plt.subplot2grid((5, 8), (4, 4), rowspan=1, colspan=4)
 
-# Axes and title
-axs[0,0].set_title('MW')
-#axs[0].set_xlabel('t [Gyr]')
-#axs[0].set_ylabel('M/M(z=0)')
-axs[0,0].set_ylabel('$M(z) / M(z=0)$')
-
-#plt.subplot(2, 1, 1)
-#axs[1].yaxis.set_ticks_position('none')
-#plt.rc('ytick', labelsize=0)
-plt.xticks([])
-plt.yticks([])
-axs[0,1].axis([x_min, x_max, y_min, y_max])
-axs[0,1].plot(time, rand_mahs[m31_fb_id, :, 1], color=col_fb)
-axs[0,1].fill_between(time, rand_mahs[m31_fb_id, :, 0], rand_mahs[m31_fb_id, :, 2], facecolor=col_fb, alpha=0.2)
-axs[0,1].plot(time, cs_mahs[m31_cs_id, :, 1], color=col_cs)
-axs[0,1].fill_between(time, cs_mahs[m31_cs_id, :, 0], cs_mahs[m31_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
+axs0.axis([x_min, x_max, y_min, y_max])
+axs0.plot(time, rand_mahs[mw_fb_id, :, 1], color=col_fb)
+axs0.fill_between(time, rand_mahs[mw_fb_id, :, 0], rand_mahs[mw_fb_id, :, 2], facecolor=col_fb, alpha=0.2)
+axs0.plot(time, cs_mahs[mw_cs_id, :, 1], color=col_cs)
+axs0.fill_between(time, cs_mahs[mw_cs_id, :, 0], cs_mahs[mw_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
 
 # Axes and title
-axs[1,0].set_title('M31')
-#axs[1].set_xlabel('t [Gyr]')
+axs0.set_title('MW')
+axs0.set_ylabel('$M(z) / M(z=0)$')
 
-#plt.tight_layout()
-#plt.savefig(file_m31_mah)
-#plt.clf()
-#plt.cla()
+axs0.set_xticks([])
+axs1.set_xticks([])
+axs1.set_yticks([])
+axs1.axis([x_min, x_max, y_min, y_max])
+axs1.plot(time, rand_mahs[m31_fb_id, :, 1], color=col_fb)
+axs1.fill_between(time, rand_mahs[m31_fb_id, :, 0], rand_mahs[m31_fb_id, :, 2], facecolor=col_fb, alpha=0.2)
+axs1.plot(time, cs_mahs[m31_cs_id, :, 1], color=col_cs)
+axs1.fill_between(time, cs_mahs[m31_cs_id, :, 0], cs_mahs[m31_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
 
+# Axes and title
+axs1.set_title('M31')
 
 # Plot ratios
-ratio = []; unity = []
+ratio_m31 = []; ratio_mw = []; unity = []
 for i in range(0, len(time)):
     v_rand = rand_mahs[m31_fb_id, i, 1]
     v_cs = cs_mahs[m31_fb_id, i, 1]
-    ratio.append(v_cs / v_rand)
+    ratio_m31.append(v_cs / v_rand)
     unity.append(1.0)
-    print(i, v_rand, v_cs, v_cs/v_rand)
+    v_rand = rand_mahs[mw_fb_id, i, 1]
+    v_cs = cs_mahs[mw_fb_id, i, 1]
+    ratio_mw.append(v_cs / v_rand)
 
-plt.xticks([])
-plt.yticks([])
-axs[1,0].axis([x_min, x_max, 0.99, 1.5])
-axs[1,0].plot(time, ratio, color='blue')
-axs[1,0].plot(time, unity, color='red')
-axs[1,1].axis([x_min, x_max, 0.99, 1.5])
-axs[1,1].plot(time, ratio, color='blue')
-
+axs2.set_xlabel('t [Gyr]')
+axs3.set_xlabel('t [Gyr]')
+axs2.axis([x_min, x_max, 0.99, 1.75])
+axs2.plot(time, ratio_m31, color='blue')
+axs2.plot(time, unity, color='red')
+axs2.set_yticks([1.0,1.25,1.5,1.75])
+axs3.set_yticks([])
+axs3.axis([x_min, x_max, 0.99, 1.5])
+axs3.plot(time, ratio_mw, color='blue')
+axs3.plot(time, unity, color='red')
 plt.tight_layout()
+plt.subplots_adjust(hspace=0.0, wspace=0.2) 
 plt.savefig(file_m31_mah_ratio)
 plt.clf()
 plt.cla()
 
+'''
 a0 = 5.7
 b0 = 2.7
 
@@ -519,3 +516,4 @@ plt.tight_layout()
 plt.savefig(file_m31_ft_kstest)
 plt.clf()
 plt.cla()
+'''

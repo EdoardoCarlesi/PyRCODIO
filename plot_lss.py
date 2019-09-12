@@ -8,8 +8,8 @@ from libcosmo.lg_plot import *
 from libio.read_ascii import *
 import pickle
 
-# First read the original GADGET file then 
-#loadFile=True
+# First read the original GADGET file then
+loadFile=True
 loadFile=False
 
 '''
@@ -38,9 +38,9 @@ codes = ['59050', '58151', '57252', '56353'] #, '55454']
 snapname='snapshot_019'; kpcU=1.e+3; c=250.0*kpcU; n_files=8; box = '500'
 
 # Compress information: take one out of reduce_fac particles
-#reduce_fac = 32    
-#reduce_fac = 16    
-reduce_fac = 2
+#reduce_fac = 32
+#reduce_fac = 16
+reduce_fac = 1
 
 # Plot Properties
 #gridSize = 512
@@ -61,8 +61,8 @@ thickn = 5.0 * kpcU
 #side = 150.0
 side = 250.0 * kpcU
 
-center=[c, c, c]; 
-#center=[47, 50, 47]; 
+center=[c, c, c];
+#center=[47, 50, 47];
 units='kpc'
 #units='Mpc'
 
@@ -75,7 +75,7 @@ if loadFile:
             i_tmp = 0
             data_x = []; data_y = []
             print('Looping on ', code, simname)
-            
+
             base_dir = '/home/eduardo/CLUES/DATA/' + simutype + '/' + box + '/' + simname + '/' + code + '/'
             slab_x_fname = base_dir + 'slab_x_fac'+str(reduce_fac)+'.pkl'
             slab_y_fname = base_dir + 'slab_y_fac'+str(reduce_fac)+'.pkl'
@@ -83,6 +83,7 @@ if loadFile:
 
             if os.path.exists(slab_x_fname) and os.path.exists(slab_y_fname):
                 loop_n_files = -1   # Skip the loop on reading the files
+                #loop_n_files = n_files
                 print('File: ', slab_x_fname, ' found, skipping to read and compress the next one...')
             else:
                 # Do the loop normally
@@ -123,7 +124,7 @@ else:
 
             print('Looping on ', code, simname)
             base_dir = '/home/eduardo/CLUES/DATA/' + simutype + '/' + box + '/' + simname + '/' + code + '/'
-            
+
             slab_x_fname = base_dir + 'slab_x_fac' + str(reduce_fac) + '.pkl'
             slab_y_fname = base_dir + 'slab_y_fac' + str(reduce_fac) + '.pkl'
             snap = base_dir + snapname
@@ -132,7 +133,7 @@ else:
             slabs = [slab_x_fname, slab_y_fname]
 
             figname = 'ProjectsPlots/' + snapname + '_' + simname + '_' + code + '_' \
-                    + str(gridSize) + '_sm' + str(smooth) + '_fac' + str(reduce_fac) 
+                    + str(gridSize) + '_sm' + str(smooth) + '_fac' + str(reduce_fac)
 
             print('Dumping to file: ', figname + '_dm.png')
 
