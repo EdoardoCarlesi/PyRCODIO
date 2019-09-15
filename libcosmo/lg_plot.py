@@ -1065,8 +1065,6 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
                     if m0 > mbin0 and m0 < mbin1:
                         y_bins[km].append(0.0)
 
-
-
         #if x_m[im][n_mm-1] < 0.7e+11
         #               y_bins[].append(0)
 
@@ -1142,8 +1140,10 @@ def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins):
 
     #plt.ylabel('$N(>M)$')
     axs.set_yscale('log'); 
+    #plt.ylabel(r'$log_{10}N(>6.25\times 10^7 M_{\odot})$'); y_min=1.0
     plt.ylabel(r'$log_{10}N(>5\times 10^8 M_{\odot})$'); y_min=1.0
 
+    y_max = 1.8 * y_max
     axs.axis([x_min, x_max, y_min, y_max])
 
     #usecolor='blue'
