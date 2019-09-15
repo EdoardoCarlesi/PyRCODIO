@@ -703,6 +703,11 @@ class LocalGroup:
 			self.LG1.nsub, self.LG2.nsub, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc, \
 			self.LG1.npart, self.LG2.npart)
 
+        if self.LG1.m_star > 0.0:
+            extra_mstar = '   %7.2e   %7.2e' % (self.LG1.m_star/h0, self.LG2.m_star/h0)
+            extra_mgas = '   %7.2e   %7.2e' % (self.LG1.m_gas/h0, self.LG2.m_gas/h0)
+            file_lg_line = file_lg_line + extra_mstar + extra_mgas
+
         return file_lg_line
 
     def m_tot(self):

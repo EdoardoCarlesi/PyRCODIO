@@ -4,11 +4,12 @@ import numpy as np
 import os
 
 # Root path for the vweb files
+dirBase='/z/carlesi/CLUES/DATA/512/'
 #dirBase='/z/carlesi/CLUES/DATA/LGF/SNAPS/512/'
 #dirBase='/work2/eduardo/DATA/512/VWEB/'
-#fileWeb='vweb_lgf_054.000064.Vweb-ascii'
+fileWeb='vweb_lgf_054.000064.Vweb-ascii'
 fileLGs='saved/lgs_'
-fileWeb='saved/lgf_'
+#fileWeb='saved/lgf_'
 
 fileEV='saved/lgs_evs.pkl'
 
@@ -20,7 +21,7 @@ fileSelectedLGs='saved/lgs_select.pkl'
 
 # Do a loop
 iSta=0
-iEnd=10
+iEnd=1
 gSta=0
 gEnd=30
 
@@ -42,10 +43,13 @@ for iRun in range(iSta, iEnd):
 		gRunStr = '%02d' % gRun
 		
 		subRunStr = iRunStr + '_' + gRunStr
-		#thisFileWeb = dirBase + subRunStr + '/' + fileWeb
-		thisFileWeb = fileWeb + subRunStr + '.pkl'
+		thisFileWeb = dirBase + subRunStr + '/' + fileWeb
+		#thisFileWeb = fileWeb + subRunStr + '.pkl'
 		thisFileLGs = fileLGs + subRunStr + '.pkl'
 		
+#		print(thisFileWeb)
+#		print(thisFileLGs)
+
 		# Check if files exist
 		exist1 = os.path.isfile(thisFileWeb)
 		exist2 = os.path.isfile(thisFileLGs)

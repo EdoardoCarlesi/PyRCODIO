@@ -21,7 +21,7 @@ def read_grid(file_name, size, box):
     while line and index < tot_n:
         line = file_web.readline()
         line = line.strip()
-        column = line.split()#; print(column[0])
+        column = line.split(); print(column[0])
 
         # Determine corresponding x, y, z in grid units
         (ix, jy, kz) = grid.reverse_index(index)#; print(ix, jy, kz)
@@ -56,24 +56,25 @@ def read_vweb(file_name, size, box):
         # Determine corresponding x, y, z in grid units
         (ix, jy, kz) = grid.reverse_index(index)#; print(ix, jy, kz)
 
-        # Density
-        grid.rho[ix, jy, kz] = float(column[0])
+        if len(column) > 1:
+            # Density
+            grid.rho[ix, jy, kz] = float(column[0])
 
-        # Velocities
-        grid.vel[:, ix, jy, kz] = [float(column[1]), float(column[2]), float(column[3])]
+            # Velocities
+            grid.vel[:, ix, jy, kz] = [float(column[1]), float(column[2]), float(column[3])]
 
-        # Eigenvalues
-        grid.evals[0, ix, jy, kz] = float(column[4])
-        grid.evals[1, ix, jy, kz] = float(column[5])
-        grid.evals[2, ix, jy, kz] = float(column[6])
+            # Eigenvalues
+            grid.evals[0, ix, jy, kz] = float(column[4])
+            grid.evals[1, ix, jy, kz] = float(column[5])
+            grid.evals[2, ix, jy, kz] = float(column[6])
 
-        # Eigenvectors
-        grid.evecs[0, :, ix, jy, kz] = [float(column[7]), float(column[8]), float(column[9])]
-        grid.evecs[1, :, ix, jy, kz] = [float(column[10]), float(column[11]), float(column[12])]
-        grid.evecs[2, :, ix, jy, kz] = [float(column[13]), float(column[14]), float(column[15])]
+            # Eigenvectors
+            grid.evecs[0, :, ix, jy, kz] = [float(column[7]), float(column[8]), float(column[9])]
+            grid.evecs[1, :, ix, jy, kz] = [float(column[10]), float(column[11]), float(column[12])]
+            grid.evecs[2, :, ix, jy, kz] = [float(column[13]), float(column[14]), float(column[15])]
 
-        # Increase line index
-        index += 1
+            # Increase line index
+            index += 1
 
     return grid
 
@@ -97,7 +98,7 @@ def read_ahf_chunks(file_root, file_suffix, n_chunks):
             n_col = len(column)
 
             if n_col > 1:
-                # Read halo properties
+            # Read halo properties
                 idn = long(column[0])
                 mass = float(column[3])
                 pos = [float(column[5]), float(column[6]), float(column[7])]
@@ -262,11 +263,17 @@ def read_ahf(file_name):
             vmax = float(column[16])
             angmom = [float(column[21]), float(column[22]), float(column[23])]
             contam = float(column[38])
-            ngas = int(column[43])
-            mgas = float(column[44])
-            nstar = int(column[63])
-            mstar = float(column[64])
 
+            if len(column) > 43:
+                ngas = int(column[43])
+                mgas = float(column[44])
+                nstar = int(column[63])
+                mstar = float(column[64])
+            else:
+                ngas = 0
+                mgas = 0
+                nstar = 0
+                mstar = 0
             #pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
 
             # Initialize and append hl to the list
