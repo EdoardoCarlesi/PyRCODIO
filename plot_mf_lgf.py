@@ -16,8 +16,10 @@ sub_ini = 0
 sub_end = 1
 #simuruns = simu_runs()
 simuruns = ['37_11']
-#res='4096'
-res='2048'
+#simuruns = ['09_18']
+#simuruns = ['45_17']
+res='4096'
+#res='2048'
 n_subrun = 10
 snap_end = 54
 snap_init = 0
@@ -35,16 +37,22 @@ for i_simu in range(sub_ini, sub_end):
     for i_sub in range(0, n_subrun):
         subrun = '%02d' % i_sub
         m_fname = 'saved/lgs_' + res + '_' + simu + '_' + subrun + '.pkl'
-        s_fname = 'saved/subs_' + res + '_' + simu + '_' +  subrun + '.pkl'
-        #m_fname='saved/'+simu+'_'+subrun+'_mains_all.pkl'
-        #s_fname='saved/'+simu+'_'+subrun+'_sats.pkl'
+
+        if res == '2048':
+            s_fname = 'saved/sub_' + res + '_' + simu + '_' + subrun + '.pkl'
+        elif res == '4096':
+            s_fname = 'saved/subs_' + res + '_' + simu + '_' + subrun + '.pkl'
         n_lg = 0
 
         try:
             hand_main = open(m_fname, 'rb')
             hand_sats = open(s_fname, 'rb')
             main = pickle.load(hand_main)
-            sats = pickle.load(hand_sats)
+
+            if res == '2048':
+                lg_sats, mw_sats, m31_sats = pickle.load(hand_sats)
+            elif res == '4096':
+                lg_sats = pickle.load(hand_sats)
 
             print('Found: ', s_fname)
             print('Found: ', m_fname)
@@ -60,8 +68,12 @@ for i_simu in range(sub_ini, sub_end):
         gather_rad = 1500.0
         print('GatherRadius: ', gather_rad)
 
-        full_lg = main[0]
-        full_subs = find_halos_mass_radius(full_lg.geo_com(), sats, gather_rad, 0.0)
+        if res == '2048':
+            full_lg = main
+        elif res == '4096':
+            full_lg = main
+
+        full_subs = find_halos_mass_radius(full_lg.geo_com(), lg_sats, gather_rad, 0.0)
 
         for isub in full_subs:
             if isub.m != full_lg.LG1.m and isub.m != full_lg.LG2.m:
@@ -75,14 +87,14 @@ for i_simu in range(sub_ini, sub_end):
         for i_lg in range(0, 2):
 
             if i_lg == 0:
-                this_halo = main[0].LG1
+                this_halo = main.LG1
             if i_lg == 1:
-                this_halo = main[0].LG2
+                this_halo = main.LG2
 
             gather_rad = this_halo.r * r_sub #500.0
             print('GatherRadius: ', gather_rad)
             print(this_halo.info())
-            subs = find_halos_mass_radius(this_halo.x, sats, gather_rad, 0.0)
+            subs = find_halos_mass_radius(this_halo.x, lg_sats, gather_rad, 0.0)
 
             n_subs = len(subs)
         
@@ -109,11 +121,11 @@ for i_simu in range(sub_ini, sub_end):
                 mfm31_z0_x.append(this_mfz0_x);         mfm31_z0_y.append(this_mfz0_y)
 
     n_bins = 15
-    f_mwz0 = simu + '_mf_z0_M31.png'
+    f_mwz0 = simu + '_mf_z0_M31_'+res+'.png'
     plot_massfunctions(mfmw_z0_x, mfmw_z0_y, n_simu, f_mwz0, n_bins)
 
-    f_m31z0 = simu + '_mf_z0_MW.png'
+    f_m31z0 = simu + '_mf_z0_MW_'+res+'.png'
     plot_massfunctions(mfm31_z0_x, mfm31_z0_y, n_simu, f_m31z0, n_bins)
 
-    f_lgz0 = simu + '_mf_z0_LG.png'
+    f_lgz0 = simu + '_mf_z0_LG_'+res+'.png'
     plot_massfunctions(mflg_z0_x, mflg_z0_y, n_simu, f_lgz0, n_bins)
