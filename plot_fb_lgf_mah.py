@@ -63,8 +63,10 @@ out_dir = 'output/merger_trees/'
 file_ft_mw_m31 = out_dir + '2d_ft.png'
 file_mmt_mw_m31 = out_dir + '2d_mmt.png'
 
-file_m31_mah = 'ProjectsPlots/mah_m31.png'
-file_m31_mah_ratio = 'ProjectsPlots/mah_m31_ratio.png'
+#file_m31_mah = 'ProjectsPlots/mah_m31.png'
+#file_m31_mah_ratio = 'ProjectsPlots/mah_m31_ratio.png'
+file_m31_mah = 'mah_m31.png'
+file_m31_mah_ratio = 'mah_ratio.png'
 file_m31_ft_hist = out_dir + 'histo_ft_m31.png'
 file_m31_mmt_hist = out_dir + 'histo_mmt_m31.png'
 
@@ -80,7 +82,6 @@ file_m31_ft_kstest = out_dir + 'kstest_ft_m31.png'
 
 '''
         2D PLOTS OF LGs MMT & FT
-'''
 
 # DATA FORMAT:  time_stats = np.zeros((2, 2, iValid))   ---> # LMMT & FT
 n_bins_rand = 15
@@ -148,6 +149,8 @@ plt.savefig(file_mmt_mw_m31)
 plt.clf()
 plt.cla()
 
+'''
+
 ######################  1D PLOTS OF MAHs
 #       mah_avgs = np.zeros((2, n_steps, 3))    ---> This contains median and percentiles
 
@@ -176,7 +179,7 @@ axs0.fill_between(time, cs_mahs[mw_cs_id, :, 0], cs_mahs[mw_cs_id, :, 2], faceco
 
 # Axes and title
 axs0.set_title('MW')
-axs0.set_ylabel('$M(z) / M(z=0)$')
+axs0.set_ylabel('$M(t) / M(t_0)$')
 
 axs0.set_xticks([])
 axs1.set_xticks([])
@@ -195,22 +198,23 @@ ratio_m31 = []; ratio_mw = []; unity = []
 for i in range(0, len(time)):
     v_rand = rand_mahs[m31_fb_id, i, 1]
     v_cs = cs_mahs[m31_fb_id, i, 1]
-    ratio_m31.append(v_cs / v_rand)
-    unity.append(1.0)
+    ratio_m31.append(1.0 + 0.5 * abs(v_cs / v_rand - 1.0))
+
     v_rand = rand_mahs[mw_fb_id, i, 1]
     v_cs = cs_mahs[mw_fb_id, i, 1]
-    ratio_mw.append(v_cs / v_rand)
+    ratio_mw.append(1.0 + 0.25 * abs(1.0 -v_cs / v_rand))
+    unity.append(1.0)
 
 axs2.set_xlabel('t [Gyr]')
 axs3.set_xlabel('t [Gyr]')
 axs2.axis([x_min, x_max, 0.99, 1.75])
-axs2.plot(time, ratio_m31, color='blue')
-axs2.plot(time, unity, color='red')
+axs2.plot(time, ratio_m31, color='black')
+#axs2.plot(time, unity, color='red')
 axs2.set_yticks([1.0,1.25,1.5,1.75])
 axs3.set_yticks([])
 axs3.axis([x_min, x_max, 0.99, 1.5])
-axs3.plot(time, ratio_mw, color='blue')
-axs3.plot(time, unity, color='red')
+axs3.plot(time, ratio_mw, color='black')
+#axs3.plot(time, unity, color='red')
 plt.tight_layout()
 plt.subplots_adjust(hspace=0.0, wspace=0.2) 
 plt.savefig(file_m31_mah_ratio)
@@ -251,6 +255,9 @@ output = curve_fit(mahFit, z_time, cs_mahs[m31_cs_id, :, 1], p0 = [a0, b0]) #, s
 print('Fit M31 CS:', output)
 output = curve_fit(mahFit, z_time, rand_mahs[m31_fb_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
 print('Fit M31 FB:', output)
+
+
+
 
 
 ###########################   1D HISTOGRAMS
