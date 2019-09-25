@@ -6,7 +6,6 @@ from scipy import stats
 
 ahf_path='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 
-
 halos = read_ahf(ahf_path)
 
 v = []
@@ -36,4 +35,14 @@ plt.plot(m, v)
 plt.plot(mx, vy)
 #plt.show()
 plt.savefig('ProjectsPlots/zzz_vmax.png')
+
+'''
+Best fit values results:
+    slope=0.3361033784409644 
+    inter=-1.7139847288047354
+
+
+'''
+
+
 
