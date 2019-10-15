@@ -19,7 +19,6 @@ from libcosmo.grid import *
 box_size = 100000.0
 
 #base_path = '/home/eduardo/CLUES/DATA/LGF/1024/'
-#base_path = '/home/eduardo/CLUES/DATA/1024/'
 #file_single0 = 'snapshot_054.z0.000.AHF_halos'
 file_single0 = 'snapshot_054.0000.z0.000.AHF_halos'
 #file_single0 = 'snapshot_054.0000.z0.000.AHF_halos'
@@ -38,11 +37,12 @@ res='512'
 #dir_path = '/home/eduardo/CLUES/DATA/' + res + '/'
 #dir_path = '/z/carlesi/STORE/LGF/SNAPS/' + res + '_Hestia_LSS/'
 dir_path = '/z/carlesi/STORE/LGF/SNAPS/' + res + '/'
+#dir_path = '/home/eduardo/CLUES/DATA/' + res + '/'
 
 base_path = dir_path
 
 # Search distance from the box center
-r_select = 8500.
+r_select = 5000.
 m_select = 5.e+11
 box_center = np.zeros((3))
 
@@ -51,12 +51,12 @@ for ix in range(0, 3):
 
 # Local group selection parameters
 iso_radius = 2000.
-r_max = 1300.
-r_min = 350.
+r_max = 1500.
+r_min = 250.
 m_min = 5.e+11
 m_max = 5.0e+12
-ratio_max = 2.0
-vrad_max = 100.0
+ratio_max = 4.0
+vrad_max = 10.0
 
 # Initialzie a local group model
 lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
@@ -77,25 +77,25 @@ f_mw = open(file_mw, 'w')
 f_m31 = open(file_m31, 'w')
 
 #mw_head = 'SimuCode(0)  ' + Halo().header(1) + '\n'
-mw_head = '#SimuCode(0)  ' + Halo().header_ahf(1) + '\n'
-lg_head = '' + Halo().header(1) + '\n'
+mw_head = '#SimuCode(0)  ' + Halo().header_ahf() + '\n'
+lg_head = '' + Halo().header() + '\n'
 f_lg.write(lg_head)
 f_mw.write(mw_head)
 f_m31.write(mw_head)
 
-#for dir_str in all_dirs: 	### 2048 & 4096 mode
-for i_dir in range(i_ini, i_end): 
+#for dir_str in all_dirs:       ### 2048 & 4096 mode
+for i_dir in range(i_ini, i_end):
     #simu = dir_str
     #base_path = dir_path + dir_str + '/'
     i_dir_str = '%02d' % i_dir
 
     for g_dir in range(g_ini, g_end):
         g_dir_str = '%02d' % g_dir
-        sub_path = i_dir_str + '_' + g_dir_str	### USE THIS FOR 512 / 1024
+        sub_path = i_dir_str + '_' + g_dir_str  ### USE THIS FOR 512 / 1024
         #sub_path = g_dir_str
         ahf_file0 = base_path + sub_path + '/' + file_single0
         ahf_file1 = base_path + sub_path + '/' + file_single1
-	ahf_file2 = base_path + sub_path + '/' + 'HESTIA_100Mpc_512_' + sub_path + '.127.z0.000.AHF_halos'
+        ahf_file2 = base_path + sub_path + '/' + 'HESTIA_100Mpc_512_' + sub_path + '.127.z0.000.AHF_halos'
         this_ahf_file = None
 
         #print(ahf_file0)
@@ -131,12 +131,12 @@ for i_dir in range(i_ini, i_end):
             for one_lg in all_lgs:
                 #print(one_lg.LG1.distance(box_center), one_lg.info())
                 #print(dir_str + '_' + g_dir_str, one_lg.info())
-                print(sub_path, one_lg.info()) #, one_lg.LG1.line)
+                #print(sub_path, one_lg.info()) #, one_lg.LG1.line)
                 #print(sub_path, one_lg.LG1.line)
-		one_lg.code = sub_path
-		f_lg.write(one_lg.info() + '\n')
-		f_mw.write(sub_path + '\t' + one_lg.LG2.line)
-		f_m31.write(sub_path + '\t' + one_lg.LG1.line)
+                one_lg.code = sub_path
+                f_lg.write(one_lg.info() + '\n')
+                f_mw.write(sub_path + '\t' + one_lg.LG2.line)
+                f_m31.write(sub_path + '\t' + one_lg.LG1.line)
 
             n_lgs = len(all_lgs)
             #print('Found %s LG candidates.' % n_lgs)
@@ -146,11 +146,13 @@ for i_dir in range(i_ini, i_end):
                 sub_halos = find_halos_mass_radius(all_lgs[0].geo_com(), all_halos, iso_radius, 0.0)
                 #out_lgs = 'saved/lgs_' + res + '_' + simu + '_' + sub_path + '.pkl'
                 #out_subs = 'saved/subs_' + res + '_' + simu + '_' +  sub_path + '.pkl'
-                out_lgs = 'saved/lgs_' + res + '_' + sub_path + '.pkl'
-                out_subs = 'saved/subs_' + res + '_' + sub_path + '.pkl'
+                #out_lgs = 'saved/lgs_' + res + '_' + sub_path + '.pkl'
+                #out_subs = 'saved/subs_' + res + '_' + sub_path + '.pkl'
+                out_lgs = 'saved/lgs_cv_' + res + '_' + sub_path + '.pkl'
+                out_subs = 'saved/subs_cv_' + res + '_' + sub_path + '.pkl'
                 f_out_lgs = open(out_lgs, 'wb')
                 f_out_subs = open(out_subs, 'wb')
-                #print('Saving LGs of %s to file %s.' % (sub_path, out_lgs))
+                print('Saving LGs of %s to file %s.' % (sub_path, out_lgs))
                 #print('Saving SUBs of %s to file %s.' % (sub_path, out_subs))
                 pickle.dump(all_lgs, f_out_lgs)
                 pickle.dump(sub_halos, f_out_subs)
