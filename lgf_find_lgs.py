@@ -77,8 +77,8 @@ f_mw = open(file_mw, 'w')
 f_m31 = open(file_m31, 'w')
 
 #mw_head = 'SimuCode(0)  ' + Halo().header(1) + '\n'
-mw_head = '#SimuCode(0)  ' + Halo().header_ahf(1) + '\n'
-lg_head = '' + Halo().header(1) + '\n'
+mw_head = '#SimuCode(0)  ' + Halo().header_ahf() + '\n'
+lg_head = LocalGroup('00_00').header() + '\n'
 f_lg.write(lg_head)
 f_mw.write(mw_head)
 f_m31.write(mw_head)

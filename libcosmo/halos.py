@@ -119,7 +119,8 @@ class Halo:
 		return head
 
         def header_ahf(self):
-            hd_ahf = "#ID(1)  hostHalo(2)     numSubStruct(3) Mvir(4) npart(5)        Xc(6)   Yc(7)   Zc(8)   VXc(9)  VYc(10) VZc(11) Rvir(12)        Rmax(13)        r2(14)  mbp_offset(15)  com_offset(16)  Vmax(17)        v_esc(18)       sigV(19)        lambda(20)      lambdaE(21)     Lx(22)  Ly(23)  Lz(24)  b(25)   c(26)   Eax(27) Eay(28) Eaz(29) Ebx(30) Eby(31) Ebz(32) Ecx(33) Ecy(34) Ecz(35) ovdens(36)      nbins(37)       fMhires(38)     Ekin(39)        Epot(40)        SurfP(41)       Phi0(42)        cNFW(43) "
+            hd_ahf = "ID(1)  hostHalo(2)     numSubStruct(3) Mvir(4) npart(5)        Xc(6)   Yc(7)   Zc(8)   VXc(9)  VYc(10) VZc(11) Rvir(12)        Rmax(13)        r2(14)  mbp_offset(15)  com_offset(16)  Vmax(17)        v_esc(18)       sigV(19)        lambda(20)      lambdaE(21)     Lx(22)  Ly(23)  Lz(24)  b(25)   c(26)   Eax(27) Eay(28) Eaz(29) Ebx(30) Eby(31) Ebz(32) Ecx(33) Ecy(34) Ecz(35) ovdens(36)      nbins(37)       fMhires(38)     Ekin(39)        Epot(40)        SurfP(41)       Phi0(42)        cNFW(43) "
+	    return hd_ahf
 
 	def info(self):
 		return "%ld %.3e %.3f %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f %d %d" % \
@@ -685,17 +686,18 @@ class LocalGroup:
     def header(self):
         n_head = 0
         header = '#' 
-        header += ' SimuCode('+ str(n_head) +')' ; n_head = +1
-        header += ' ID_M31('+ str(n_head) +')' ; n_head = +1
-        header += ' ID_MW('+ str(n_head) +')' ; n_head = +1
-        header += ' R_MWM31('+ str(n_head) +')' ; n_head = +1
-        header += ' Vrad('+ str(n_head) +')' ; n_head = +1
-        header += ' Nsub_M31('+ str(n_head) +')' ; n_head = +1
-        header += ' Nsub_MW('+ str(n_head) +')' ; n_head = +1
-        header += ' X_com('+ str(n_head) +')' ; n_head = +1
-        header += ' Y_com('+ str(n_head) +')' ; n_head = +1
-        header += ' Z_com('+ str(n_head) +')' ; n_head = +1
+        header += ' SimuCode('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' ID_M31('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' ID_MW('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' R_MWM31('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' Vrad('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' Nsub_M31('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' Nsub_MW('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' X_com('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' Y_com('+ str(n_head) +')' ; n_head = n_head+1
+        header += ' Z_com('+ str(n_head) +')' ; n_head = n_head+1
 
+	print(n_head)
         return header
 
     def info(self):

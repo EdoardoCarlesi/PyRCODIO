@@ -25,7 +25,7 @@ r_min = 250.0
 m_min = 5.0e+11 
 m_max = 5.0e+12 
 ratio_max = 4.0
-vrad_max = 10.0
+vrad_max = 0.0
 
 '''
 TEST PARAMETERS
@@ -68,6 +68,7 @@ for i_dir in range(i_ini, i_end):
 
         # Save all the identified LG pairs to a binary file
 #        out_lgs = 'saved/rand_lgs_' + sub_path + '.pkl'
-        out_lgs = 'saved/rand_web_lgs_' + sub_path + '.pkl'
+#        out_lgs = 'saved/rand_web_lgs_' + sub_path + '.pkl'
+        out_lgs = 'saved/rand_all_lgs_' + sub_path + '.pkl'
         f_out_lgs = open(out_lgs, 'wb')
         pickle.dump(all_lgs, f_out_lgs)
