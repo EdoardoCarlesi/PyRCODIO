@@ -77,8 +77,8 @@ f_mw = open(file_mw, 'w')
 f_m31 = open(file_m31, 'w')
 
 #mw_head = 'SimuCode(0)  ' + Halo().header(1) + '\n'
-mw_head = '#SimuCode(0)  ' + Halo().header_ahf() + '\n'
-lg_head = '' + Halo().header() + '\n'
+mw_head = '#SimuCode(0)  ' + Halo().header(1) + '\n'
+lg_head = '' + LocalGroup('').header() + '\n'
 f_lg.write(lg_head)
 f_mw.write(mw_head)
 f_m31.write(mw_head)
@@ -108,7 +108,7 @@ for i_dir in range(i_ini, i_end):
             this_ahf_file = ahf_file2
 
         if this_ahf_file != None:
-            #print('Reading file : %s' % this_ahf_file)
+            print('Reading file : %s' % this_ahf_file)
             all_halos = read_ahf(this_ahf_file)
 
             n_halos = len(all_halos)
