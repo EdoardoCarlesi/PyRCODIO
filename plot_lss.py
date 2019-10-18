@@ -34,7 +34,8 @@ snapname='snapshot_019'; kpcU=1.e+3; c=335.0*kpcU; n_files=8; box = '670'
 
 simutype='CF3'
 simnames = ['CF3_BGc_256']
-codes = ['59050', '58151', '57252', '56353'] #, '55454']
+#codes = ['59050', '58151', '57252', '56353'] #, '55454']
+codes = ['54555', '55454']
 snapname='snapshot_019'; kpcU=1.e+3; c=250.0*kpcU; n_files=8; box = '500'
 
 # Compress information: take one out of reduce_fac particles

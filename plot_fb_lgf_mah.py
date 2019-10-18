@@ -18,6 +18,10 @@ z_file='/home/eduardo/CLUES/DATA/output/output_z.txt'
 rand_stat_mah = 'saved/rand_halo_stat_mah.pkl'
 rand_stat_time = 'saved/rand_halo_stat_time.pkl'
 
+# Full Trees
+m31_trees = 'saved/all_trees_lgf_m31.pkl'
+mw_trees = 'saved/all_trees_lgf_mw.pkl'
+
 # LGF LGs statistics TODO
 cs_stat_mah = 'saved/all_lgf_stat_mah.pkl'
 cs_stat_time = 'saved/all_lgf_stat_time.pkl'
@@ -151,6 +155,18 @@ plt.cla()
 
 '''
 
+# Full trees
+#m31_trees = 'all_trees_lgf_m31.pkl'
+#mw_trees = 'all_trees_lgf_mw.pkl'
+
+f_mt_mw = open(mw_trees, 'rb')
+f_mt_m31 = open(m31_trees, 'rb')
+
+mt_mw = pickle.load(f_mt_mw)
+mt_m31 = pickle.load(f_mt_m31)
+
+
+
 ######################  1D PLOTS OF MAHs
 #       mah_avgs = np.zeros((2, n_steps, 3))    ---> This contains median and percentiles
 
@@ -177,6 +193,21 @@ axs0.fill_between(time, rand_mahs[mw_fb_id, :, 0], rand_mahs[mw_fb_id, :, 2], fa
 axs0.plot(time, cs_mahs[mw_cs_id, :, 1], color=col_cs)
 axs0.fill_between(time, cs_mahs[mw_cs_id, :, 0], cs_mahs[mw_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
 
+imm=0; ids = []
+for imw in range(0, 31):
+    mah_mw = mt_mw[imw].smooth_tree()
+    v0 = 954
+    v1 = 970
+    intv = int(mah_mw[1] * 1000)
+
+    if intv != v0 and intv != v1: 
+        print(mah_mw[1])
+        ids.append(imw)
+        imm = imm +1
+        axs0.plot(time, mah_mw)
+print(imm)
+
+#print(mt_mw[0].smooth_tree())
 # Axes and title
 axs0.set_title('MW')
 axs0.set_ylabel('$M(t) / M(t_0)$')
@@ -189,6 +220,12 @@ axs1.plot(time, rand_mahs[m31_fb_id, :, 1], color=col_fb)
 axs1.fill_between(time, rand_mahs[m31_fb_id, :, 0], rand_mahs[m31_fb_id, :, 2], facecolor=col_fb, alpha=0.2)
 axs1.plot(time, cs_mahs[m31_cs_id, :, 1], color=col_cs)
 axs1.fill_between(time, cs_mahs[m31_cs_id, :, 0], cs_mahs[m31_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
+
+imm=0
+for im31 in ids:
+    mah_m31 = mt_m31[im31].smooth_tree()
+    axs1.plot(time, mah_m31)
+
 
 # Axes and title
 axs1.set_title('M31')

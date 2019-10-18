@@ -3,7 +3,7 @@ from libcosmo.utils import *
 from libcosmo.mtree import *
 from libcosmo.units import *
 from libcosmo.halos import *
-from libcosmo.find_halos import *
+from libcosmo.find_halo import *
 from libcosmo.particles import *
 from libcosmo.lg_plot import *
 from libio.read_ascii import *
@@ -36,8 +36,8 @@ out_vweb = 'saved/rand_vweb.pkl'
 out_ev1 = 'saved/rand_ev1.pkl'
 out_ev2 = 'saved/rand_ev2.pkl'
 out_ev3 = 'saved/rand_ev3.pkl'
-evs_lg = 'saved/lgs_evs.pkl'
-#evs_lg = 'saved/lgs_evs_all.pkl'
+#evs_lg = 'saved/lgs_evs.pkl'
+evs_lg = 'saved/lgs_evs_all.pkl'
 in_lgs = 'saved/rand_web_lgs_'
 
 # Append all trees here - use ALL the DB!	
@@ -105,17 +105,39 @@ lgev1s = np.var(lgev1); lgev1m = np.median(lgev1)
 print('EV1 CS Median: ', lgev1m, ' Scatter:', lgev1s)
 
 ev2s = np.var(ev2); ev2m = np.median(ev2)
-print('EV1 RAND Median: ', ev2m, ' Scatter:', ev2s)
+print('EV2 RAND Median: ', ev2m, ' Scatter:', ev2s)
 lgev2s = np.var(lgev2); lgev2m = np.median(lgev2)
-print('EV1 CS Median: ', lgev2m, ' Scatter:', lgev2s)
+print('EV2 CS Median: ', lgev2m, ' Scatter:', lgev2s)
 
 ev3s = np.var(ev3); ev3m = np.median(ev3)
-print('EV1 RAND Median: ', ev3m, ' Scatter:', ev3s)
+print('EV3 RAND Median: ', ev3m, ' Scatter:', ev3s)
 lgev3s = np.var(lgev3); lgev3m = np.median(lgev3)
-print('EV1 CS Median: ', lgev3m, ' Scatter:', lgev3s)
+print('EV3 CS Median: ', lgev3m, ' Scatter:', lgev3s)
 
 
+l10 = 0.10
+l11 = 0.22
 
+l20 = 0.04
+l21 = 0.08
+
+l30 = -0.20
+l31 = -0.10
+
+i_lgf = 0
+
+for iev in range(0, len(ev3)):
+    l1 = ev1[iev]
+    l2 = ev2[iev]
+    l3 = ev3[iev]
+
+#    print(l1, l2,l3)
+
+    if (l1 > l10 and l1 < l11) and (l2 > l20 and l2 < l21) and (l3 > l30 and l3 < l31):
+        i_lgf = i_lgf + 1
+
+
+print('Found ', i_lgf, ' out of ', len(ev3))
 
 n_lgev = len(lgev1)
 n_fbev = len(ev1)
