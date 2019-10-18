@@ -684,7 +684,7 @@ class LocalGroup:
 
     def header(self):
         n_head = 0
-	header = '#'
+        header = '#'
         header += ' SimuCode('+ str(n_head) +')' ; n_head = +1
         header += ' ID_M31('+ str(n_head) +')' ; n_head = +1
         header += ' ID_MW('+ str(n_head) +')' ; n_head = +1
