@@ -27,18 +27,24 @@ r_min = 250.0
 m_min = 4.0e+11 
 m_max = 5.0e+12 
 ratio_max = 4.0
-vrad_max = 0.0
+vrad_max = 25.0
 
-#refineSelection = False
-refineSelection = True
+refineSelection = False
+#refineSelection = True
 n_models = 5
 select_params = np.zeros((n_models, 7), dtype='float')
 
+iso_radius = 2000.0
+
+ms_min = [4.0e+11, 5.0e+11, 6.0e+11, 7.0e+11, 7.5e+11, 8.0e+11]
+ms_max = [5.0e+12, 4.0e+12, 3.0e+12, 2.5e+12, 2.0e+12, 1.5e+12]
+n_dens = [0, 0, 0, 0, 0, 0]
+n_loc_dens = [0, 0, 0, 0, 0, 0]
+
 if refineSelection == True:
     # Model 1 
-    iso_radius = 2000.0
-    r_max = 1200.0
-    r_min = 350.0
+    r_max = 1300.0
+    r_min = 300.0
     m_min = 4.5e+11 
     m_max = 4.0e+12 
     ratio_max = 3.0
@@ -53,8 +59,7 @@ if refineSelection == True:
     select_params[0, 6] = vrad_max 
 
     # Model 2 
-    iso_radius = 2000.0
-    r_max = 1200.0
+    r_max = 1000.0
     r_min = 350.0
     m_min = 5.0e+11 
     m_max = 3.0e+12 
@@ -70,7 +75,6 @@ if refineSelection == True:
     select_params[1, 6] = vrad_max 
 
     # Model 3 
-    iso_radius = 2000.0
     r_max = 900.0
     r_min = 400.0
     m_min = 5.5e+11 
@@ -87,8 +91,7 @@ if refineSelection == True:
     select_params[2, 6] = vrad_max 
 
     # Model 4 
-    iso_radius = 2050.0
-    r_max = 750.0
+    r_max = 800.0
     r_min = 450.0
     m_min = 6.0e+11 
     m_max = 2.0e+12 
@@ -104,10 +107,9 @@ if refineSelection == True:
     select_params[3, 6] = vrad_max 
 
     # Model 5
-    iso_radius = 2100.0
     r_max = 700.0
     r_min = 500.0
-    m_min = 8.0e+11 
+    m_min = 6.5e+11 
     m_max = 1.5e+12 
     ratio_max = 2.0
     vrad_max = -100.0
@@ -154,11 +156,28 @@ for i_dir in range(i_ini, i_end):
         print('Removing halos below ', m_min)
         m_halos = []
 
+        for im in range(0, 6):
+            n_loc_dens[im] = 0
+
         for halo in all_halos:
             if halo.m > m_min:
                     m_halos.append(halo)
-        print('Found ', len(m_halos), ' above mass threshold')
 
+                    for im in range(0, 6):
+                        mmin = ms_min[im]
+                        mmax = ms_max[im]
+
+                        if halo.m > mmin and halo.m < mmax:
+                            n_dens[im] = n_dens[im] + 1
+                            n_loc_dens[im] = n_loc_dens[im] + 1
+                            
+        for im in range(0, 6):
+            print(im, '] Found ', n_loc_dens[im], ' above mass threshold, in total: ', n_dens[im])
+
+for im in range(0, 6):
+    print(im, ' ', float(n_dens[im]) / 5.e+6)
+
+'''
         # Find suitable pairs in the selected halos
         all_lgs = find_lg(m_halos, lg_model)    
         n_lgs = len(all_lgs)
@@ -172,7 +191,6 @@ for i_dir in range(i_ini, i_end):
         f_out_lgs = open(out_lgs, 'wb')
         pickle.dump(all_lgs, f_out_lgs)
     
-'''
     select_params[2, 0] = iso_radius
     select_params[2, 1] = r_max
     select_params[2, 2] = r_min
