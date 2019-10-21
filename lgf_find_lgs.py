@@ -58,6 +58,11 @@ m_max = 5.0e+12
 ratio_max = 4.0
 vrad_max = 100.0
 
+ms_min = [4.0e+11, 5.0e+11, 6.0e+11, 7.0e+11, 7.5e+11, 8.0e+11]
+ms_max = [5.0e+12, 4.0e+12, 3.0e+12, 2.5e+12, 2.0e+12, 1.5e+12]
+n_dens = [0, 0, 0, 0, 0, 0]
+n_loc_dens = [0, 0, 0, 0, 0, 0]
+
 iso_radius = 2000.
 m_select = m_min
 
@@ -68,7 +73,7 @@ rStr = str(r_select)
 lg_model = LocalGroupModel(iso_radius, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
 i_ini = 0
-i_end = 10
+i_end = 100
 g_ini = 0
 g_end = 30
 
@@ -125,17 +130,34 @@ for i_dir in range(i_ini, i_end):
 
             all_halos = read_ahf(this_ahf_file)
 
+	    m_halos = []
+	    for im in range(0, 6):
+		n_loc_dens[im] = 0
+
             for halo in all_halos:
                 this_r = halo.distance(box_center)
 
-                if halo.m > m_min and this_r < r_select and halo.m < m_max:
-                    m_halos.append(halo)
+                if this_r < r_select:
+			for im in range(0, 6):
+				m_min = ms_min[im]
+				m_max = ms_max[im]
+				if halo.m < m_max and halo.m > m_min:
+					n_dens[im] = n_dens[im] + 1 
+					n_loc_dens[im] = n_loc_dens[im] + 1 
 
-            n_tot = n_tot + len(m_halos)
+            #n_tot = n_tot + len(m_halos)
+	    vol = np.power(r_select/1000., 3) * 4.0 / 3.0 * 3.14
+
+	print('<--->')
+	for im in range(0, 6):
+	    print(im, ') nTot= ', n_loc_dens[im], '/', n_dens[im], \
+		' loc dens= ', n_loc_dens[im]/vol, ', totDens', n_dens[im]/(vol * n_files), sub_path)
 
 vol = np.power(r_select/1000., 3) * 4.0 / 3.0 * 3.14
-dens = n_tot / (vol * n_files)
-print('nTot = ', n_tot, ' dens= ', dens, ' nFiles: ', n_files)
+
+for im in range(0, 6):
+	dens = n_dens[im] / (vol * n_files)
+	print('nTot = ', n_dens[im], ' dens= ', dens, ' nFiles: ', n_files)
 
 '''
         if this_ahf_file != None and isPkl == False:

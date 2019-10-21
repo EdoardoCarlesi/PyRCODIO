@@ -24,7 +24,7 @@ base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
 iso_radius = 2000.0
 r_max = 1500.0
 r_min = 250.0
-m_min = 5.0e+11 
+m_min = 4.0e+11 
 m_max = 5.0e+12 
 ratio_max = 4.0
 vrad_max = 0.0
@@ -39,7 +39,7 @@ if refineSelection == True:
     iso_radius = 2000.0
     r_max = 1200.0
     r_min = 350.0
-    m_min = 6.0e+11 
+    m_min = 4.5e+11 
     m_max = 4.0e+12 
     ratio_max = 3.0
     vrad_max = 0.0
@@ -56,8 +56,8 @@ if refineSelection == True:
     iso_radius = 2000.0
     r_max = 1200.0
     r_min = 350.0
-    m_min = 6.0e+11 
-    m_max = 4.0e+12 
+    m_min = 5.0e+11 
+    m_max = 3.0e+12 
     ratio_max = 3.0
     vrad_max = -25.0
 
@@ -73,8 +73,8 @@ if refineSelection == True:
     iso_radius = 2000.0
     r_max = 900.0
     r_min = 400.0
-    m_min = 7.0e+11 
-    m_max = 3.0e+12 
+    m_min = 5.5e+11 
+    m_max = 2.5e+12 
     ratio_max = 2.5
     vrad_max = -50.0
 
@@ -90,8 +90,8 @@ if refineSelection == True:
     iso_radius = 2050.0
     r_max = 750.0
     r_min = 450.0
-    m_min = 7.5e+11 
-    m_max = 2.5e+12 
+    m_min = 6.0e+11 
+    m_max = 2.0e+12 
     ratio_max = 2.5
     vrad_max = -75.0
 
@@ -108,7 +108,7 @@ if refineSelection == True:
     r_max = 700.0
     r_min = 500.0
     m_min = 8.0e+11 
-    m_max = 2.5e+12 
+    m_max = 1.5e+12 
     ratio_max = 2.0
     vrad_max = -100.0
 
