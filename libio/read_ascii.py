@@ -252,6 +252,12 @@ def read_ahf(file_name):
         n_col = len(column)
 
         if n_col > 1 and line[0] != "#":
+            if (column[5] + column[6] + column[7]) < 5.e+3:
+                print(column[5:8])
+                column[5] = column[5] * 1.e+3
+                column[6] = column[6] * 1.e+3
+                column[7] = column[7] * 1.e+3
+
             # Read halo properties
             idn = int(column[0])
             mass = float(column[3])
