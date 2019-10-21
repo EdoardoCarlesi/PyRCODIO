@@ -47,7 +47,7 @@ box_center = np.zeros((3))
 for ix in range(0, 3):
     box_center[ix] = box_size * 0.5
 
-doMoreSelect = False
+#doMoreSelect = False
 doMoreSelect = True
 
 # Local group selection parameters
@@ -81,6 +81,7 @@ g_end = 30
 n_files = 0
 n_tot_lgs = 0
 n_tot = 0
+n_lgs = 0
 
 file_lg = 'info_lg.txt'
 file_mw = 'info_mw.txt'
@@ -124,12 +125,13 @@ for i_dir in range(i_ini, i_end):
 
         if os.path.isfile(this_pkl):
             isPkl = True
+#	    print('Found ', this_pkl)
 
         if this_ahf_file != None:
             n_files = n_files + 1
 
+	'''
             all_halos = read_ahf(this_ahf_file)
-
 	    m_halos = []
 	    for im in range(0, 6):
 		n_loc_dens[im] = 0
@@ -159,7 +161,8 @@ for im in range(0, 6):
 	dens = n_dens[im] / (vol * n_files)
 	print('nTot = ', n_dens[im], ' dens= ', dens, ' nFiles: ', n_files)
 
-'''
+	'''
+
         if this_ahf_file != None and isPkl == False:
             print('Reading file : %s' % this_ahf_file)
             all_halos = read_ahf(this_ahf_file)
@@ -214,12 +217,11 @@ for im in range(0, 6):
             pickle.dump(lgs_pkl, f_out_lgs)
             f_out_lgs.close()
 
-    if isPkl == True:
+    	if isPkl == True:
             f_pkl = open(this_pkl, 'rb')
             lg_pkl = pickle.load(f_pkl)
 
             #print('Found: ', this_pkl, len(lg_pkl), ' - ', lg_pkl[0].code)
-            #print(lg_pkl)
             if lg_pkl[0].code == 'EMPTY':
                     'do nothing'
             else:
@@ -231,66 +233,65 @@ f_mw.close()
 
 vol = 4.3 / 3.14 * np.power(r_select/1000.0, 3.0)
 density = n_tot_lgs / (n_files * vol)
-
 print('LG CS density: ', density, ' totLGs found: ', n_tot_lgs, ' out of ', n_files)
+
+
+vol = 4.3 / 3.14 * np.power(r_select/1000.0, 3.0)
 
 if doMoreSelect == True:
 
     #select = 'zero'
-    #select = 'one'
+    select = 'one'
     select = 'two'
-    #select = 'three'
-    #select = 'four'
-    #select = 'five'
+    select = 'three'
+    select = 'four'
+    select = 'five'
 
     if select == 'zero':
-            iso_radius = 2000.
             r_max = 1500.
             r_min = 250.
             m_min = 4.0e+11
             m_max = 5.0e+12
             ratio_max = 4.0
-            vrad_max = 10.0
-
+            vrad_max = 25.0
 
     if select == 'one':
-            iso_radius = 2000.
-            r_max = 1200.
-            r_min = 350.
-            m_min = 5.0e+11
+            r_max = 1300.
+            r_min = 300.
+            m_min = 4.5e+11
             m_max = 4.0e+12
             ratio_max = 3.0
             vrad_max = 0.0
 
     if select == 'two':
-            r_max = 1200.
+            r_max = 1000.
             r_min = 350.
-            m_min = 6.0e+11
-            m_max = 4.0e+12
+            m_min = 5.0e+11
+            m_max = 3.0e+12
             ratio_max = 3.0
             vrad_max = -25.0
 
     if select == 'three':
-            r_max = 1000.0
+            r_max = 900.0
             r_min = 400.0
-            m_min = 7.0e+11
-            m_max = 3.0e+12
+            m_min = 5.5e+11
+            m_max = 2.5e+12
             ratio_max = 2.5
             vrad_max = -50.0
 
     if select == 'four':
-            r_max = 900.0
+            r_max = 800.0
             r_min = 450.0
-            m_min = 7.5e+11
-            m_max = 2.5e+12
+            m_min = 6.0e+11
+            m_max = 2.0e+12
             ratio_max = 2.5
             vrad_max = -75.0
 
     if select == 'five':
-            r_max = 750.0
+            r_max = 700.0
             r_min = 500.0
-            m_min = 8.0e+11
-            m_max = 2.0e+12
+            m_min = 6.5e+11
+            m_max = 1.5e+12
             ratio_max = 2.0
             vrad_max = -100.0
 
@@ -307,10 +308,9 @@ if doMoreSelect == True:
 
                     if os.path.isfile(this_pkl):
                             isPkl = True
-
                             f_pkl = open(this_pkl, 'rb')
                             lg_pkl = pickle.load(f_pkl)
-
+				
                             if lg_pkl[0].code == 'EMPTY':
                                     'do nothing'
                             else:
@@ -319,11 +319,11 @@ if doMoreSelect == True:
                                             condition1 = (lg.LG1.m > m_min and lg.LG1.m < m_max)
                                             condition2 = (lg.LG2.m > m_min and lg.LG2.m < m_max)
                                             condition3 = (lg.r_halos() > r_min and lg.r_halos() < r_max)
-                                            condition4 = (lg.v_radial() > vrad_max and lg.r_halos() < r_max)
-                                            condition5 = True #(lg.LG1.m / lg.LG2.m < ratio_max)
+                                            condition4 = (lg.v_radial() < vrad_max)
+                                            condition5 = (lg.LG1.m / lg.LG2.m < ratio_max)
+
                                     if (condition1 and condition2 and condition3 and condition4 and condition5):
                                             n_lgs = n_lgs + 1
 
 density = n_lgs / (n_files * vol)
 print('LG CS refined density: ', density, ' totLGs found: ', n_lgs, ' out of ', n_files)
-'''
