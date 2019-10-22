@@ -17,12 +17,12 @@ from libcosmo.track_halos import *
 from libcosmo.find_halo import *
 from libcosmo.lg_plot import *
 
-resolution='1024'; snapname = 'snapshot_054.z0.000.AHF_halos'
+#resolution='1024'; snapname = 'snapshot_054.z0.000.AHF_halos'
 #resolution='2048'; snapname = 'snapshot_054.0000.z0.000.AHF_halos'
-#resolution='4096'
+resolution='4096'; snapname = 'snapshot_055.0000.z0.000.AHF_halos'
 
 run_init = 0
-run_end = 10
+run_end = 1
 
 subrun_init = 0
 subrun_end = 10
@@ -43,7 +43,13 @@ hubble = 0.67
 center = [50000., 50000., 50000.]
 
 # Allocate LG Models
-all_runs = simu_runs()
+if resolution == '2048':
+    all_runs = simu_runs()
+
+if resolution == '4096':
+    all_runs = ['37_11']
+
+
 (all_lg_models, hash_run) = lg_models()
 
 lg_dummy = LocalGroup(all_runs[0])
