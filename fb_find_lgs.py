@@ -24,10 +24,10 @@ base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
 iso_radius = 2000.0
 r_max = 1500.0
 r_min = 250.0
-m_min = 5.0e+11 
+m_min = 4.0e+11 
 m_max = 5.0e+12 
 ratio_max = 4.0
-vrad_max = 0.0
+vrad_max = 25.0
 
 #refineSelection = False
 refineSelection = True
@@ -37,9 +37,9 @@ select_params = np.zeros((n_models, 7), dtype='float')
 if refineSelection == True:
     # Model 1 
     iso_radius = 2000.0
-    r_max = 1200.0
-    r_min = 350.0
-    m_min = 6.0e+11 
+    r_max = 1300.0
+    r_min = 300.0
+    m_min = 5.0e+11 
     m_max = 4.0e+12 
     ratio_max = 3.0
     vrad_max = 0.0
@@ -57,7 +57,7 @@ if refineSelection == True:
     r_max = 1200.0
     r_min = 350.0
     m_min = 6.0e+11 
-    m_max = 4.0e+12 
+    m_max = 3.0e+12 
     ratio_max = 3.0
     vrad_max = -25.0
 
@@ -71,7 +71,7 @@ if refineSelection == True:
 
     # Model 3 
     iso_radius = 2000.0
-    r_max = 900.0
+    r_max = 1000.0
     r_min = 400.0
     m_min = 7.0e+11 
     m_max = 3.0e+12 
