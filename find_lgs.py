@@ -18,8 +18,13 @@ from libcosmo.find_halo import *
 from libcosmo.lg_plot import *
 
 #resolution='1024'; snapname = 'snapshot_054.z0.000.AHF_halos'
+<<<<<<< HEAD
 #resolution='2048'; snapname = 'snapshot_054.0000.z0.000.AHF_halos'
 resolution='4096'; snapname = 'snapshot_055.0000.z0.000.AHF_halos'
+=======
+resolution='2048'; snapname = 'snapshot_054.0000.z0.000.AHF_halos'
+#resolution='4096'
+>>>>>>> 688f880b36040dad98394e807bce220078210e73
 
 run_init = 0
 run_end = 1
