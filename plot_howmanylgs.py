@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 
 # Open files
-fname_lgs = 'LGs_models_density.txt'
+#fname_lgs = 'LGs_models_density.txt'; file_lg_dens = 'LGs_model_dens.png'
+fname_lgs = 'HALOs_models_density.txt'; file_lg_dens = 'halos_model_dens.png'
 f_lgs = open(fname_lgs, 'r')
 lg_dens = f_lgs.readlines()
 
@@ -29,14 +30,18 @@ for rep in lg_dens:
         if ele != '':
             line.append(ele)
 
-#    print(line)
-    
+    print(line)
     dens_fb.append(float(line[1]))
     dens_cs.append(float(line[2]))
     ratio.append(float(line[2])/float(line[1]))
-    
+
+    '''
+    dens_fb.append(float(line[0]))
+    dens_cs.append(float(line[1]))
+    ratio.append(float(line[1])/float(line[0]))
+    '''
+
 print(ratio)
-file_lg_dens = 'LGs_model_dens.png'
 
 '''
         GENERAL PLOT PROPERTIES
@@ -74,18 +79,25 @@ axs0.plot(x, dens_cs, color=col_cs, label='CS')
 axs0.legend(loc = 'upper right', bbox_to_anchor=(0.85, 0.95)) #, shadow=True, ncol=2)
 
 # Axes and title
-axs0.set_ylabel('$ N_{LG} Mpc ^{-3} h ^ 3$')
+axs0.set_ylabel('$ N_{h} Mpc ^{-3} h ^ 3$')
+#axs0.set_ylabel('$ N_{LG} Mpc ^{-3} h ^ 3$')
 axs0.set_yscale('log')
 
-axs1.set_xlabel('LG Model')
+axs1.set_xlabel('Model')
 axs1.set_ylabel('ratio')
 
-#axs0.set_xticks([])
+axs0.set_xticks([])
 #axs1.set_xticks(xticks)
-plt.xticks(xticks, labels)
-axs1.set_yticks([0, 2.5, 5, 7.5, 10, 12.5])
-axs0.axis([0, 7, 2e-6, 1e-3])
-axs1.axis([0, 7, 0.0, 15])
+#plt.xticks(xticks, labels)
+
+axs1.set_yticks([1.5, 1.75, 2])
+axs0.axis([0, 7, 1.5e-3, 1.8e-2])
+axs1.axis([0, 7, 1.5, 2.0])
+'''
+axs1.set_yticks([2, 3, 4, 5])
+axs0.axis([0, 7, 9e-7, 2e-3])
+axs1.axis([0, 7, 2, 5.5])
+'''
 axs1.plot(x, ratio, color=col_ratio) 
 
 plt.tight_layout()

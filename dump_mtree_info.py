@@ -1,14 +1,21 @@
 from libio.read_ascii import *
 from libcosmo.halos import *
+import glob
 import os
 
-res='4096'
+res='2048'
+#res='4096'
 halo_base='/home/eduardo/CLUES/DATA/' + res + '/'
 tree_base='/home/eduardo/CLUES/DATA/trees/' + res + '/'
 
 # 'snapshot_055.0000.z0.000.AHF_halos'
 ahf_base = 'snapshot_'
-ahf_midd = '.0000.'
+
+if res == '2048':
+    ahf_midd = '.0000.z*'
+else:
+    ahf_midd = '.0000.'
+
 ahf_suff = '.AHF_halos'
 
 #'halo_4037937173177511913.ids'
@@ -17,14 +24,19 @@ mcpp_suff = '.ids'
 
 out_suff = '.allinfo'
 
-run='37_11'
-ahf_zs = halo_base + run + '/zs.txt'
+#run='37_11'
+#run='00_06'
+#run='45_17'
+#run='55_02'
+run='34_13'
+
+ahf_zs = halo_base + '/redshifts.txt'
 
 # AHF snapshots
 sIni = 0
-sEnd = 55
+sEnd = 54
 
-gIni = 1
+gIni = 0
 gEnd = 10
 
 f_zs = open(ahf_zs, 'r')
@@ -42,8 +54,13 @@ for g in range(gIni, gEnd):
     for s in range(0, sEnd - sIni):
         sInv = sEnd - s
         sSnap = '%03d' % sInv
-        zStr = zs[sInv-1]
-        file_snap = halo_base + run + '/' + gDir + '/' + ahf_base + sSnap + ahf_midd + zStr + ahf_suff
+        if res == '4096':
+            zStr = zs[sInv-1]
+        else:
+            zStr = zs[sInv]
+        #file_snap = halo_base + run + '/' + gDir + '/' + ahf_base + sSnap + ahf_midd + zStr + ahf_suff
+        file_find = glob.glob(halo_base + run + '/' + gDir + '/' + ahf_base + sSnap + ahf_midd + ahf_suff)
+        file_snap = file_find[0]
 
         if os.path.isfile(file_snap):
             print(s, '. Reading: ', file_snap)
