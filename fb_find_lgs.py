@@ -24,8 +24,8 @@ base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
 iso_radius = 2000.0
 r_max = 1500.0
 r_min = 250.0
-m_min = 4.0e+11
-m_max = 5.0e+12
+m_min = 4.0e+11 
+m_max = 5.0e+12 
 ratio_max = 4.0
 vrad_max = 25.0
 
@@ -42,11 +42,20 @@ n_dens = [0, 0, 0, 0, 0, 0]
 n_loc_dens = [0, 0, 0, 0, 0, 0]
 
 if refineSelection == True:
+<<<<<<< HEAD
+    # Model 1 
+    iso_radius = 2000.0
+    r_max = 1300.0
+    r_min = 300.0
+    m_min = 5.0e+11 
+    m_max = 4.0e+12 
+=======
     # Model 1
     r_max = 1300.0
     r_min = 300.0
     m_min = 4.5e+11
     m_max = 4.0e+12
+>>>>>>> 688f880b36040dad98394e807bce220078210e73
     ratio_max = 3.0
     vrad_max = 0.0
 
