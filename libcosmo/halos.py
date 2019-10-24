@@ -156,7 +156,10 @@ class HaloThroughZ:
         mass_t = np.zeros((self.n_steps))
 
         for ixy in range(0, self.n_steps):
-            mass_t[ixy] = self.halo[ixy].m
+            try:
+                mass_t[ixy] = self.halo[ixy].m
+            except:
+                mass_t[ixy] = 0.0
 
         return mass_t
 
@@ -304,7 +307,6 @@ class HaloThroughZ:
             if n_col > 0:
                 z_step = float(column[0])
                 hid = long(column[1])
-                t_step = z2Myr(z_step)
                 mass = float(column[2])
                 pos = [float(column[4]), float(column[5]), float(column[6])]
                 vel = [float(column[7]), float(column[8]), float(column[9])]
@@ -312,8 +314,43 @@ class HaloThroughZ:
                 nsub = int(column[10])
                 npart = int(column[11])
                 halo.initialize(hid, mass, pos, vel, rvir, nsub, npart)
-                self.add_step(halo, t_step, z_step)
+                self.add_step(halo, z_step)
 
+
+    def load_files(self, f_ahf, f_zs):
+        f_in = open(f_ahf, 'r')
+        line = f_in.readline()
+
+        f_z = open(f_zs, 'r')
+        allz = f_z.readlines()
+
+        nz = len(allz)
+        zs = np.zeros((nz))
+
+        for iz in range(0, nz):
+            zs[nz-iz-1] = float(allz[iz])
+
+        while line:
+            line = f_in.readline()
+            line = line.strip()
+            column = line.split()
+            halo = Halo()
+            n_col = len(column)
+
+            iz = 0;
+            if n_col > 0:
+                iz = iz + 1
+                z_step = zs[iz]
+                hid = int(column[0])
+                t_step = z2Myr(z_step)
+                mass = float(column[3])
+                pos = [float(column[5]), float(column[6]), float(column[7])]
+                vel = [float(column[8]), float(column[9]), float(column[10])]
+                rvir = float(column[11])
+                nsub = int(column[2])
+                npart = int(column[4])
+                halo.initialize(hid, mass, pos, vel, rvir, nsub, npart)
+                self.add_step(halo, z_step)
 
     def save(self, f_name):
         # Use pickle to save file

@@ -173,6 +173,15 @@ def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
     return halos_ahf
 
 
+def read_header(file_name):
+    f_in = open(file_name, 'r')
+    line = f_in.readline()
+
+    if line[0] == '#':
+        this_line = line.split(' ')
+#        print('Header: ', this_line)
+    
+    return this_line
 
 def read_dwarf_list(file_name):
     file_dw = open(file_name, 'r')
