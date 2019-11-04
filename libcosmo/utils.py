@@ -572,6 +572,25 @@ def cdf(values):
 
 
 
+def gen_subpaths(iIni, iEnd, gIni, gEnd):
+	
+	subp = []
+
+	for i in range(iIni, iEnd):
+		iStr = '%02d' % i
+
+		for g in range(gIni, gEnd):
+			gStr = '%02d' % g
+			sp = iStr + '_' + gStr
+			
+			subp.append(sp)
+			
+	return subp
+
+
+
+
+
 
 
 

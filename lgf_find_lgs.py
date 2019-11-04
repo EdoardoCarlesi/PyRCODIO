@@ -119,7 +119,25 @@ for i_dir in range(i_ini, i_end):
             this_ahf_file = ahf_file1
         elif os.path.isfile(ahf_file2):
             this_ahf_file = ahf_file2
+	else:
+		this_ahf_file='File_does_not_exist.txt'
 
+	if os.path.isfile(this_ahf_file):
+	        all_halos = read_ahf(this_ahf_file)
+        	this_pkl = 'saved/lgs_center_' + rStr + '_' + sub_path + '.pkl'
+		print(this_pkl)
+		hOut = []
+        	for halo in all_halos:
+        		this_r = halo.distance(box_center)
+
+        		if this_r < r_select:
+				hOut.append(halo)
+
+		outPkl = open(this_pkl, 'w')
+		pickle.dump(hOut, outPkl)
+		outPkl.close()
+		
+	'''
         isPkl = False
         this_pkl = 'saved/lgs_r_' + rStr + '_mMin' + mMinStr + '_' + res + '_' + sub_path + '.pkl'
 
@@ -130,7 +148,6 @@ for i_dir in range(i_ini, i_end):
         if this_ahf_file != None:
             n_files = n_files + 1
 
-	'''
             all_halos = read_ahf(this_ahf_file)
 	    m_halos = []
 	    for im in range(0, 6):
@@ -160,8 +177,7 @@ vol = np.power(r_select/1000., 3) * 4.0 / 3.0 * 3.14
 for im in range(0, 6):
 	dens = n_dens[im] / (vol * n_files)
 	print('nTot = ', n_dens[im], ' dens= ', dens, ' nFiles: ', n_files)
-
-	'''
+# OLD 
 
         if this_ahf_file != None and isPkl == False:
             print('Reading file : %s' % this_ahf_file)
@@ -327,3 +343,4 @@ if doMoreSelect == True:
 
 density = n_lgs / (n_files * vol)
 print('LG CS refined density: ', density, ' totLGs found: ', n_lgs, ' out of ', n_files)
+	'''
