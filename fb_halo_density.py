@@ -10,14 +10,17 @@ runNum = '00'
 file_ahf = '/home/eduardo/CLUES/DATA/FullBox/catalogs/' + runNum + '/snapshot_054.z0.000.AHF_halos'
 
 box=100.0
+#nodes=15
 nodes=10
 
 mpc2kpc=1.e+3
 mMin = 1.e+8
 mMax = 1.e+16
 
+thrRho = 0.27; maxRho = 3.3
+#thrRho = 0.21   & maxRho = 2.6
+#thrRho = 0.5
 #thrRho = 0.78
-thrRho = 0.5
 
 hMmin = 0.4e+12
 hMmax = 5.0e+12
@@ -85,8 +88,8 @@ for ix in range(0, nodes):
 fracVol = float(nOver)/np.power(nodes, 3)
 print('Tot nUnder = ', nUnder, ' nOver = ', nOver, ' nTot = ', np.power(nodes, 3), ' fracVol: ', fracVol) 
 
-mMin = 0.4e+12; mMax = 5.0e+12; v_max = 25; r_min = 250; r_max = 1500
-#mMin = 0.45e+12; mMax = 4.0e+12; v_max = 0; r_min = 300; r_max = 1300
+#mMin = 0.4e+12; mMax = 5.0e+12; v_max = 25; r_min = 250; r_max = 1500
+mMin = 0.45e+12; mMax = 4.0e+12; v_max = 0; r_min = 300; r_max = 1300
 #mMin = 0.5e+12; mMax = 3.0e+12; v_max = -25; r_min = 350; r_max = 1000
 #mMin = 0.55e+12; mMax = 2.5e+12; v_max = -50; r_min = 400; r_max = 900
 #mMin = 0.6e+12; mMax = 2.0e+12; v_max = -75.; r_min = 450; r_max = 800
@@ -126,12 +129,12 @@ if doLgs == True:
 
 
 
-mMin = 0.4e+12; mMax = 5.0e+12; v_max = 25; r_min = 250; r_max = 1500
-mMin = 0.45e+12; mMax = 4.0e+12; v_max = 0; r_min = 300; r_max = 1300
+#mMin = 0.4e+12; mMax = 5.0e+12; v_max = 25; r_min = 250; r_max = 1500
+#mMin = 0.45e+12; mMax = 4.0e+12; v_max = 0; r_min = 300; r_max = 1300
 #mMin = 0.5e+12; mMax = 3.0e+12; v_max = -25; r_min = 350; r_max = 1000
 #mMin = 0.55e+12; mMax = 2.5e+12; v_max = -50; r_min = 400; r_max = 900
 #mMin = 0.6e+12; mMax = 2.0e+12; v_max = -75.; r_min = 450; r_max = 800
-#mMin = 0.65e+12; mMax = 1.5e+12; v_max = -100; r_min = 500; r_max = 700
+mMin = 0.65e+12; mMax = 1.5e+12; v_max = -100; r_min = 500; r_max = 700
 
 nUnder = 0; nOver = 0;
 if doHalos == True:
@@ -148,7 +151,8 @@ if doHalos == True:
         thisRho = ahfGrid.rho[ixyz[0], ixyz[1], ixyz[2]]
         condition = (h.m > mMin and h.m < mMax)
     
-        if (thisRho > thrRho) and condition:
+        if (thisRho > thrRho) and condition and (thisRho < maxRho):
+        #if (thisRho > thrRho) and condition:
             nOver = nOver + 1
         else:
             nUnder = nUnder + 1

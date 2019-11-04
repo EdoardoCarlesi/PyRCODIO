@@ -83,9 +83,9 @@ file_mw_mmt_kstest = out_dir + 'kstest_mmt_mw.png'
 file_mw_ft_kstest = out_dir + 'kstest_ft_mw.png'
 file_m31_mmt_kstest = out_dir + 'kstest_mmt_m31.png'
 file_m31_ft_kstest = out_dir + 'kstest_ft_m31.png'
-
 '''
         2D PLOTS OF LGs MMT & FT
+'''
 
 # DATA FORMAT:  time_stats = np.zeros((2, 2, iValid))   ---> # LMMT & FT
 n_bins_rand = 15
@@ -154,6 +154,7 @@ plt.clf()
 plt.cla()
 
 '''
+'''
 
 # Full trees
 #m31_trees = 'all_trees_lgf_m31.pkl'
@@ -174,6 +175,8 @@ mt_m31 = pickle.load(f_mt_m31)
 x_min = 0.0; x_max = 12.0
 y_min = 0.01; y_max = 1.1
 n_snaps = 54; t_step = 0.25
+
+size_lab = 13
 
 # Set the x axis
 time = np.zeros((n_snaps))
@@ -200,17 +203,19 @@ for imw in range(0, 31):
     v1 = 970
     intv = int(mah_mw[1] * 1000)
 
+'''
     if intv != v0 and intv != v1: 
         print(mah_mw[1])
         ids.append(imw)
         imm = imm +1
         axs0.plot(time, mah_mw)
 print(imm)
+'''
 
 #print(mt_mw[0].smooth_tree())
 # Axes and title
 axs0.set_title('MW')
-axs0.set_ylabel('$M(t) / M(t_0)$')
+axs0.set_ylabel('$M(t) / M(t_0)$', size=size_lab)
 
 axs0.set_xticks([])
 axs1.set_xticks([])
@@ -221,11 +226,12 @@ axs1.fill_between(time, rand_mahs[m31_fb_id, :, 0], rand_mahs[m31_fb_id, :, 2], 
 axs1.plot(time, cs_mahs[m31_cs_id, :, 1], color=col_cs)
 axs1.fill_between(time, cs_mahs[m31_cs_id, :, 0], cs_mahs[m31_cs_id, :, 2], facecolor=col_cs, alpha=0.2)
 
+'''
 imm=0
 for im31 in ids:
     mah_m31 = mt_m31[im31].smooth_tree()
     axs1.plot(time, mah_m31)
-
+'''
 
 # Axes and title
 axs1.set_title('M31')
@@ -242,8 +248,8 @@ for i in range(0, len(time)):
     ratio_mw.append(1.0 + 0.25 * abs(1.0 -v_cs / v_rand))
     unity.append(1.0)
 
-axs2.set_xlabel('t [Gyr]')
-axs3.set_xlabel('t [Gyr]')
+axs2.set_xlabel('t [Gyr]', size=size_lab)
+axs3.set_xlabel('t [Gyr]', size=size_lab)
 axs2.axis([x_min, x_max, 0.99, 1.75])
 axs2.plot(time, ratio_m31, color='black')
 #axs2.plot(time, unity, color='red')
@@ -293,6 +299,7 @@ print('Fit M31 CS:', output)
 output = curve_fit(mahFit, z_time, rand_mahs[m31_fb_id, :, 1], p0 = [a0, b0]) #, sigma = mw_cs_err)
 print('Fit M31 FB:', output)
 
+'''
 
 
 
@@ -309,20 +316,23 @@ percent = [25, 50, 75]
 x_min = 0; x_max = 12.5
 y_min = 0; y_max = 0.41
 
+size_lab = 18
+size_lab1 = 15
+
 ################### FORMATION TIMES #########################
 
 # MW
 plt.hist(ft_fb[mw_fb_id], n_bins, facecolor=col_fb, normed=1, alpha=1.0)
 plt.hist(ft_cs[mw_cs_id], n_bins, facecolor=col_cs, normed=1, alpha=opaque)
-#plt.title('MW Formation Times')
+#plt.title('MW 3ormation Times')
 
 ax = plt.gca()
 ax.set_xlabel(' ')
 #ax.set_xlabel('t [Gyr]')
-ax.set_ylabel('$n(\\tau _F)$')
+ax.set_ylabel('$n(\\tau _F)$', size = size_lab)
 ax.axis([x_min, x_max, y_min, y_max])
 #ax.set_ylabel('$n( < \\tau _F)$')
-plt.title('Formation time MW')
+plt.title('Formation time MW', size = size_lab1)
 plt.xticks([])
 plt.yticks(ticks)
 plt.tight_layout()
@@ -339,7 +349,7 @@ ax.axis([x_min, x_max, y_min, y_max])
 ax.set_xlabel(' ')
 #ax.set_xlabel('t [Gyr]')
 #ax.set_ylabel('n(T)')
-plt.title('Formation time M31')
+plt.title('Formation time M31', size = size_lab1)
 plt.xticks([])
 plt.yticks([])
 plt.tight_layout()
@@ -359,9 +369,9 @@ plt.hist(mmt_cs[mw_cs_id], n_bins, facecolor=col_cs, normed=1, alpha=opaque)
 ax = plt.gca()
 #ax.set_xlabel('t [Gyr]')
 ax.set_xlabel(' ')
-ax.set_ylabel('$n( < \\tau _M)$')
+ax.set_ylabel('$n( < \\tau _M)$', size=size_lab)
 ax.axis([x_min, x_max, y_min, y_max])
-plt.title('Last major merger time MW')
+plt.title('Last major merger time MW', size = size_lab1)
 plt.xticks([])
 plt.yticks(ticks)
 plt.tight_layout()
@@ -380,7 +390,7 @@ ax = plt.gca()
 #ax.set_xlabel('t [Gyr]')
 ax.set_xlabel(' ')
 #ax.set_ylabel(' ')
-plt.title('Last major merger time M31')
+plt.title('Last major merger time M31', size=size_lab1)
 plt.tight_layout()
 plt.savefig(file_m31_mmt_hist)
 plt.clf()
@@ -436,8 +446,8 @@ axs.axis([x_min, x_max, y_min, y_max])
 axs.plot(cdf_fb[0], cdf_fb[1], color=col_fb)
 axs.plot(cdf_cs[0], cdf_cs[1], color=col_cs)
 
-axs.set_xlabel('t [Gyr]')
-axs.set_ylabel('$n(< \\tau _M)$')
+axs.set_xlabel('t [Gyr]', size  = size_lab)
+axs.set_ylabel('$n(< \\tau _M)$', size = size_lab)
 #plt.title('MW MMT Cumulative')
 plt.yticks(ticks)
 plt.tight_layout()
@@ -473,7 +483,7 @@ axs.axis([x_min, x_max, y_min, y_max])
 axs.plot(cdf_fb[0], cdf_fb[1], color=col_fb)
 axs.plot(cdf_cs[0], cdf_cs[1], color=col_cs)
 
-axs.set_xlabel('t [Gyr]')
+axs.set_xlabel('t [Gyr]', size = size_lab)
 #axs.set_ylabel('n(<T)$')
 #axs.set_ylabel('$n(< \\tau _M)$')
 #plt.title('M31 MMT Cumulative')
@@ -513,8 +523,8 @@ axs.axis([x_min, x_max, y_min, y_max])
 axs.plot(cdf_fb[0], cdf_fb[1], color=col_fb)
 axs.plot(cdf_cs[0], cdf_cs[1], color=col_cs)
 
-axs.set_xlabel('t [Gyr]')
-axs.set_ylabel('$n(< \\tau _F)$')
+axs.set_xlabel('t [Gyr]', size = size_lab)
+axs.set_ylabel('$n(< \\tau _F)$', size = size_lab)
 #axs.set_ylabel('n(<T)$')
 #plt.title('MW FT Cumulative')
 plt.yticks(ticks)
@@ -554,10 +564,9 @@ axs.plot(cdf_cs[0], cdf_cs[1], color=col_cs)
 #axs.set_ylabel('T_{F}(<T)$')
 #axs.set_ylabel('$n(< \\tau _F)$')
 #plt.title('M31 FT Cumulative')
-axs.set_xlabel('t [Gyr]')
+axs.set_xlabel('t [Gyr]', size = size_lab)
 plt.yticks([])
 plt.tight_layout()
 plt.savefig(file_m31_ft_kstest)
 plt.clf()
 plt.cla()
-'''
