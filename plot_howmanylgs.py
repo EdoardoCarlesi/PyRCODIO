@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 
 # Open files
-#fname_lgs = 'LGs_models_density.txt'; file_lg_dens = 'LGs_model_dens.png'; doHalo = False;
-fname_lgs = 'HALOs_models_density.txt'; file_lg_dens = 'halos_model_dens.png'; doHalo = True;
+fname_lgs = 'LGs_models_density.txt'; file_lg_dens = 'LGs_model_dens.png'; doHalo = False;
+#fname_lgs = 'HALOs_models_density.txt'; file_lg_dens = 'halos_model_dens.png'; doHalo = True;
 f_lgs = open(fname_lgs, 'r')
 lg_dens = f_lgs.readlines()
 
@@ -21,6 +21,8 @@ ratio2 = []
 dens_fb1 = []
 dens_fb2 = []
 dens_cs = []
+
+err1 = []; err2 = []; err3 = []
 
 for rep in lg_dens:
     rep = rep.replace("\t", " ")
@@ -38,6 +40,11 @@ for rep in lg_dens:
     dens_fb2.append(float(line[2]))
     ratio1.append(float(line[1])/float(line[0]))
     ratio2.append(float(line[1])/float(line[2]))
+
+    if doHalo == False:
+        error1 = float(line[0]) / np.sqrt(float(line[3]));         err1.append(error1)   
+        error2 = float(line[1]) / np.sqrt(float(line[5]));         err2.append(error2)   
+        error3 = float(line[2]) / np.sqrt(float(line[4]));         err3.append(error3)   
 
 print(ratio1)
 print(dens_fb1)
@@ -75,9 +82,15 @@ axs1 = plt.subplot2grid((8, 6), (6, 0), rowspan=2, colspan=6)
 #x = [1, 2, 3, 4, 5, 6]
 x = [1, 2, 3, 4, 5, 6]
 
-axs0.plot(x, dens_fb1, color=col_fb1, label='RAND') 
-axs0.plot(x, dens_fb2, color=col_fb2, label='RAND$_ \delta$') 
-axs0.plot(x, dens_cs, color=col_cs, label='CS') 
+if doHalo == True:
+    axs0.plot(x, dens_fb1, color=col_fb1, label='RAND') 
+    axs0.plot(x, dens_fb2, color=col_fb2, label='RAND$_ \delta$') 
+    axs0.plot(x, dens_cs, color=col_cs, label='CS') 
+else:
+    axs0.errorbar(x, dens_fb1, yerr=err1, color=col_fb1, label='RAND') 
+    axs0.errorbar(x, dens_fb2, yerr=err3, color=col_fb2, label='RAND$_ \delta$') 
+    axs0.errorbar(x, dens_cs, yerr=err2, color=col_cs, label='CS') 
+
 axs0.legend(loc = 'upper right', bbox_to_anchor=(0.95, 0.95)) #, shadow=True, ncol=2)
 
 # Axes and title

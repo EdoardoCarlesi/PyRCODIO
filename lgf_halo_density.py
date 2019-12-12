@@ -36,10 +36,13 @@ for i in range(iIni, iEnd):
             thisRho = mTot / volZero / rhoZero
             allRhos.append(thisRho)
             #print('Found: ', pklFile, ', n: ', len(halos))
-            
-rhoMed = np.median(allRhos)
-rhoMea = np.mean(allRhos)
-rhoSig = np.std(allRhos)
+fac = 1.0 / 1.0   
 
-print('Med: ', rhoMed, ' rhoMea: ', rhoMea, ' rhoSig: ', rhoSig)
+rhoMed = np.median(allRhos) * fac
+rhoMea = np.mean(allRhos) * fac
+rhoSig = np.std(allRhos) * fac
+rho25 = np.percentile(allRhos, 5) * fac
+rho75 = np.percentile(allRhos, 95) * fac
+
+print('Med: ', rhoMed, ' rhoMea: ', rhoMea, ' rhoSig: ', rhoSig, ' 25: ', rho25, ' r75: ', rho75)
 
