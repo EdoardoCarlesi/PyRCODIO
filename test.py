@@ -1,15 +1,42 @@
 #from libpynbody.read_ahf import *
 from libcosmo.halos import *
-#from libio.read_ascii import *
+from libcosmo.find_halos import *
+from libio.read_ascii import *
 from pygadgetreader import *
 #import gadfly as gdf
 
 import numpy as np
-import pynbody as pyn
-import pynbody.plot.sph as sph
-import matplotlib.pylab as plt
+#import pynbody as pyn
+#import pynbody.plot.sph as sph
+#import matplotlib.pylab as plt
 import pickle
+from config import *
 
+run = '00_06'
+ahf_file='/z/carlesi/STORE/512box100/AHF/' + run + '/merged_054.AHF_halos'
+ahf = read_ahf(ahf_file)
+r_iso = 2e+3
+r_max = 1.2e+3
+r_min = 0.4e+3
+ratio_max = 4.0
+vrad_max = 10.0
+radius = 8.0e+3
+m_min = 0.5e+12
+m_max = 2.5e+12
+d_max = 10.e+3
+
+#lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+lg_model = LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+
+center = [50.e+3, 50.e+3, 50.e+3]
+
+ahf_center = find_halos_point(center, ahf, radius)
+hs = find_lg(ahf_center, lg_model)
+
+print(hs)
+
+
+'''
 #snap_path='/home/eduardo/CLUES/DATA/CF2P5/57252/snapshot_019'
 #snap_path='/home/eduardo/CLUES/DATA/01/snapshot_035'
 snap_path='/home/eduardo/CLUES/DATA/HESTIA/2048/37_11/snapshot_127'
@@ -81,11 +108,10 @@ plt.savefig('test.png')
 #h = pyn.halo.ahf.AHFCatalogue('sim', ahf_basename=ahf_path)
 #h = pyn.halo.ahf.AHFCatalogue(s, ahf_basename=ahf_path)
 #h = pyn.halo.ahf.AHFCatalogue('sim', ahf_path)
-
+'''
 
 
 '''
-# THIS ARE THE OLD PLOTTING ROUTINES THAT USE SEABORN
 elif oldLoad:
 
     doBar=False
@@ -304,6 +330,11 @@ print lg_model[4].info()
 print lg_dict
 print this_index, this_model.info(), this_model
 
+(lg_model, lg_dict) = lg_models()
+
+
+'/z/carlesi/STORE/512box100/AHF/00_06/merged_054.AHF_halos'
+print('# Run\tM(1.e+14)\td(True)\t\tSGx,\t\tSGy,\t\tSGz')
 ahf = read_ahf(ahf_file)
 hs = find_lg(ahf, this_model)
 
