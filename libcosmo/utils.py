@@ -588,7 +588,33 @@ def gen_subpaths(iIni, iEnd, gIni, gEnd):
 	return subp
 
 
+def bin_this(x_bin, x_data, y_data):
 
+    lenBin = len(x_bin)
+    y_bin = np.zeros(lenBin-1)
+    x_bin2 = np.zeros(lenBin-1)
+
+    nBin = 0; iB = 0; nD = 0;
+    for iD in range(0, len(y_data)):
+        thisX = x_data[iD]
+        thisD = y_data[iD]
+
+        dowBin = x_bin[iB]
+        topBin = x_bin[iB+1]
+
+        if (thisX >= dowBin) and (thisX <= topBin):
+            nD = nD + 1
+            y_bin[iB] = y_bin[iB] + thisD
+        elif thisX > topBin:
+            if nD > 0:
+                y_bin[iB] = y_bin[iB] / float(nD)
+                x_bin2[iB] = 0.5 * (x_bin[iB] + x_bin[iB+1])
+
+            iB = iB + 1
+            iD = iD -1
+            nD = 0
+
+    return (x_bin2, y_bin)
 
 
 
