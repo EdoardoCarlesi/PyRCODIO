@@ -173,6 +173,15 @@ def read_ahf_chunks_mass_range(file_root, file_suffix, n_chunks, m_max, m_min):
     return halos_ahf
 
 
+def read_header(file_name):
+    f_in = open(file_name, 'r')
+    line = f_in.readline()
+
+    if line[0] == '#':
+        this_line = line.split(' ')
+#        print('Header: ', this_line)
+    
+    return this_line
 
 def read_dwarf_list(file_name):
     file_dw = open(file_name, 'r')
@@ -208,7 +217,8 @@ def read_ahf_mass_range(file_name, m_max, m_min):
 
         if n_col > 1:
             # Read halo properties
-            idn = long(column[0])
+            #idn = long(column[0])
+            idn = int(column[0])
             mass = float(column[3])
             pos = [float(column[5]), float(column[6]), float(column[7])]
             vel = [float(column[8]), float(column[9]), float(column[10])]
@@ -252,7 +262,7 @@ def read_ahf(file_name):
         n_col = len(column)
 
         if n_col > 1 and line[0] != "#":
-            if (float(column[5]) + float(column[6]) + float(column[7])) < 5.e+3:
+            if (float(column[5]) + float(column[6]) + float(column[7])) < 1.e+3:
                 column[5] = float(column[5]) * (1.e+3)
                 column[6] = float(column[6]) * (1.e+3)
                 column[7] = float(column[7]) * (1.e+3)

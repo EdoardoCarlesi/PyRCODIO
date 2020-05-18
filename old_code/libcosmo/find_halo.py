@@ -319,7 +319,8 @@ def locate_clusters(ahf_all, box_center, runcode):
 				d0 = distance(this_x, x0)
 				#print cluster_name[ic], ' ',  clusters[iv].m, clusters[iv].x, d_center/1000., d0/1000.
 				#print cluster_name[ic], ' ',  clusters[iv].m/1.e+14, \
-				print(str(runcode), '\t', cluster_name[ic], '\t\t', clusters[iv].m/1.e+14/hubble, '\t', d0/facMpc, '\t\t', \
+				print(str(runcode), '\t', cluster_name[ic], '\t\t', \
+                                clusters[iv].m/1.e+14/hubble, '\t', d0/facMpc, '\t\t', \
 				(clusters[iv].x[0]-box_center[0])/facMpc,'\t',\
                                 (clusters[iv].x[1]-box_center[1])/facMpc,'\t',\
                                 (clusters[iv].x[2]-box_center[2])/facMpc) #, \
@@ -338,7 +339,6 @@ def locate_clusters(ahf_all, box_center, runcode):
 
 
 def print_subhalos(com, mcut, lg_halos, fname_lg):
-
     #f_out = open(fname_lg, 'wb')
     f_out = open(fname_lg, 'w')
 
@@ -347,13 +347,22 @@ def print_subhalos(com, mcut, lg_halos, fname_lg):
             this_d = halo.distance(com)
 
             if this_d > 10.0:
-            #    print('Mass: %e distance: %f' % (halo.m, this_d))
-                f_out.write('%s\n' % (halo.ID))
+                f_out.write('%s\n' % (halo.line.rstrip('\n')))
             elif this_d == 0.0:
                 f_out.write('# Host ID %s\n' % (halo.ID))
-            #    print('Host: %e' % (halo.m))
 
     f_out.close()
+
+def print_subhalo_ids(com, mcut, lg_halos, fname_lg):
+    f_out = open(fname_lg, 'w')
+
+    for halo in lg_halos:
+        if halo.m > mcut:
+            this_d = halo.distance(com)
+            f_out.write('%s\n' % (halo.ID))
+
+    f_out.close()
+
 
 '''
 # Find the best match for each halo, ahf_now contains all the haloes we want to trace at z and ahf_back all the possible candidates at z+1

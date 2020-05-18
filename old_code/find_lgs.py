@@ -18,11 +18,11 @@ from libcosmo.find_halo import *
 from libcosmo.lg_plot import *
 
 #resolution='1024'; snapname = 'snapshot_054.z0.000.AHF_halos'
+#resolution='4096'; snapname = 'snapshot_055.0000.z0.000.AHF_halos'
 resolution='2048'; snapname = 'snapshot_054.0000.z0.000.AHF_halos'
-#resolution='4096'
 
 run_init = 0
-run_end = 10
+run_end = 12
 
 subrun_init = 0
 subrun_end = 10
@@ -43,7 +43,13 @@ hubble = 0.67
 center = [50000., 50000., 50000.]
 
 # Allocate LG Models
-all_runs = simu_runs()
+if resolution == '2048':
+    all_runs = simu_runs()
+
+if resolution == '4096':
+    all_runs = ['37_11']
+
+
 (all_lg_models, hash_run) = lg_models()
 
 lg_dummy = LocalGroup(all_runs[0])
@@ -58,7 +64,7 @@ fac_r = 1.5     # This is used for the global R around the LG as well as for Rvi
 min_common = 15
 part_min = 1000.
 mmin = 1.e+6    # Track haloes above this threshold at z=0
-mcut = 0.5e+10
+mcut = 0.5e+7
 
 n_lg_good = 0
 all_subs = np.zeros((run_end - run_init, 2,subrun_end - subrun_init), dtype='int')
@@ -75,17 +81,19 @@ for run_j in range(run_init, run_end):
     print(base_run)
 
     # Print halos and their distances from the center of LG / MW / M31
-    fname_lg  = out_base + resolution + '_' + base_run + '_subs_LG.txt';
-    fname_mw  = out_base + resolution + '_' + base_run + '_subs_MW.txt';
-    fname_m31 = out_base + resolution + '_' + base_run + '_subs_M31.txt';
-
     # Loop on the different small scale realisations of the LGs
     for subrun_i in range(subrun_init, subrun_end):
 
         # First find a Local Group candidate
         run_num = '%02d' % subrun_i
+
         settings.init_files(base_run, run_num)
         settings.re_init()
+
+        fname_id  = out_base + resolution + '_' + base_run + '_' + run_num + '_subs_ID.txt';
+        fname_lg  = out_base + resolution + '_' + base_run + '_' + run_num + '_subs_LG.txt';
+        fname_mw  = out_base + resolution + '_' + base_run + '_' + run_num + '_subs_MW.txt';
+        fname_m31 = out_base + resolution + '_' + base_run + '_' + run_num + '_subs_M31.txt';
 
         # Look for LGs in the last snapshot first, use only one MPI task, initialize other useful variables
         snap_last = 54
@@ -151,9 +159,12 @@ for run_j in range(run_init, run_end):
                 all_host[run_j, 1, subrun_i] = best_lg.LG2.m
 
                 # Print the subhalo list
-                #print_subhalos(com, 10. * mcut, lg_halos,  run_num, fname_lg)
-                #print_subhalos(best_lg.LG1.x, mcut, mw_halos,  run_num, fname_mw)
-                #print_subhalos(best_lg.LG2.x, mcut, m31_halos, run_num, fname_m31)
+                print_subhalos(com, mcut, lg_halos,  fname_lg)
+                print_subhalo_ids(com, mcut, lg_halos, fname_id)
+                print_subhalos(best_lg.LG2.x, mcut, m31_halos, fname_m31)
+                print_subhalos(best_lg.LG2.x, mcut, m31_halos, fname_m31)
+
+print('LG subhalos printed to :', fname_lg)
 
 f_subs = open(fname_subs, 'wb')
 f_host = open(fname_host, 'wb')
