@@ -4,13 +4,17 @@
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
-    test.py: this file is used to test new routines and functionalities
+    main_sub_mass_function.py: wrapper for utilites to compute and plot subhalo mass functions
 '''
 
 import read_files as rf
 import tools as t
 import halo_utils as hu
 import pandas as pd
+import seaborn as sns
+import pickle as pkl
+
+base_ahf = '/media/edoardo/data1/DATA/'
 
 file_ahf = '/media/edoardo/data1/DATA/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 file_mah = '/media/edoardo/data1/DATA/00_06/00/halo_'
@@ -18,18 +22,19 @@ form_mah = '.allinfo'
 data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
 
 time = rf.read_time(data_path)
+print(time)
+
 all_halo_mah = []
 
 mahs = rf.read_mah_halo(file_ahf, file_mah, time)
 
-#mahs[1].host = mahs[0]
-#print(mahs[1].trajectory_around_host())
+
+
 #print(mahs[0].m_t())
-#print(mahs[10].t_m_max())
+#print(mahs[0].m_max())
 #print(mahs[0].x_t())
-#print(mahs[0].formation_time())
-#print(mahs[0].last_major_merger())
-#print(mahs[0].m_t())
+print(mahs[0].formation_time())
+#print(mahs[0].m_t_norm())
 #print(mahs[0].last_major_merger())
 
 #print(mahs[0].head())

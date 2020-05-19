@@ -9,5 +9,6 @@
 *.bak
 output/*
 COPY/
+activate
 ProjectsPlots
 ProjectsPlots/

@@ -69,23 +69,21 @@ class HaloHistory:
     n_steps = 0
 
     host = None
-    halos = []
+    mainhalo = None
+    time = None
     subhalos = []
-    redshift = []
-    time = []
     n_mergers = []
 
     # Constructor, we need only the number of steps, the rest is allocated by default
-    def __init__(self, n_steps, host = None):
-        self.n_steps = n_steps
+    def __init__(self, time, host = None):
+        self.n_steps = 0
 
         # Initialize some empty lists
-        self.halos = []
+        self.mainhalo = None
         self.subhalos = []
-        self.redshift = []
 
-        # Time in Gigayears
-        self.time = []
+        # a, z and Time in Gigayears 
+        self.time = time
 
         # Number of mergers per time step
         self.n_mergers = []
@@ -94,26 +92,47 @@ class HaloHistory:
         if host != None:
             self.host = host
 
+    # When reading the complete MAH from a dataframe
+    def load_full_mah(self, mah_df):
+        self.mainhalo = mah_df
+        self.n_steps = mah_df.shape[0]
+
+    def set_time(self, time):
+        self.time = time
+
     # Simply return the mass evolution as a function of time
     def m_t(self):
-        m_t = np.zeros((self.n_steps))
+        mvir_name = 'Mvir(4)'
 
-        for i in range(0, self.n_steps):
-            m_t[i] = halos[i].m()
+        return self.mainhalo[mvir_name]
+ 
+    # Return the mass normalized to m(z=0)
+    def m_t_norm(self):
+        m_t = self.m_t() / self.m_t()[0]
 
         return m_t
     
     # Return the max mass value
     def m_max(self):
         m_max = np.max(self.m_t())
+
         return m_max
+ 
+    # Return the max mass value
+    def t_m_max(self):
+        m_max = np.max(self.m_t())
+        m_ind = np.where(self.m_t() == m_max)
+        t_m_max = self.time[2, m_ind]
+
+        return t_m_max
 
     # Halo velocity as a function of time
     def v_t(self):
         vel_t = np.zeros((self.n_steps, 3))
 
-        for i in range(0, self.n_steps):
-            vel_t[i] = self.halos[i].vel()
+        vel_t[:, 0] = self.mainhalo['VXc(9)']
+        vel_t[:, 1] = self.mainhalo['VYc(10)']
+        vel_t[:, 2] = self.mainhalo['VZc(11)']
 
         return vel_t
 
@@ -121,26 +140,41 @@ class HaloHistory:
     def x_t(self):
         pos_t = np.zeros((self.n_steps, 3))
 
-        for i in range(0, self.n_steps):
-            pos_t[i] = self.halo[i].pos()
+        pos_t[:, 0] = self.mainhalo['Xc(6)']
+        pos_t[:, 1] = self.mainhalo['Yc(7)']
+        pos_t[:, 2] = self.mainhalo['Zc(8)']
 
         return pos_t
 
     # Last major merger time, assuming a mass ratio of 0.1
     def last_major_merger(self):
-        lmm = 0
+        m_t = self.m_t_norm().values
+        thr = 0.1
+
+        for i in range(1, self.n_steps):
+            m0 = m_t[i-1]
+            m1 = m_t[i]
+            mdiff = abs((m0 - m1) / m0)
+
+            if mdiff > thr:
+                lmm = 0.5 * (self.time[2, i-1] + self.time[2, i])
+                break
 
         return lmm
 
     # Formation time, with a mass at half time of 0.5
     def formation_time(self):
-        ft = 0
+        m_t = self.m_t_norm().values
+        f_t = m_t[np.where(m_t > 0.5)]
+        n_ft = len(f_t)
 
-        return ft
+        # Take half step in between
+        f_t = 0.5 * (self.time[2, n_ft-1] + self.time[2, n_ft])
+
+        return f_t
 
     # Compute the path of the halo in the host halo reference system
     def trajectory_around_host(self):
-
         if self.host != None:
             tah = self.x_t() - self.host.x_t()
         else:
