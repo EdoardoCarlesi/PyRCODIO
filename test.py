@@ -20,8 +20,15 @@ data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
 time = rf.read_time(data_path)
 all_halo_mah = []
 
-mahs = rf.read_mah_halo(file_ahf, file_mah, time)
+halos = rf.read_ahf_halo(file_ahf)
 
+c = [50.e+3, 50.e+3, 50.e+3]
+r = 2.e+3
+
+id_list = hu.halo_ids_around_center(halos, c, r)
+mahs = rf.read_mah_halo(id_list, file_mah, time)
+
+#print(mahs)
 #mahs[1].host = mahs[0]
 #print(mahs[1].trajectory_around_host())
 #print(mahs[0].m_t())

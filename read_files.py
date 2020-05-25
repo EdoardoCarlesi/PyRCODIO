@@ -30,27 +30,50 @@ def read_ahf_halo(file_name):
     halo.columns = new_columns
     halo.drop('0', axis=1, inplace=True)
 
-    return halo
+    halos = []
+
+    n_rows = halo.shape[0]
+
+    for i in range(0, n_rows):
+        this_h = halo.loc[i]
+        h = hu.Halo(this_h)
+        halos.append(h)
+
+    return halos
 
 
 """
     Read directly the full MAH of every single halo once the AHF file is given.
     We also need to pass the time data about a/z/t that will be read by each object.
 """
-def read_mah_halo(file_name, mah_path, time):
-    halo_z0 = read_ahf_halo(file_name)
+def read_mah_halo(id_list, mah_path, time):
     mah_format = '.allinfo'
     all_mah = []
+    cols = None
+    n_cols = 0
+    head_count = 0
 
-    for ID in halo_z0['ID']:
+    while head_count == 0:
+        for ID in id_list:
+            file_mah = mah_path + str(ID) + mah_format
+
+            try:
+                # Read header. There is some issue with delimiters so we need to read this separately. Only one time
+                head = pd.read_csv(file_mah, sep='\s+', nrows=0)
+                cols = head.columns
+                n_cols = len(head.columns)
+                head_count = 1
+            except:
+                'This file does not exist'
+
+#    print(n_cols)
+#    print(cols)
+
+
+    for ID in id_list:
         file_mah = mah_path + str(ID) + mah_format
-        
+
         try:
-            # Read header. There is some issue with delimiters so we need to read this separately
-            head = pd.read_csv(file_mah, sep='\s+', nrows=0)
-            cols = head.columns
-            n_cols = len(head.columns)
-            
             # Read the rest of the file
             this_mah = pd.read_csv(file_mah, sep='\t', skiprows=1, header=None)
 
@@ -81,7 +104,6 @@ def read_mah_halo(file_name, mah_path, time):
 
         except:
             'The output file for this halo was not produced (too few particles to be traced, most likely). Do nothing'
-
     return all_mah
 
 
