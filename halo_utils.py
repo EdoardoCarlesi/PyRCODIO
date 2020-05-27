@@ -380,3 +380,17 @@ def halo_ids_around_center(halos, center, radius):
 
     return ids
 
+'''
+    Given a (halo) center at pos_host, find all the (sub) halos within a given radius
+'''
+def find_halos(pos_host, radius, catalog):
+
+    new_key = 'Distance'
+
+    def dist(x, c):
+        return distance(x, c)
+
+    catalog[new_key] = catalog[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.apply(dist, c=pos_host).T
+    
+    return catalog[catalog[new_key] < radius]    
+

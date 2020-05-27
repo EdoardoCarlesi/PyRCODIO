@@ -11,4 +11,7 @@ Works with GADGET1, GADGET2 and HDF5 fortran using h5py and gadget py reader.
 
 The version 0.2 now extensively relies on Pandas libraries which improve the readability and speed of the code.
 
+It needs a local copy of pyreadgadget  (or a link to it)
+https://bitbucket.org/astroduff/pyreadgadget/src/master/
+
 

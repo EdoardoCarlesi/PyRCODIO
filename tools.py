@@ -7,45 +7,12 @@
     tools.py: various utilities and simple computational routines used throughout the code
 '''
 
-from pygadgetreader import *
 import pandas as pd
 import numpy as np
+import sys
 
-
-'''
-    Read multiple gadget files (one snap split into several)
-'''
-def readgadget(f_snap, read_type, p_type, n_files):
-    if n_files == 1:
-        print('Read snap: ', f_snap, ' read type: ', read_type, ' ptype: ', p_type)
-        parts = readsnap(f_snap, read_type, p_type)
-    else:
-        parts = np.zeros((1, 3), dtype=float)
-        size_part = 0
-        for i_file in range(0, n_files):
-            f_tmp = f_snap + '.' + str(i_file)
-            parts_tmp = readsnap(f_tmp, read_type, p_type)
-
-            old_size = size_part
-            size_part += len(parts_tmp)
-            parts.resize((size_part, 3))
-            parts[old_size:size_part][:] = [xyz for xyz in parts_tmp[:][:]]
-
-            '''
-            for i_part in range(0, len(parts_tmp)):
-                parts[old_size + i_part, :] = parts_tmp[i_part][:]
-#                i_x = 2
-#                print(parts_tmp[i_part][i_x])
-#                print(parts[old_size + i_part][i_x])
-#                for i_x in range(0, 3):
-#                    parts[old_size + i_part, i_x] = parts_tmp[i_part][i_x]
-                    #print(parts_tmp[i_part][i_x])
-                    #print(parts[old_size + i_part][i_x])
-            '''
-    print('Found a total of ', np.shape(parts), ' particles.')
-    return parts
-
-
+sys.path.append('pygadgetreader/')
+from pygadgetreader import *
 
 
 '''
@@ -64,6 +31,7 @@ def distance(x, center):
 '''
     Below is a series of simple functions copied from the old utils.py
 '''
+
 def rad2deg():
 	coeff = 180.0 / math.pi
 	return coeff
@@ -145,21 +113,41 @@ def mass_function(masses):
 
 	return (x_m, y_n)
 
-
-
-
-
 '''
-    Given a (halo) center at pos_host, find all the (sub) halos within a given radius
+    Read multiple gadget files (one snap split into several)
 '''
-def find_halos(pos_host, radius, catalog):
+def readgadget(f_snap, read_type, p_type, n_files):
+    if n_files == 1:
+        print('Read snap: ', f_snap, ' read type: ', read_type, ' ptype: ', p_type)
+        parts = readsnap(f_snap, read_type, p_type)
+    else:
+        parts = np.zeros((1, 3), dtype=float)
+        size_part = 0
+        for i_file in range(0, n_files):
+            f_tmp = f_snap + '.' + str(i_file)
+            parts_tmp = readsnap(f_tmp, read_type, p_type)
 
-    new_key = 'Distance'
+            old_size = size_part
+            size_part += len(parts_tmp)
+            parts.resize((size_part, 3))
+            parts[old_size:size_part][:] = [xyz for xyz in parts_tmp[:][:]]
 
-    def dist(x, c):
-        return distance(x, c)
+            '''
+            for i_part in range(0, len(parts_tmp)):
+                parts[old_size + i_part, :] = parts_tmp[i_part][:]
+#                i_x = 2
+#                print(parts_tmp[i_part][i_x])
+#                print(parts[old_size + i_part][i_x])
+#                for i_x in range(0, 3):
+#                    parts[old_size + i_part, i_x] = parts_tmp[i_part][i_x]
+                    #print(parts_tmp[i_part][i_x])
+                    #print(parts[old_size + i_part][i_x])
+            '''
+    print('Found a total of ', np.shape(parts), ' particles.')
+    return parts
 
-    catalog[new_key] = catalog[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.apply(dist, c=pos_host).T
-    
-    return catalog[catalog[new_key] < radius]    
+
+
+
+
 
