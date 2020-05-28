@@ -33,7 +33,7 @@ def distance(x, center):
 '''
 
 def rad2deg():
-	coeff = 180.0 / math.pi
+	coeff = 180.0 / np.pi
 	return coeff
 
 def module(vec):
@@ -73,9 +73,43 @@ def center_of_mass(m,x):
 
 	return com
 	
+def vec_subt(x1, x2):
+	vs = [x1[0] - x2[0], x1[1] - x2[1], x1[2] - x2[2]]
+	return vs
+
+def dot_prod(x1, x2):
+	dp = x1[0]*x2[0] + x1[1]*x2[1] + x1[2]*x2[2] 
+	return dp
+
+def vec_divide(x, fac):
+	n = len(x)
+	nx = [0] * n
+
+	for i in range(0, n):
+		nx[i] = x[i] / fac
+
+	return nx
+	
+def center_of_mass(m,x):
+	n = len(m)
+	com = [0.0] * 3 
+	
+	for j in range(0, 3):
+		mtot = 0.0
+
+		for i in range(0, n):
+			mtot += m[i] 
+			com[j] += x[i][j] * m[i]
+		
+		com[j] /= mtot
+
+	return com
+
+
+
 def vec_module(v):
 	vmod = dot_prod(v, v)
-	return math.sqrt(vmod)
+	return np.sqrt(vmod)
 
 def vec_distance(x, y):
 	vsub = vec_subt(x, y)
@@ -89,7 +123,7 @@ def vec_norm(x):
 
 	for ix in range(0, n):
 		norm += x[ix] * x[ix]
-	norm = math.sqrt(norm)	
+	norm = np.sqrt(norm)	
 
 	for ix in range(0, n):
 		vn.append(x[ix] / norm)
@@ -98,7 +132,7 @@ def vec_norm(x):
 
 def vel_radial(x1, x2, v1, v2):
 	x12 = vec_subt(x2, x1)	
-	n12 = math.sqrt(dot_prod(x12, x12))
+	n12 = np.sqrt(dot_prod(x12, x12))
 	r12 = dot_prod(vec_subt(v2, v1), x12) 
 	nr12 = r12 / n12
 	return nr12

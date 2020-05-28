@@ -66,10 +66,6 @@ def read_mah_halo(id_list, mah_path, time):
             except:
                 'This file does not exist'
 
-#    print(n_cols)
-#    print(cols)
-
-
     for ID in id_list:
         file_mah = mah_path + str(ID) + mah_format
 

@@ -40,11 +40,11 @@ class Halo:
 
     # Simply return r
     def r(self):
-        return self.halo_df[['Rvir(12)']].values[0, 0]
+        return self.halo_df[['Rvir(12)']].values[0]
 
     # Simply return the mass
     def m(self):
-        return self.halo_df[['Mvir(4)']].values[0, 0]
+        return self.halo_df[['Mvir(4)']].values[0]
 
     # Compute the distance from a given point
     def distance(self, c):
@@ -366,7 +366,6 @@ def rate_lg_pair(lg1, lg2):
 
     return lg_rate
 
-
 '''
     Given a point in space return the halo IDS around it, very simple.
 '''
@@ -394,3 +393,106 @@ def find_halos(pos_host, radius, catalog):
     
     return catalog[catalog[new_key] < radius]    
 
+'''
+    Given a box and a model, return a list of possible local groups
+    Taken from the old PyRCODIO routines
+'''
+def find_lg(halos, lgmod):
+    center = lgmod.center
+    iso_radius = lgmod.d_iso
+    m_min = lgmod.m_min
+    m_max = lgmod.m_max
+    r_min = lgmod.r_min
+    r_max = lgmod.r_max
+    model_code = lgmod.model_code	
+    vrad_max = lgmod.vrad_max
+
+    # TODO: rewrite these routines with pandas and something quicker and smarter
+
+    '''
+	# Center is a three-D variable
+	# These are initialized empty
+	halos_lg = []		# list of individual halos
+	lgs = []		# Haloes paired as LG structures
+	halos_center = []	# List of haloes with the right mass range and distance from centrum
+
+	n_halos = len(halos)
+
+	# First identify a set of candidates within the radius and mass range
+	for h in range(0, n_halos):
+		halo_this = halos[h]
+
+		if halo_this.m() > m_min:
+			halos_center.append(halo_this)
+			
+	n_candidates = len(halos_center)
+	
+	# Total number of LG-halos
+	n_all_lgs = 0
+
+	# Now loop on halo center candidates
+	for h in range(0, n_candidates):
+		halo_lg0 = halos_center[h]
+		count_lg = 0
+		count_wrong = 0
+		
+		if halo_lg0.m() > m_max:
+			count_wrong = 1
+
+		# We need to run the loop on ALL halos, in case there is a third halo lying close
+		for i in range(h+1, n_candidates):
+			halo_lg1 = halos_center[i]
+			dis_this = halo_lg1.distance(halo_lg0.pos())
+
+			# This is a subhalo! Keep it				
+			if dis_this < halo_lg0.r() or dis_this < r_min:
+				count_wrong += 0
+
+			elif dis_this > r_min and dis_this < r_max:
+				halo_lg2 = halo_lg1	# This is a possible candidate
+				vrad = t.vel_radial(halo_lg2.pos(), halo_lg0.pos(), halo_lg2.vel(), halo_lg0.vel()) 
+				count_lg += 1
+				
+				# There are too many close-by haloes
+				if count_lg > 1:
+					count_wrong += 1
+
+				if vrad + (0.67 * dis_this * 0.1) > vrad_max:
+					count_wrong += 1
+
+		# A new first & second LG halos have been found:
+		if count_wrong == 0 and count_lg == 1:
+			already_there = 0
+
+			for j in range(0, n_all_lgs):
+				lg1 = halos_lg[2 * j]
+				lg2 = halos_lg[2 * j + 1]
+			
+				if halo_lg0.ID == lg1.ID or halo_lg0.ID == lg2.ID:
+					already_there += 1
+
+			# We have a candidate! 
+			if already_there == 0:
+				n_iso_radius = 0
+
+				# Check also for third haloes within the isolation radius before adding the pair
+				com = t.center_of_mass([halo_lg0.m(), halo_lg2.m()], [halo_lg0.pos(), halo_lg2.pos()])		
+				halos_iso = find_halos(com, iso_radius, halos)
+				nh_iso = len(halos_iso)
+
+				for k in range(0, nh_iso):
+					#print halos_iso[k].info()
+					if halos_iso[k].m > m_min:
+						#print halos_iso[k].distance(com), halos_iso[k].m
+						n_iso_radius += 1
+	
+				if n_iso_radius == 2: 
+					# A new first & second LG halos have been found:
+					halos_lg.append(halo_lg0)
+					halos_lg.append(halo_lg2)
+					this_lg = LocalGroup(model_code)
+					this_lg.init_halos(halo_lg0, halo_lg2)
+					lgs.append(this_lg)
+					n_all_lgs += 1
+	return lgs
+                '''
