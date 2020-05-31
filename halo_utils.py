@@ -19,7 +19,7 @@ class Halo:
     host_df = pd.DataFrame()
     subhalos = []
 
-    # We must assign the main halo, if this is a subhalo then the host can be also assigned
+    # We must assign the main halo, if this is a subhalo then the host can be also assigned. Halo is a dataframe!
     def __init__(self, halo, host=None):
         self.halo_df = halo
 
@@ -29,6 +29,18 @@ class Halo:
     # Print the head of this DF - it hols only one element (row) so it will print everything
     def info(self):
         print(self.halo_df.head())
+
+    # Return the ID of the halo
+    def ID(self):
+        return self.halo_df[['ID']].values[0]
+
+    # Number of subhalos
+    def nsub(self):
+        return self.halo_df[['numSubStruct(3)']].values[0]
+
+    # Number of particles
+    def npart(self):
+        return self.halo_df[['npart(5)']].values[0]
 
     # Return the position vector
     def pos(self):
@@ -59,7 +71,7 @@ class Halo:
         if r_sub == None:
             r_sub = self.r()
 
-        self.subhalos = t.find_halos(self.pos(), r_sub, halos)
+        self.subhalos = t.find_halos(halos, self.pos(), r_sub)
 
 
 '''
@@ -198,7 +210,6 @@ class LocalGroupModel:
     mratio_max = 4.
     vrad_max = -1.0
     center = [50000.0] * 3
-    model_code = '00'
 
     def __init__(self, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
         self.d_iso = d_iso
@@ -224,6 +235,7 @@ class LocalGroupModel:
 class LocalGroup:
     # Initialize to some numerical value
     vrad = -100.
+    vtan = 0.
     r = 770.
     d_cbox = 0.0
     d_virgo = 0.0
@@ -240,17 +252,18 @@ class LocalGroup:
     # The constructor needs two halos (lg1, lg2)
     def __init__(self, lg1, lg2):
 
-        if lg1.m > lg2.m:
+        if lg1.m() > lg2.m():
             self.LG1 = lg1
             self.LG2 = lg2
         else:
             self.LG1 = lg2
             self.LG2 = lg1
 
-        if lg1.x[0] != 0 and lg2.x != 0:
+        if lg1.pos()[0] != 0 and lg2.pos()[0] != 0:
             self.r = self.r_halos()
-            self.vrad = self.v_radial()
-            self.com = self.get_com()
+            self.vrad = self.vel_radial()
+            self.vtan = self.vel_tangential()
+            self.com = self.mass_com()
 
     def rating(self):
         self.rating = rate_lg_pair(self.LG1, self.LG2)
@@ -259,8 +272,8 @@ class LocalGroup:
     def geo_com(self):
         return 0.5 * (self.LG1.pos() + self.LG2.pos())
 
-    def com(self):
-        self.com = center_of_mass([self.LG1.m, self.LG2.m], [self.LG1.x, self.LG2.x])
+    def mass_com(self):
+        self.com = t.center_of_mass([self.LG1.m(), self.LG2.m()], [self.LG1.pos(), self.LG2.pos()])
         return self.com
 
     def lg_member(self, n_member):
@@ -273,10 +286,20 @@ class LocalGroup:
         self.r = self.LG1.distance(self.LG2.pos())
         return self.r
 
-    def v_radial(self):
-        self.vrad = vel_radial(self.LG1.pos(), self.LG2.pos(), self.LG1.vel(), self.LG2.vel())
-        self.vrad += self.hubble * self.r * 0.1
+    def vel_radial(self, hubble=True):
+        self.vrad = t.vel_radial(self.LG1.pos(), self.LG2.pos(), self.LG1.vel(), self.LG2.vel())
+            
+        # Add the effects of the Hubble expansion by default
+        if hubble == True:
+            self.vrad += self.hubble * self.r * 0.1
         return self.vrad
+
+    def vel_tangential(self):
+        vrad0 = self.vel_radial(hubble=False)
+        vtot = t.vec_module(t.vec_subt(self.LG1.vel(), self.LG2.vel()))
+        self.vtan = vtot**2.0 - vrad0**2.0
+
+        return self.vtan
 
     def m_ratio(self):
         if self.LG1.m > self.LG2.m:
@@ -286,32 +309,40 @@ class LocalGroup:
 
     def header(self):
         n_head = 0
-        header = '#'
-        header += ' SimuCode('+ str(n_head) +')' ; n_head = +1
-        header += ' ID_M31('+ str(n_head) +')' ; n_head = +1
-        header += ' ID_MW('+ str(n_head) +')' ; n_head = +1
-        header += ' R_MWM31('+ str(n_head) +')' ; n_head = +1
-        header += ' Vrad('+ str(n_head) +')' ; n_head = +1
-        header += ' Nsub_M31('+ str(n_head) +')' ; n_head = +1
-        header += ' Nsub_MW('+ str(n_head) +')' ; n_head = +1
-        header += ' X_com('+ str(n_head) +')' ; n_head = +1
-        header += ' Y_com('+ str(n_head) +')' ; n_head = +1
+        header = ''
+        header += ' SimuCode('+ str(n_head) +'),' ; n_head = +1
+        header += ' ID_M31('+ str(n_head) +'),' ; n_head = +1
+        header += ' ID_MW('+ str(n_head) +'),' ; n_head = +1
+        header += ' R_MWM31('+ str(n_head) +'),' ; n_head = +1
+        header += ' Vrad('+ str(n_head) +'),' ; n_head = +1
+        header += ' Vtan('+ str(n_head) +'),' ; n_head = +1
+        header += ' Nsub_M31('+ str(n_head) +'),' ; n_head = +1
+        header += ' Nsub_MW('+ str(n_head) +'),' ; n_head = +1
+        header += ' X_com('+ str(n_head) +'),' ; n_head = +1
+        header += ' Y_com('+ str(n_head) +'),' ; n_head = +1
         header += ' Z_com('+ str(n_head) +')' ; n_head = +1
 
         return header
 
-    def info(self):
+    def info(self, dump=True):
         h0 = self.hubble
         kpc = 1000.
-        file_lg_line = '%s  %ld   %ld   %7.2e   %7.2e   %7.2f   %7.2f   %5d   %5d  %5.2f  %5.2f  %5.2f  %d  %d' % \
-                (self.code, self.LG1.ID, self.LG2.ID, self.LG1.m/h0, self.LG2.m/h0, self.r/h0, self.vrad, \
-                        self.LG1.nsub, self.LG2.nsub, self.com[0]/kpc, self.com[1]/kpc, self.com[2]/kpc, \
-                        self.LG1.npart, self.LG2.npart)
+        file_lg_line = '%ld, %ld, %7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %5d, %5d, %5.2f, %5.2f, %5.2f, %d, %d' % \
+                       (self.LG1.ID(), self.LG2.ID(), self.LG1.m()/h0, self.LG2.m()/h0, self.r_halos()/h0, \
+                        self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
+                        self.geo_com()[0]/kpc, self.geo_com()[1]/kpc, self.geo_com()[2]/kpc, \
+                        self.LG1.npart(), self.LG2.npart())
 
+        # TODO implement this
+        ''' 
         if self.LG1.m_star > 0.0:
             extra_mstar = '   %7.2e   %7.2e' % (self.LG1.m_star/h0, self.LG2.m_star/h0)
             extra_mgas = '   %7.2e   %7.2e' % (self.LG1.m_gas/h0, self.LG2.m_gas/h0)
             file_lg_line = file_lg_line + extra_mstar + extra_mgas
+        '''
+
+        if dump == True:
+            print(file_lg_line)
 
         return file_lg_line
 
@@ -367,7 +398,8 @@ def rate_lg_pair(lg1, lg2):
     return lg_rate
 
 '''
-    Given a point in space return the halo IDS around it, very simple.
+    Given a point in space return the halo IDS around it.
+    Input: halos is a list of halo objects
 '''
 def halo_ids_around_center(halos, center, radius):
     ids = []
@@ -380,16 +412,17 @@ def halo_ids_around_center(halos, center, radius):
     return ids
 
 '''
-    Given a (halo) center at pos_host, find all the (sub) halos within a given radius
+    Given a center, find all the halo within a given radius
+    Input: catalog is a DataFrame
 '''
-def find_halos(pos_host, radius, catalog):
+def find_halos(catalog, center, radius):
 
     new_key = 'Distance'
 
     def dist(x, c):
-        return distance(x, c)
+        return t.distance(x, c)
 
-    catalog[new_key] = catalog[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.apply(dist, c=pos_host).T
+    catalog[new_key] = catalog[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.apply(dist, c=center).T
     
     return catalog[catalog[new_key] < radius]    
 
@@ -397,7 +430,7 @@ def find_halos(pos_host, radius, catalog):
     Given a box and a model, return a list of possible local groups
     Taken from the old PyRCODIO routines
 '''
-def find_lg(halos, lgmod):
+def find_lg(halos, lgmod, center, radius):
     center = lgmod.center
     iso_radius = lgmod.d_iso
     m_min = lgmod.m_min
@@ -407,92 +440,85 @@ def find_lg(halos, lgmod):
     model_code = lgmod.model_code	
     vrad_max = lgmod.vrad_max
 
-    # TODO: rewrite these routines with pandas and something quicker and smarter
+    # First select only halos within a given radius from the center
+    halos_center = find_halos(halos, center, radius)
 
-    '''
-	# Center is a three-D variable
-	# These are initialized empty
-	halos_lg = []		# list of individual halos
-	lgs = []		# Haloes paired as LG structures
-	halos_center = []	# List of haloes with the right mass range and distance from centrum
+    # Refine the selection choosing only halos above the minimum mass
+    halos_mass = halos_center[halos_center['Mvir(4)'] > m_min]
+    
+    n_candidates = halos_mass['Mvir(4)'].count()
+    print('Looking for candidates among ', n_candidates, ' halos.')
 
-	n_halos = len(halos)
+    # Sanity check
+    #print(halos_mass.info())
+    #print(halos_mass.head())
+    #pos = halos_mass.iloc[1, 3:6].values
+    #print('Pos: ', pos)
 
-	# First identify a set of candidates within the radius and mass range
-	for h in range(0, n_halos):
-		halo_this = halos[h]
+    # These are initialized empty
+    lgs = []		# Haloes paired as LG structures
 
-		if halo_this.m() > m_min:
-			halos_center.append(halo_this)
-			
-	n_candidates = len(halos_center)
-	
-	# Total number of LG-halos
-	n_all_lgs = 0
-
-	# Now loop on halo center candidates
-	for h in range(0, n_candidates):
-		halo_lg0 = halos_center[h]
-		count_lg = 0
-		count_wrong = 0
+    # Now loop on halo center candidates
+    for h in range(0, n_candidates):
+        # We want to create a single halo object that needs a DataFrame for the constructor
+        halo_lg0 = Halo(halos_mass[halos_mass['ID'] == halos_mass.iloc[h, -3]])
+        count_lg = 0    
+        count_wrong = 0
 		
-		if halo_lg0.m() > m_max:
-			count_wrong = 1
+        if halo_lg0.m() > m_max:
+            count_wrong = 1
+    
+        # We need to run the loop on ALL halos, in case there is a third halo lying close
+        for i in range(h+1, n_candidates):
+            halo_lg1 = Halo(halos_mass[halos_mass['ID'] == halos_mass.iloc[i, -3]])
+            dis_this = halo_lg1.distance(halo_lg0.pos())
 
-		# We need to run the loop on ALL halos, in case there is a third halo lying close
-		for i in range(h+1, n_candidates):
-			halo_lg1 = halos_center[i]
-			dis_this = halo_lg1.distance(halo_lg0.pos())
-
-			# This is a subhalo! Keep it				
-			if dis_this < halo_lg0.r() or dis_this < r_min:
-				count_wrong += 0
-
-			elif dis_this > r_min and dis_this < r_max:
-				halo_lg2 = halo_lg1	# This is a possible candidate
-				vrad = t.vel_radial(halo_lg2.pos(), halo_lg0.pos(), halo_lg2.vel(), halo_lg0.vel()) 
-				count_lg += 1
+            # This is a subhalo! Keep it				
+            if dis_this < halo_lg0.r() or dis_this < r_min:
+                # Just do nothing
+                count_wrong += 0
+            
+            # This is a possible second candidate
+            elif dis_this > r_min and dis_this < r_max:
+                halo_lg2 = halo_lg1	
+                vrad = t.vel_radial(halo_lg2.pos(), halo_lg0.pos(), halo_lg2.vel(), halo_lg0.vel()) 
+                count_lg += 1
 				
-				# There are too many close-by haloes
-				if count_lg > 1:
-					count_wrong += 1
+                # There are too many close-by haloes
+                if count_lg > 1:
+                    count_wrong += 1
 
-				if vrad + (0.67 * dis_this * 0.1) > vrad_max:
-					count_wrong += 1
+                # Check if they satisfy the v radial condition
+                if vrad + (0.67 * dis_this * 0.1) > vrad_max:
+                    count_wrong += 1
 
 		# A new first & second LG halos have been found:
-		if count_wrong == 0 and count_lg == 1:
-			already_there = 0
+                if count_wrong == 0 and count_lg == 1:
+                    already_there = 0
 
-			for j in range(0, n_all_lgs):
-				lg1 = halos_lg[2 * j]
-				lg2 = halos_lg[2 * j + 1]
+                    '''
+                    for j in range(0, n_all_lgs):
+                        lg1 = halos_lg[2 * j]
+                        lg2 = halos_lg[2 * j + 1]
 			
-				if halo_lg0.ID == lg1.ID or halo_lg0.ID == lg2.ID:
-					already_there += 1
+                        if halo_lg0.ID == lg1.ID or halo_lg0.ID == lg2.ID:
+                            already_there += 1
+                    '''
 
-			# We have a candidate! 
-			if already_there == 0:
-				n_iso_radius = 0
+                    # We have a candidate! 
+                    if already_there == 0:
+                        n_iso_radius = 0
 
-				# Check also for third haloes within the isolation radius before adding the pair
-				com = t.center_of_mass([halo_lg0.m(), halo_lg2.m()], [halo_lg0.pos(), halo_lg2.pos()])		
-				halos_iso = find_halos(com, iso_radius, halos)
-				nh_iso = len(halos_iso)
+                    # Check also for third haloes within the isolation radius before adding the pair
+                    this_lg = LocalGroup(halo_lg0, halo_lg2)
+                    com = this_lg.geo_com()
+                    halos_iso = find_halos(halos, com, iso_radius)
+                    nh_iso = len(halos_iso)
 
-				for k in range(0, nh_iso):
-					#print halos_iso[k].info()
-					if halos_iso[k].m > m_min:
-						#print halos_iso[k].distance(com), halos_iso[k].m
-						n_iso_radius += 1
+                    n_iso_radius = halos_iso[halos_iso['Mvir(4)'] > m_min]['Mvir(4)'].count()
 	
-				if n_iso_radius == 2: 
-					# A new first & second LG halos have been found:
-					halos_lg.append(halo_lg0)
-					halos_lg.append(halo_lg2)
-					this_lg = LocalGroup(model_code)
-					this_lg.init_halos(halo_lg0, halo_lg2)
-					lgs.append(this_lg)
-					n_all_lgs += 1
-	return lgs
-                '''
+                    # Make sure there are only two halos within this radius
+                    if n_iso_radius == 2: 
+                        lgs.append(this_lg)
+
+    return lgs

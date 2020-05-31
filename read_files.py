@@ -39,7 +39,8 @@ def read_ahf_halo(file_name):
         h = hu.Halo(this_h)
         halos.append(h)
 
-    return halos
+    # Halos is a list of Halo objects, halo is a DataFrame type
+    return [halos, halo]
 
 
 """

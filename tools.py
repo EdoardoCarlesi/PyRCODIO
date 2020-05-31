@@ -105,8 +105,6 @@ def center_of_mass(m,x):
 
 	return com
 
-
-
 def vec_module(v):
 	vmod = dot_prod(v, v)
 	return np.sqrt(vmod)
