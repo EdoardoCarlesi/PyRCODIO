@@ -1,0 +1,10 @@
+
+Repository url:
+https://github.com/EdoardoCarlesi/PyRCODIO
+
+A few useful commands:
+git push origin master
+git commit -a
+git config --global http.sslVerify false
+git config --global http.sslVerify true
+

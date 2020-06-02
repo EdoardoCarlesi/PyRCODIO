@@ -9,5 +9,7 @@
 *.bak
 output/*
 COPY/
+activate
+pygadgetreader
 ProjectsPlots
 ProjectsPlots/
