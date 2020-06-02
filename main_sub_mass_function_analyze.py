@@ -48,7 +48,7 @@ all_halo_mah = []
 out_base_pkl = 'saved/lg_mahs_'
 
 # Now loop on all the simulations and gather data
-for code in code_run[1:2]:
+for code in code_run:
 
     for sub in sub_run:
         this_path = base_path + code + '/' + sub + '/'

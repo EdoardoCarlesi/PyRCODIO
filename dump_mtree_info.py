@@ -42,6 +42,7 @@ out_suff = '.allinfo'
 
 # Select the runs to be analyzed
 runs = cfg.simu_runs()
+subs = cfg.sub_runs()
 run = runs[1]
 
 # We need the redshifts to reconstruct the AHF file path
@@ -64,9 +65,7 @@ for line in lines:
     zs.append(line.rstrip('\n'))
 
 # Loop on the subruns
-for g in range(gIni, gEnd):
-    gDir = '%02d' % g
-    
+for gDir in subs: 
     halosIDs = dict()
     
     # Read each AHF catalog per simulation subrun

@@ -29,7 +29,7 @@ out_suff = '.allinfo'
 
 runs = cfg.simu_runs()
 
-run = runs[2]
+run = runs[10]
 
 ahf_zs = halo_base + '/redshifts.txt'
 

@@ -54,19 +54,24 @@ def read_mah_halo(id_list, mah_path, time):
     n_cols = 0
     head_count = 0
 
-    while head_count == 0:
-        for ID in id_list:
-            file_mah = mah_path + str(ID) + mah_format
+    for ID in id_list:
+        file_mah = mah_path + str(ID) + mah_format
 
-            try:
-                # Read header. There is some issue with delimiters so we need to read this separately. Only one time
-                head = pd.read_csv(file_mah, sep='\s+', nrows=0)
-                cols = head.columns
-                n_cols = len(head.columns)
-                head_count = 1
-            except:
-                'This file does not exist'
-                print('File: ', file_mah, ' does not exist.')
+        try:
+            # Read header. There is some issue with delimiters so we need to read this separately. Only one time
+            head = pd.read_csv(file_mah, sep='\s+', nrows=0)
+            cols = head.columns
+            n_cols = len(head.columns)
+            head_count = 1
+            break
+        except:
+            'This file does not exist'
+            #print('File: ', file_mah, ' does not exist.')
+
+    if head_count == 0:
+        print('There are no suitable MAH files in folder ', mah_path)
+        print('Please make sure there are enough files with the right format. Exiting...')
+        id_list = []
 
     for ID in id_list:
         file_mah = mah_path + str(ID) + mah_format
