@@ -66,6 +66,7 @@ def read_mah_halo(id_list, mah_path, time):
                 head_count = 1
             except:
                 'This file does not exist'
+                print('File: ', file_mah, ' does not exist.')
 
     for ID in id_list:
         file_mah = mah_path + str(ID) + mah_format
@@ -101,6 +102,7 @@ def read_mah_halo(id_list, mah_path, time):
 
         except:
             'The output file for this halo was not produced (too few particles to be traced, most likely). Do nothing'
+
     return all_mah
 
 

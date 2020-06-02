@@ -328,7 +328,7 @@ class LocalGroup:
         h0 = self.hubble
         kpc = 1000.
         file_lg_line = '%ld, %ld, %7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %5d, %5d, %5.2f, %5.2f, %5.2f, %d, %d' % \
-                       (self.LG1.ID(), self.LG2.ID(), self.LG1.m()/h0, self.LG2.m()/h0, self.r_halos()/h0, \
+                       (self.LG1.ID(), self.LG2.ID(), self.LG1.m(), self.LG2.m(), self.r_halos(), \
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
                         self.geo_com()[0]/kpc, self.geo_com()[1]/kpc, self.geo_com()[2]/kpc, \
                         self.LG1.npart(), self.LG2.npart())

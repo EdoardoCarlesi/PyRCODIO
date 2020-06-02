@@ -1,9 +1,20 @@
-from libio.read_ascii import *
-from libcosmo.halos import *
+'''
+    Python Routines for COsmology and Data I/O
+    PyRCODIO Pandas Version
+    Edoardo Carlesi 2020
+    ecarlesi83@gmail.com
+
+    dump_mtree_info.py = dump to a single file the full MAH with complete info(full AHF catalog line) at each snapshot, for each halo found at z = 0
+'''
+
+
+import read_file as rf
+import halo_utils as hu
 import glob
 import os
 import config as cfg
 
+# Path and properties of the simulations
 res='2048'
 #res='4096'
 #halo_base='/home/eduardo/CLUES/DATA/' + res + '/'
@@ -11,7 +22,7 @@ res='2048'
 halo_base='/media/edoardo/Elements/CLUES/DATA/' + res + '/'
 tree_base='/media/edoardo/Elements/CLUES/DATA/trees/' + res + '/'
 
-# 'snapshot_055.0000.z0.000.AHF_halos'
+# File structure be like 'snapshot_055.0000.z0.000.AHF_halos'
 ahf_base = 'snapshot_'
 
 if res == '2048':
@@ -19,27 +30,32 @@ if res == '2048':
 else:
     ahf_midd = '.0000.'
 
+# File format
 ahf_suff = '.AHF_halos'
 
-#'halo_4037937173177511913.ids'
+# File input be like 'halo_4037937173177511913.ids'
 mcpp_base = 'halo_'
 mcpp_suff = '.ids'
 
+# Output format
 out_suff = '.allinfo'
 
+# Select the runs to be analyzed
 runs = cfg.simu_runs()
+run = runs[1]
 
-run = runs[2]
-
+# We need the redshifts to reconstruct the AHF file path
 ahf_zs = halo_base + '/redshifts.txt'
 
-# AHF snapshots
+# Number of AHF snapshots 
 sIni = 0
 sEnd = 54
 
+# How many subruns per main run
 gIni = 0
 gEnd = 10
 
+# Read the redshift file
 f_zs = open(ahf_zs, 'r')
 lines = f_zs.readlines()
 
@@ -47,19 +63,22 @@ zs = []
 for line in lines:
     zs.append(line.rstrip('\n'))
 
+# Loop on the subruns
 for g in range(gIni, gEnd):
     gDir = '%02d' % g
     
     halosIDs = dict()
-
+    
+    # Read each AHF catalog per simulation subrun
     for s in range(0, sEnd - sIni):
         sInv = sEnd - s
         sSnap = '%03d' % sInv
+
         if res == '4096':
             zStr = zs[sInv-1]
         else:
             zStr = zs[sInv]
-        #file_snap = halo_base + run + '/' + gDir + '/' + ahf_base + sSnap + ahf_midd + zStr + ahf_suff
+
         file_find = glob.glob(halo_base + run + '/' + gDir + '/' + ahf_base + sSnap + ahf_midd + ahf_suff)
         file_snap = file_find[0]
 
@@ -71,6 +90,7 @@ for g in range(gIni, gEnd):
             else:
                 halos = read_ahf(file_snap)
             
+                # FIXME this one needs to be adapted to the new read halo routine
                 for halo in halos:
                     halosIDs[str(halo.ID)] = halo
         else:
@@ -83,13 +103,13 @@ for g in range(gIni, gEnd):
         idStr = str(halo0.ID)
         file_tree = tree_base + run + '/' + gDir + '/' + mcpp_base + idStr + mcpp_suff
         file_out = tree_base + run + '/' + gDir + '/' + mcpp_base + idStr + out_suff
-#        print(file_tree)
 
         if os.path.isfile(file_tree):
             #print('Found: ', file_tree, len(halos0))
             f_tree = open(file_tree, 'r')
             f_out = open(file_out, 'w')
 
+            # FIXME
             print(halo0.header_ahf(), file=f_out)
             theseIDs = []; iLine = 0
 
@@ -109,7 +129,6 @@ for g in range(gIni, gEnd):
 
                 iLine += iLine + 1
 
-            #print('Full tree written to: ', file_out)
             f_out.close()
             f_tree.close()
             

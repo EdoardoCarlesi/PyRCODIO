@@ -25,7 +25,14 @@ sub_run = cfg.sub_runs()
 file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 file_mah = 'halo_'
 form_mah = '.allinfo'
-base_path = '/media/edoardo/data1/DATA/'
+
+# Local test files
+#base_path = '/media/edoardo/data1/DATA/'
+#base_path_mah = '/media/edoardo/data1/DATA/'
+
+# Full dataset
+base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
+base_path_mah = '/media/edoardo/Elements/CLUES/DATA/trees/2048/'
 data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
 
 # Select a subsample from the full catalog to look for local groups
@@ -41,18 +48,16 @@ all_halo_mah = []
 out_base_pkl = 'saved/lg_mahs_'
 
 # Now loop on all the simulations and gather data
-for code in code_run[0:1]:
+for code in code_run[1:2]:
 
-    for sub in sub_run[0:5]:
+    for sub in sub_run:
         this_path = base_path + code + '/' + sub + '/'
+        this_path_mah = base_path_mah + code + '/' + sub + '/'
         this_ahf = this_path + file_ahf
-        this_mah = this_path + file_mah
+        this_mah = this_path_mah + file_mah
 
         # Check that file exists
         if os.path.isfile(this_ahf):
-            print('Reading AHF file: ', this_ahf)
-            halos, halo_df = rf.read_ahf_halo(this_ahf)
-
             out_file_pkl = out_base_pkl + code + '_' + sub + '.pkl'
 
             if os.path.isfile(out_file_pkl):
@@ -64,6 +69,9 @@ for code in code_run[0:1]:
                 print('LG properties: ')
                 lg.info()
             else:
+                print('Reading AHF file: ', this_ahf)
+                halos, halo_df = rf.read_ahf_halo(this_ahf)
+
                 print('Looking for Local Group candidates...')
                 this_model = model_run[dict_model[code]]
 
