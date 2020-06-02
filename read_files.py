@@ -39,7 +39,8 @@ def read_ahf_halo(file_name):
         h = hu.Halo(this_h)
         halos.append(h)
 
-    return halos
+    # Halos is a list of Halo objects, halo is a DataFrame type
+    return [halos, halo]
 
 
 """
@@ -65,10 +66,6 @@ def read_mah_halo(id_list, mah_path, time):
                 head_count = 1
             except:
                 'This file does not exist'
-
-#    print(n_cols)
-#    print(cols)
-
 
     for ID in id_list:
         file_mah = mah_path + str(ID) + mah_format

@@ -8,72 +8,95 @@
 '''
 
 import read_files as rf
-import tools as t
 import halo_utils as hu
-import pandas as pd
 import seaborn as sns
+import config as cfg
 import pickle as pkl
+import pandas as pd
+import tools as t
+import os
 
-base_ahf = '/media/edoardo/data1/DATA/'
+# Configure the LG model and subpaths
+[model_run, dict_model] = cfg.lg_models()
+code_run = cfg.simu_runs()
+sub_run = cfg.sub_runs()
 
-file_ahf = '/media/edoardo/data1/DATA/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
-file_mah = '/media/edoardo/data1/DATA/00_06/00/halo_'
+# Local data path, file names and file format
+file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
+file_mah = 'halo_'
 form_mah = '.allinfo'
+base_path = '/media/edoardo/data1/DATA/'
 data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
 
+# Select a subsample from the full catalog to look for local groups
+cat_radius = 10.0e+3
+cat_center = [50.e+3] * 3
+
+# Read the | Gyr / z / a | time conversion table
 time = rf.read_time(data_path)
-print(time)
 
 all_halo_mah = []
 
-mahs = rf.read_mah_halo(file_ahf, file_mah, time)
+# Output file base path, save all relevant halo MAHs here
+out_base_pkl = 'saved/lg_mahs_'
 
+# Now loop on all the simulations and gather data
+for code in code_run[0:1]:
 
+    for sub in sub_run[0:5]:
+        this_path = base_path + code + '/' + sub + '/'
+        this_ahf = this_path + file_ahf
+        this_mah = this_path + file_mah
 
-#print(mahs[0].m_t())
-#print(mahs[0].m_max())
-#print(mahs[0].x_t())
-print(mahs[0].formation_time())
-#print(mahs[0].m_t_norm())
-#print(mahs[0].last_major_merger())
+        # Check that file exists
+        if os.path.isfile(this_ahf):
+            print('Reading AHF file: ', this_ahf)
+            halos, halo_df = rf.read_ahf_halo(this_ahf)
 
-#print(mahs[0].head())
-#print(mahs[0]['ID'])
-#cols = str(mahs[0].columns)
-#row = str(mahs[0].iloc[[1]])
-#print(row.split())
-#print(cols.split())
-#mahs[0].columns = cols.split()
-#print(mahs[0].head()) 
-#print(mahs[0]['#ID(1)']) 
-#print(mahs[0]['Mvir(4)']) 
-#print(mahs[0]['HostHalo(2)']) 
+            out_file_pkl = out_base_pkl + code + '_' + sub + '.pkl'
 
-"""
-    TEST READ IN ROUTINES FOR MAH and AHF
+            if os.path.isfile(out_file_pkl):
+                print('Loading MAHs from .pkl file...')
+                out_f_pkl = open(out_file_pkl, 'rb')
+                mahs, lg = pkl.load(out_f_pkl)
+                out_f_pkl.close()
+                print('Done.')
+                print('LG properties: ')
+                lg.info()
+            else:
+                print('Looking for Local Group candidates...')
+                this_model = model_run[dict_model[code]]
 
-file_halo = '/media/edoardo/Elements/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
-file_tree = '/media/edoardo/Elements/CLUES/DATA/trees/2048/00_06/00/df_all_ids.csv'
-halo = rf.read_ahf_halo(file_halo)
-tree = rf.read_csv_tree(file_tree)
+                # The local group model might eventually find more than one pair in the given volume
+                these_lgs = hu.find_lg(halo_df, this_model, cat_center, cat_radius)
 
-id0 = halo['ID'].loc[0]
-hh = halo[halo['ID'] == id0]
-this_halo = hu.Halo(hh)
+                # SELECT ONE LG
+                print('Found a LG candidate with properties: ')
+                these_lgs[0].info()
+                lg = these_lgs[0]
 
-this_halo.assign_subhalos(halo)
+                # Define a gather radius for halos around the LG
+                lg_radius = lg.LG1.r() + lg.LG2.r() + lg.r_halos()
+                lg_radius = 1.2 * lg_radius
 
-hs = hu.HaloHistory(10)
+                # TODO there might be more LGs in the area but here I am selecting only one
+                #for this_lg in these_lgs:
+                lg_center = lg.geo_com()
+                id_list = hu.halo_ids_around_center(halos, lg_center, lg_radius)
 
-hs.halos.append(hh)
-hs.trajectory_around_host()
+                print('Reading MAHs for ', len(id_list), ' halos at ', lg_radius, ' kpc/h around the LG center of mass... ')
+                mahs = rf.read_mah_halo(id_list, this_mah, time)
+                print('Done.')
+            
+                print('Saving MAHs output to file: ', out_file_pkl)
+                out_f_pkl = open(out_file_pkl, 'wb')
+                pkl.dump([mahs, lg], out_f_pkl)
+                out_f_pkl.close()
 
-print(tree[tree])
-
-#print(this_halo.info())
-#print(this_halo.distance(pos))
-"""
-
-
-
-
+                '''
+                print(mahs[0].m_t())
+                print(mahs[0].m_max())
+                print(mahs[0].m_t_norm())
+                print(mahs[0].formation_time())
+                print(mahs[0].last_major_merger())
+                '''
