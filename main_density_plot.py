@@ -33,9 +33,10 @@ snap_path = 'snapshot_054'
 side_size = 2.0e+3
 thickness = 1.0e+3
 n_files = 1
-frac = 0.5
+frac = 0.3
 units = 'kpc'
 part_type = 1
+doVelocity = True
 
 # Production mode: read LG from several snapshots OR single Halos from one snapshots
 LG_mode = True; Halo_mode = False
@@ -59,56 +60,31 @@ if LG_mode == True:
 
             sub = '%02d' % sub
             this_path = base_path + code + '/' + sub + '/'
+            this_fout = 'output/lg_' + code + '_' + sub + '_'
             this_snap = this_path + snap_path
 
             # Check that file exists
             if os.path.isfile(this_snap):
 
-                # Do the plot
+                # TODO loop on the axis
+                # Select particles for the plot, do a selection first. z_axis is orthogonal to the plane of the projection
+                z_axis = 2
                 center = this_com[0]
                 print('Found: ', this_snap, ', plotting around: ', center)
 
-                slab_x, slab_y = pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center, reduction_factor=frac)
+                # Select a slab around a given axis, this function returns a dataframe
+                part_df = pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center, reduction_factor=frac, z_axis=z_axis, velocity=doVelocity, rand_seed=1)
+
+                pu.plot_density(data=part_df, axes_plot=[0, 1], file_name=this_fout)
+
+# In this kind of production mode we select individual halos from a single snapshot
+elif Halo_mode == True:
+
+    input_halo_csv = 'specify_a_file'
+    data_all = pd.read_csv(input_halo_csv)
+    
 
 
-#                x_tmp, y_tmp = pu.find_slab(this_snap, )
-
-'''
-            out_file_pkl = out_base_pkl + code + '_' + sub + '.pkl'
-            if os.path.isfile(out_file_pkl):
-                print('Loading MAHs from .pkl file...')
-                out_f_pkl = open(out_file_pkl, 'rb')
-                lg = pkl.load(out_f_pkl)
-                out_f_pkl.close()
-                print('Done.')
-                print('Writing LG properties... ')
-                out_all_lgs.write(lg.info()+'\n')
-            else:
-                print('Reading AHF file: ', this_ahf)
-                halos, halo_df = rf.read_ahf_halo(this_ahf)
-
-                print('Looking for Local Group candidates...')
-                this_model = model_run[dict_model[code]]
-
-                # The local group model might eventually find more than one pair in the given volume
-                these_lgs = hu.find_lg(halo_df, this_model, cat_center, cat_radius)
-
-                # SELECT ONE LG
-                print('Found a LG candidate with properties: ')
-                these_lgs[0].info()
-                lg = these_lgs[0]
-
-                print('Writing LG properties... ')
-                out_all_lgs.write(lg.info()+'\n')
-
-                print('Saving MAHs output to file: ', out_file_pkl)
-                out_f_pkl = open(out_file_pkl, 'wb')
-                pkl.dump(lg, out_f_pkl)
-                out_f_pkl.close()
-
-# Close the CSV file containing all the LG infos
-out_all_lgs.close()
-'''
 
 
 

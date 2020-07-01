@@ -11,6 +11,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.colors as colors
+import seaborn as sns
 import pandas as pd
 import numpy as np
 import math
@@ -33,14 +34,27 @@ def find_slab(file_name=None, center=None, side=None, thick=None, velocity=False
     minima = np.zeros((3))
     maxima = np.zeros((3))
 
-    cols = ['X', 'Y', 'Z']
+    # Do we want to read in velocity data as well? Or positions only?
+    if velocity == True:
+        print('Reading velocity and position particle info...')
+        particles = readsnap(file_name, 'pos', part_type)
+        velocities = readsnap(file_name, 'vel', part_type)
+    
+        # Concatenate the columns 
+        full_data = np.concatenate((particles, velocities), axis=1)
+        cols = ['X', 'Y', 'Z', 'Vx', 'Vy', 'Vz']
+
+    else:
+        print('Reading position particle info...')
+        particles = readsnap(file_name, 'pos', part_type)
+        full_data = particles
+        cols = ['X', 'Y', 'Z']
 
     # Read the snapshot
-    particles = readsnap(file_name, 'pos', part_type)
-    n_part = len(particles)
+    n_part = len(full_data)
 
     print('Found ', n_part, ' particles in total.')
-    part_df = pd.DataFrame(data=particles, columns=cols)
+    part_df = pd.DataFrame(data=full_data, columns=cols)
 
     # Select the two axes for the 2D projection
     ax0 = (z_axis + 1) % 3
@@ -85,118 +99,63 @@ def find_slab(file_name=None, center=None, side=None, thick=None, velocity=False
 
         print('The number of particles to be used has been reduced to: ', len(part_select))
 
-    slab_x = part_select[col0].values
-    slab_y = part_select[col1].values
-
-    # TODO read the velocity data as well in case!
-    # FIXME this should be fairly quick
-    if velocity == True:
-        velocities = readsnap(file_name, 'vel', part_type)
-
-    return (slab_x, slab_y)
+    # Return the selected particles' properties in a dataframe
+    return part_select
 
 
-def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, slab_type):
-    print('Plotting density slices for snapshot: ', slab)
+#def plot_density(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, slab_type):
+
+def plot_density(data=None, axes_plot=None, file_name=None, legend=False):
+    print('Plotting density slices...')
 
     # Plot properties
     axis_margins = 1
-    axis_size = 12
-    
-    # Select factor margin: select particles slightly outside of the side_size restriction, for nicer binning
-    sf = 1.1
+    fig_size = 10
+    ax0 = axes_plot[0]
+    ax1 = axes_plot[1]
+    coord = ['X', 'Y', 'Z']
 
-    axis_units = 'Mpc/h'; 
-    facMpc = 1000.
-    axis_label = ['SGX', 'SGY']
-
-    kpcOrMpc = 1.e+4
-
-    if center[0] > kpcOrMpc:
-        center[0] = center[0] / facMpc
-        center[1] = center[1] / facMpc
-        center[2] = center[2] / facMpc
-    
-    if side_size > kpcOrMpc:
-        side_size = side_size / facMpc
-
-    if slab_type == 1:
-        f_slab = open(slab[0], 'rb')
-        (x_plot, y_plot) = pickle.load(f_slab)
-
-    elif slab_type == 2:
-        f_slab0 = open(slab[0], 'rb')
-        f_slab1 = open(slab[1], 'rb')
-        (x_plot) = pickle.load(f_slab0)
-        (y_plot) = pickle.load(f_slab1)
-
-    n_x = len(x_plot)
-    print('N Part in slab: ', n_x)
-    print('Slab (%s, %s) with %d particles found.' % (axis_label[0], axis_label[1], n_x))
-    print('X Plot max min', max(x_plot), min(x_plot))
-
-    plt.xlabel(axis_label[0]+' '+axis_units)
-    plt.ylabel(axis_label[1]+' '+axis_units)
-
+    # If we are going to use the images with CNNs then by default legend is set to False
+    if legend == True:
+        axis_size = 12
+        axis_units = 'Mpc/h'
+        axis_label = ['SGX', 'SGY', 'SGZ']
+        plt.title('Matter density')
+        plt.xlabel(axis_label[ax0]+' '+axis_units)
+        plt.ylabel(axis_label[ax1]+' '+axis_units)
+    else:
+        axis_size = 0
+        
     # General plot settings
-    plt.figure(figsize=(8,8))
+    plt.figure(figsize=(fig_size,fig_size))
     plt.rc('xtick', labelsize=axis_size)
     plt.rc('ytick', labelsize=axis_size)
     plt.rc('axes',  labelsize=axis_size)
     plt.margins(axis_margins)
 
-    x_min = -side_size; x_max = side_size
-    y_min = -side_size; y_max = side_size
+    # Find the maxima and minima of the plot. Use a small reduction factor to make sure the picture is well centered
+    eps = 0.001
+    fac_min = 1.00 + eps
+    fac_max = 1.00 - eps
 
-    print('XMin: ', x_min, ' XMax: ', x_max)
-    print(center)
-    print(side_size)
-    data_x = [];     data_y = []
+    x_min = data[coord[ax0]].min() * fac_min
+    y_min = data[coord[ax1]].min() * fac_min
+    x_max = data[coord[ax0]].max() * fac_max
+    y_max = data[coord[ax1]].max() * fac_max
 
-    if max(x_plot) > kpcOrMpc:
-        facNorm = 1.e+3
-        print('Auto reducing to Mpc units')
-    else:
-        facNorm = 1.0
+    print('XMin: ', x_min, 'YMin: ', y_min)
+    print('XMax: ', x_max, 'YMax: ', y_max)
 
-    for ip in range(0, n_x):
-        if x_min > 0:
-            x = (x_plot[ip]/facNorm - center[0])
-            y = (y_plot[ip]/facNorm - center[1])
-        else:
-            x = (x_plot[ip]/facNorm) 
-            y = (y_plot[ip]/facNorm)
 
-        # Select only particles within the area
-        if (x > x_min*sf and x < x_max*sf and y > y_min*sf and y < y_max*sf):
-            data_x.append(x) 
-            data_y.append(y) 
-            #print(ip, x)
-
-    print('New particles number: ', len(data_x), ' n bins: ', nbins)
-    print('New maxmin: ', max(data_x), min(data_x))
-
-    data = np.zeros((len(data_x), 2), dtype='float')
-    for ip in range (0, len(data_x)):
-            data[ip, 0] = data_x[ip]
-            data[ip, 1] = data_y[ip]
+    #sns.kdeplot(data = data[coord[ax0]], data2 = data[coord[ax0]])
+    #sns.jointplot(coord[ax0], coord[ax1], data=data, kind='kde')
+    sns.jointplot(coord[ax0], coord[ax1], data=data, kind='hex', bins='log')
+    plt.show()
     
-    print('Smoothing on a ', nbins, ' grid...')
-    xi, yi = np.mgrid[min(data_x):max(data_x):nbins*1j, min(data_y):max(data_y):nbins*1j]
-    k = kde.gaussian_kde(data.T, bw_method=bw_smooth)
-    zi = k(np.vstack([xi.flatten(), yi.flatten()]))
-    print('Done.')
+    '''
 
     plt.axis([x_min, x_max, y_min, y_max])
-    plt.xlabel(axis_label[0]+' '+axis_units)
-    plt.ylabel(axis_label[1]+' '+axis_units)
-
-    plt.title('DM')
     colorscale = 'rainbow'
-    #colorscale = 'viridis'
-    #print(max(zi), min(zi))
-    #levels = [np.percentile(zi, 5), np.percentile(zi, 7), np.percentile(zi, 10)]
-    #levels = [np.percentile(zi, 25)] #, np.percentile(zi, 7), np.percentile(zi, 10)]
 
     levels = [np.percentile(zi, 75), np.percentile(zi, 90), np.percentile(zi, 99)]
 
@@ -209,8 +168,8 @@ def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, sl
     # Save to file
     plt.tight_layout()
     plt.savefig(f_out)
-
-
+    '''
+    
 
 
 
