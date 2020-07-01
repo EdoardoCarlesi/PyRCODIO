@@ -4,11 +4,12 @@
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
-    main_lg_pca_extract.py: extract LG properties to be used for PCA analysis
+    main_density_plot.py: produce a large number of plots centered around individual objects (LGs, halos, clusters...)
 '''
 
 import read_files as rf
 import halo_utils as hu
+import plot_utils as pu
 import config as cfg
 import pickle as pkl
 import pandas as pd
@@ -20,56 +21,65 @@ import os
 code_run = cfg.simu_runs()
 sub_run = cfg.sub_runs()
 
-# Local data path, file names and file format
+# Local data path
 data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
-file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 
 # Full dataset
 #base_path = '/media/edoardo/data1/DATA/'
 base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
+snap_path = 'snapshot_054'
 
-# Select a subsample from the full catalog to look for local groups
-cat_radius = 10.0e+3
-cat_center = [50.e+3] * 3
+# Plot properties
+side_size = 2.0e+3
+thickness = 1.0e+3
+n_files = 1
+reduce_factor = 1.0
+units = 'kpc'
+part_type = 1
 
-# Read the | Gyr / z / a | time conversion table
-time = rf.read_time(data_path)
+# Production mode: read LG from several snapshots OR single Halos from one snapshots
+LG_mode = True; Halo_mode = False
+#LG_mode = False; Halo_mode = True
 
-all_halo_mah = []
+if LG_mode == True:
+    
+    # Input file containing all the main properties needed to do the plots
+    input_all_csv = 'output/lg_pairs_2048.csv'
+    data_all = pd.read_csv(input_all_csv)
 
-# Output file base path, save all relevant halo MAHs here
-out_base_pkl = 'saved/lg_pair_'
+    code_run = data_all['simu_code'].unique()
+    sub_run = data_all['sub_code'].unique()
 
-# Output file containing all the LG properties 
-out_all_lgs_csv = 'output/lg_pairs_2048.csv'
+    # Now loop on all the simulations and gather data
+    for code in code_run[:2]:
 
-# Write the file header
-out_all_lgs = open(out_all_lgs_csv, 'w')
-h = hu.Halo('void')
-out_all_lgs.write(hu.LocalGroup(h, h).header()+'\n')
-out_all_lgs.close()
+        for sub in sub_run:
+            com = ['Xc_LG', 'Yc_LG', 'Zc_LG']
+            this_com = data_all[(data_all['sub_code'] == sub) & (data_all['simu_code'] == code)][com].values
 
-# Re-open the file in append mode
-out_all_lgs = open(out_all_lgs_csv, 'a')
+            sub = '%02d' % sub
+            this_path = base_path + code + '/' + sub + '/'
+            this_snap = this_path + snap_path
 
-# Now loop on all the simulations and gather data
-for code in code_run:
+            # Check that file exists
+            if os.path.isfile(this_snap):
 
-    for sub in sub_run:
-        this_path = base_path + code + '/' + sub + '/'
-        this_ahf = this_path + file_ahf
+                # Do the plot
+                center = this_com[0]
+                print('Found: ', this_snap, ', plotting around: ', center)
 
-        # Check that file exists
-        if os.path.isfile(this_ahf):
+                pu.find_slab(file_name=this_snap, side=side_size, thickness=thickness, center=center)
+
+#                x_tmp, y_tmp = pu.find_slab(this_snap, )
+
+'''
             out_file_pkl = out_base_pkl + code + '_' + sub + '.pkl'
-
             if os.path.isfile(out_file_pkl):
                 print('Loading MAHs from .pkl file...')
                 out_f_pkl = open(out_file_pkl, 'rb')
                 lg = pkl.load(out_f_pkl)
                 out_f_pkl.close()
                 print('Done.')
-                lg.code = code + ', ' + sub
                 print('Writing LG properties... ')
                 out_all_lgs.write(lg.info()+'\n')
             else:
@@ -97,7 +107,7 @@ for code in code_run:
 
 # Close the CSV file containing all the LG infos
 out_all_lgs.close()
-
+'''
 
 
 

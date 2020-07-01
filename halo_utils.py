@@ -351,7 +351,11 @@ class LocalGroup:
             header += 'lambda_MW,'
             header += 'lambda_M31,'
             header += 'cNFW_MW,'
-            header += 'cNFW_M31'
+            header += 'Xc_LG,'
+            header += 'Yc_LG,'
+            header += 'Zc_LG,'
+            header += 'simu_code,'
+            header += 'sub_code'
 
         else:
             # TODO : implement some readable header
@@ -368,11 +372,12 @@ class LocalGroup:
         kpc = 1000.
 
         if csv == True:
-            file_lg_line = '%7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %d, %d, %d, %d, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f' % \
+            file_lg_line = '%7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %d, %d, %d, %d, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f,%s' % \
                        (self.LG1.m(), self.LG2.m(), self.r_halos(), \
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
                         self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),\
-                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW())
+                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),\
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code)
         else:
             # TODO : implement some readable header
             n_head = 0
