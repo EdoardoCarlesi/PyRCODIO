@@ -23,17 +23,20 @@ from matplotlib import rc
     Slab size, thickness and so on need to be specified.
     axis_data (False by default) prints also units on the axes and the legend.
 '''
-def find_slab(file_name=None, center=None, side=None, thick=None, 
+def find_slab(file_name=None, center=None, side=None, thick=None, velocity=False, rand_seed=69,
         reduction_factor=1.0, z_axis=2, part_type=1, units='kpc', n_files=1, axis_data=False):
 
-    particles = readsnap(file_name, 'pos', part_type)
+    # Set some parameters
     kpcThresh = 1.e+4
     kpc2Mpc = 1.e-3
+
     minima = np.zeros((3))
     maxima = np.zeros((3))
 
     cols = ['X', 'Y', 'Z']
 
+    # Read the snapshot
+    particles = readsnap(file_name, 'pos', part_type)
     n_part = len(particles)
 
     print('Found ', n_part, ' particles in total.')
@@ -41,7 +44,7 @@ def find_slab(file_name=None, center=None, side=None, thick=None,
 
     # Select the two axes for the 2D projection
     ax0 = (z_axis + 1) % 3
-    ax1 = (z_axis + 1) % 3
+    ax1 = (z_axis + 2) % 3
     ax2 = z_axis
 
     # Column names
@@ -53,18 +56,20 @@ def find_slab(file_name=None, center=None, side=None, thick=None,
     half_n = int(n_part * 0.5)
     sum_coord = particles[half_n][0] + particles[half_n][1] + particles[half_n][2]
     
+    # Make sure the units are consistent
     if sum_coord < kpcThresh:
         side = side * kpc2Mpc
         center = center * ([kpc2Mpc] *3) 
         thick = thick * kpc2Mpc
 
-        minima[ax0] = center[ax0] - side * 0.5
-        minima[ax1] = center[ax1] - side * 0.5
-        minima[ax2] = center[ax2] - thick * 0.5
+    # Set the minima and maxima for the particles to be used in the plot
+    minima[ax0] = center[ax0] - side * 0.5
+    minima[ax1] = center[ax1] - side * 0.5
+    minima[ax2] = center[ax2] - thick * 0.5
 
-        maxima[ax0] = center[ax0] + side * 0.5
-        maxima[ax1] = center[ax1] + side * 0.5
-        maxima[ax2] = center[ax2] + thick * 0.5
+    maxima[ax0] = center[ax0] + side * 0.5
+    maxima[ax1] = center[ax1] + side * 0.5
+    maxima[ax2] = center[ax2] + thick * 0.5
 
     # Find the particles in the slab
     condition_x = (part_df[col0] > minima[ax0]) & (part_df[col0] < maxima[ax0])
@@ -72,85 +77,23 @@ def find_slab(file_name=None, center=None, side=None, thick=None,
     condition_z = (part_df[col2] > minima[ax2]) & (part_df[col2] < maxima[ax2])
     part_select = part_df[(condition_x) & (condition_y) & (condition_z)]
 
-    '''
-	if (reduce_fac < 1.0):
-		reduce_fac = 1.0
+    print('Found: ', len(part_select), ' particles in the slab')
 
-	reduce_fac = int(reduce_fac)
+    # Now select a random subsample of the full particle list
+    if reduction_factor < 1.0:
+        part_select = part_select.sample(frac=reduction_factor, random_state=rand_seed)
 
-	print('Finding slab across ', n_p, ' particles.')
+        print('The number of particles to be used has been reduced to: ', len(part_select))
 
-	loc_x = [0.0] * 3
-	
-	# These are the 2-D coordinates
-	min_a = min_ab[0]
-	min_b = min_ab[1] 
-	max_a = min_ab[0] + side
-	max_b = min_ab[1] + side
+    slab_x = part_select[col0].values
+    slab_y = part_select[col1].values
 
-	print('Selecting particles within %.3f side and %.3f height around %s' % (side, thick, center))
-	
-        # Select the two orthogonal axes
-	a = (axis+1) % 3
-	b = (axis+2) % 3
-	
-	ireduce = 0	
-	ip = 0
+    # TODO read the velocity data as well in case!
+    # FIXME this should be fairly quick
+    if velocity == True:
+        velocities = readsnap(file_name, 'vel', part_type)
 
-	while ip < (n_p-1):
-		coord = x_p[ip]
-    #condition = (condition_x) & (condition_y) & (condition_z)
-    #print(condition)
-    part_select = part_df[part_df[(condition_x) & (condition_y) & (condition_z)]]
-
-    print(part_select.head())
-
-	if (reduce_fac < 1.0):
-		reduce_fac = 1.0
-
-	reduce_fac = int(reduce_fac)
-
-	print('Finding slab across ', n_p, ' particles.')
-
-	loc_x = [0.0] * 3
-	
-	# These are the 2-D coordinates
-	min_a = min_ab[0]
-	min_b = min_ab[1] 
-	max_a = min_ab[0] + side
-	max_b = min_ab[1] + side
-
-	print('Selecting particles within %.3f side and %.3f height around %s' % (side, thick, center))
-	
-        # Select the two orthogonal axes
-	a = (axis+1) % 3
-	b = (axis+2) % 3
-	
-	ireduce = 0	
-	ip = 0
-
-	while ip < (n_p-1):
-		coord = x_p[ip]
-
-		for jx in range(0, 3):
-			loc_x[jx] = coord[jx] * facMpc
-
-		delta_c = math.fabs(loc_x[axis] - center[axis])
-
-		if delta_c < thick:
-			delta_a = math.fabs(loc_x[axis] - center[axis])
-			delta_b = math.fabs(loc_x[axis] - center[axis])
-
-			if delta_b < halfside and delta_a < halfside:
-					x_a.append(x_p[ip][a])	
-					x_b.append(x_p[ip][b])
-
-		ip = next_ip_slab(ip, thick, delta_c)
-		ip += reduce_fac
-
-	print('Found %d particles within the slab, reduced by a factor of %d.' % (len(x_a), reduce_fac))
-	return (x_a, x_b)
-'''
+    return (slab_x, slab_y)
 
 
 def simple_plot_dm(center, side_size, f_out, nbins, f_rescale, thickn, units, slab, bw_smooth, slab_type):

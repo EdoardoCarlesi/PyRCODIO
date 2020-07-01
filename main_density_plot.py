@@ -33,7 +33,7 @@ snap_path = 'snapshot_054'
 side_size = 2.0e+3
 thickness = 1.0e+3
 n_files = 1
-reduce_factor = 1.0
+frac = 0.5
 units = 'kpc'
 part_type = 1
 
@@ -68,7 +68,8 @@ if LG_mode == True:
                 center = this_com[0]
                 print('Found: ', this_snap, ', plotting around: ', center)
 
-                pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center)
+                slab_x, slab_y = pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center, reduction_factor=frac)
+
 
 #                x_tmp, y_tmp = pu.find_slab(this_snap, )
 
