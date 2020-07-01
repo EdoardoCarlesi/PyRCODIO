@@ -11,6 +11,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.colors as colors
+import pandas as pd
 import numpy as np
 import math
 from pygadgetreader import *
@@ -19,20 +20,90 @@ from matplotlib import rc
 
 '''
     Find the particles belonging to a slab around a given point in space.
-    Slab size, thickness and so on need to be specified
+    Slab size, thickness and so on need to be specified.
+    axis_data (False by default) prints also units on the axes and the legend.
 '''
-def find_slab(file_name=None, center=None, side=None, thickness=None, 
-        reduction_factor=1.0, z_axis=2, part_type=1, units='kpc', n_files=1):
+def find_slab(file_name=None, center=None, side=None, thick=None, 
+        reduction_factor=1.0, z_axis=2, part_type=1, units='kpc', n_files=1, axis_data=False):
 
     particles = readsnap(file_name, 'pos', part_type)
-    minima = center - [side] * 3
-    print(minima)
-    halfside = 0.5 * side
+    kpcThresh = 1.e+4
+    kpc2Mpc = 1.e-3
+    minima = np.zeros((3))
+    maxima = np.zeros((3))
+
+    cols = ['X', 'Y', 'Z']
+
+    n_part = len(particles)
+
+    print('Found ', n_part, ' particles in total.')
+    part_df = pd.DataFrame(data=particles, columns=cols)
+
+    # Select the two axes for the 2D projection
+    ax0 = (z_axis + 1) % 3
+    ax1 = (z_axis + 1) % 3
+    ax2 = z_axis
+
+    # Column names
+    col0 = cols[ax0]
+    col1 = cols[ax1]
+    col2 = cols[ax2]
+
+    # Sanity check on the units
+    half_n = int(n_part * 0.5)
+    sum_coord = particles[half_n][0] + particles[half_n][1] + particles[half_n][2]
+    
+    if sum_coord < kpcThresh:
+        side = side * kpc2Mpc
+        center = center * ([kpc2Mpc] *3) 
+        thick = thick * kpc2Mpc
+
+        minima[ax0] = center[ax0] - side * 0.5
+        minima[ax1] = center[ax1] - side * 0.5
+        minima[ax2] = center[ax2] - thick * 0.5
+
+        maxima[ax0] = center[ax0] + side * 0.5
+        maxima[ax1] = center[ax1] + side * 0.5
+        maxima[ax2] = center[ax2] + thick * 0.5
+
+    # Find the particles in the slab
+    condition_x = (part_df[col0] > minima[ax0]) & (part_df[col0] < maxima[ax0])
+    condition_y = (part_df[col1] > minima[ax1]) & (part_df[col1] < maxima[ax1])
+    condition_z = (part_df[col2] > minima[ax2]) & (part_df[col2] < maxima[ax2])
+    part_select = part_df[(condition_x) & (condition_y) & (condition_z)]
 
     '''
-	n_p = len(x_p)
-	x_a = []
-	x_b = []
+	if (reduce_fac < 1.0):
+		reduce_fac = 1.0
+
+	reduce_fac = int(reduce_fac)
+
+	print('Finding slab across ', n_p, ' particles.')
+
+	loc_x = [0.0] * 3
+	
+	# These are the 2-D coordinates
+	min_a = min_ab[0]
+	min_b = min_ab[1] 
+	max_a = min_ab[0] + side
+	max_b = min_ab[1] + side
+
+	print('Selecting particles within %.3f side and %.3f height around %s' % (side, thick, center))
+	
+        # Select the two orthogonal axes
+	a = (axis+1) % 3
+	b = (axis+2) % 3
+	
+	ireduce = 0	
+	ip = 0
+
+	while ip < (n_p-1):
+		coord = x_p[ip]
+    #condition = (condition_x) & (condition_y) & (condition_z)
+    #print(condition)
+    part_select = part_df[part_df[(condition_x) & (condition_y) & (condition_z)]]
+
+    print(part_select.head())
 
 	if (reduce_fac < 1.0):
 		reduce_fac = 1.0
@@ -41,11 +112,6 @@ def find_slab(file_name=None, center=None, side=None, thickness=None,
 
 	print('Finding slab across ', n_p, ' particles.')
 
-	if units == 'kpc' :
-		facMpc = 1.0
-	else:
-		facMpc = 1.0
-	
 	loc_x = [0.0] * 3
 	
 	# These are the 2-D coordinates

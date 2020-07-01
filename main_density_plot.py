@@ -68,7 +68,7 @@ if LG_mode == True:
                 center = this_com[0]
                 print('Found: ', this_snap, ', plotting around: ', center)
 
-                pu.find_slab(file_name=this_snap, side=side_size, thickness=thickness, center=center)
+                pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center)
 
 #                x_tmp, y_tmp = pu.find_slab(this_snap, )
 
