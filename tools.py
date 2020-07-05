@@ -7,6 +7,7 @@
     tools.py: various utilities and simple computational routines used throughout the code
 '''
 
+import random
 import pandas as pd
 import numpy as np
 import sys
@@ -29,8 +30,23 @@ def distance(x, center):
     return dist
 
 '''
+    Given a set of coordinates, randomly shift them by a maximum of 'r' amount
+'''
+def shift(center, r):
+    new_c = []
+
+    for c in center:
+        eps = random.randrange(-r, r)
+        c = c + eps
+        new_c.append(c)
+
+    return np.array(new_c)
+
+
+'''
     Below is a series of simple functions copied from the old utils.py
 '''
+
 
 def rad2deg():
 	coeff = 180.0 / np.pi

@@ -14,28 +14,35 @@ import numpy as np
     This function assumes that the halo catalog format is AHF and is correcting accordingly.
     This can be of course very easily modified
 """
-def read_ahf_halo(file_name):
+def read_ahf_halo(file_name, file_mpi=True):
     halo = pd.read_csv(file_name, sep='\t')
     halo.shift(1, axis=1)
 
-    # Rearrange the columns, the first one is being read incorrectly so we need to split
-    halo['ID'] = halo['#ID(1)'].apply(lambda x: x.split()[0])
-    halo['HostHalo'] = halo['#ID(1)'].apply(lambda x: x.split()[1])
+    # MPI produced files have a slightly different formatting
+    if file_mpi == True:
 
-    # There's a NaN unknown column being read at the end of the file
-    new_columns = halo.columns[2:].insert(len(halo.columns[2:-2]), '0')
+        # Rearrange the columns, the first one is being read incorrectly so we need to split
+        halo['ID'] = halo['#ID(1)'].apply(lambda x: x.split()[0])
+        halo['HostHalo'] = halo['#ID(1)'].apply(lambda x: x.split()[1])
+        
+        # There's a NaN unknown column being read at the end of the file
+        new_columns = halo.columns[2:].insert(len(halo.columns[2:-2]), '0')
 
-    # Now drop some useless stuff
-    halo.drop('#ID(1)', axis=1, inplace=True)
-    halo.columns = new_columns
-    halo.drop('0', axis=1, inplace=True)
+        # Now drop some useless stuff
+        halo.drop('#ID(1)', axis=1, inplace=True)
+        halo.columns = new_columns
+        halo.drop('0', axis=1, inplace=True)
+
+    else:
+        halo.rename(columns={"#ID(1)":"ID", "hostHalo(2)":"HostHalo"}, inplace=True)
 
     halos = []
 
     n_rows = halo.shape[0]
 
     for i in range(0, n_rows):
-        this_h = halo.loc[i]
+        #this_h = pd.DataFrame(data=halo.loc[i], columns=new_columns)
+        this_h = data=halo.loc[i]
         h = hu.Halo(this_h)
         halos.append(h)
 

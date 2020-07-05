@@ -36,7 +36,7 @@ def simu_runs():
     all_runs.append('17_10') 
     all_runs.append('17_13') 
     all_runs.append('34_13')
-    all_runs.append('45_17')
+#    all_runs.append('45_17')
     all_runs.append('55_02') 
     all_runs.append('09_18')
     all_runs.append('64_14')
