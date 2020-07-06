@@ -114,12 +114,12 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     print('Plotting density slices...')
 
     if (velocity == False) and (vel != None):
-        print('Velocity is set to false but vel= is different than None! Set velocity to True or set vel to None.')
-        return 0
+        print('Velocity is set to false but vel= is different than None! Seting vel to None...')
+        vel = None
 
     # Plot properties
-    #colorscale = 'inferno'
-    colorscale = 'gray'
+    colorscale = 'inferno'
+    #colorscale = 'gray'
     #colorscale = 'hot'
     #colorscale = 'gist_gray'
     #colorscale = 'bwr'
@@ -128,17 +128,21 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     coord = ['X', 'Y', 'Z']
     axis_label = ['SGX', 'SGY', 'SGZ']
 
+    plt.figure(figsize=(fig_size, fig_size))
+
     # If we are going to use the images with CNNs then by default legend is set to False
     if legend == True:
-        axis_size = 12
-        axis_units = 'Mpc/h'
-        plt.title('Matter density')
-        plt.xlabel(axis_label[ax0]+' '+axis_units)
-        plt.ylabel(axis_label[ax1]+' '+axis_units)
-        file_out = file_name + 'rho_' + axis_label[ax0] + axis_label[ax1]
-        #plt.rc('axes',  labelsize=axis_size)
-        #plt.rc('xtick', labelsize=axis_size)
-        #plt.rc('ytick', labelsize=axis_size)
+        axis_size = fig_size * 2
+        plt.rc({'text.usetex': True})
+        plt.rc('axes',  labelsize=axis_size)
+        plt.rc('xtick', labelsize=axis_size)
+        plt.rc('ytick', labelsize=axis_size)
+        plt.xlabel(r'$h^{-1}$Mpc')
+        plt.ylabel(r'$h^{-1}$Mpc')
+        #plt.xlabel(axis_label[ax0]+' '+axis_units)
+        #plt.ylabel(axis_label[ax1]+' '+axis_units)
+
+        file_out = file_name + 'density_' + axis_label[ax0] + axis_label[ax1]
     else:
         axis_size = 0
         file_out = file_name + 'rho_no_labels_' + axis_label[ax0] + axis_label[ax1]
@@ -150,7 +154,6 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     y_max = data[coord[ax1]].max() - margin
 
     # Set the axis maxima and minima
-    plt.figure(figsize=(fig_size, fig_size))
     plt.axis([x_min, x_max, y_min, y_max])
 
     # Unset the ticks and set margins to zero if legend is true
@@ -158,12 +161,11 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
         plt.margins(0.0) 
         plt.xticks([])
         plt.yticks([])
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     else:
         plt.tight_layout()
 
     # Do the plot using hexagonal bins
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-
     plt.hexbin(data[coord[ax0]], data[coord[ax1]], gridsize=grid_size, cmap=colorscale, bins='log')
     
     # Actually show the plot, otherwise we will just save it to a .png file
@@ -171,6 +173,9 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
         plt.show()
     
     # Save the file
+    if legend == False:
+        plt.tight_layout()
+
     plt.savefig(file_out + '.png')
     print('File saved to: ', file_out + '.png')
 

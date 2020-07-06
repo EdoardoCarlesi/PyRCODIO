@@ -37,7 +37,7 @@ units = 'kpc'
 part_type = 1
 grid_size = 600
 rand_seed = 1
-fig_size = 12
+fig_size = 15
 show_plot = False
 velocity = False
 augment = False
@@ -66,7 +66,7 @@ for code in code_run:
         # Check that file exists
         if os.path.isfile(this_snap):
 
-            for z_axis in range(0, 3):
+            for z_axis in range(2, 3):
                 # Select particles for the plot, do a selection first. z_axis is orthogonal to the plane of the projection
                 ax0 = (z_axis + 1) % 3
                 ax1 = (z_axis + 2) % 3
@@ -77,9 +77,10 @@ for code in code_run:
 
                 # Select a slab around a given axis, this function returns a dataframe
                 part_df = pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center, reduction_factor=frac, 
-                            z_axis=z_axis, velocity=velocity, rand_seed=rand_seed, legend=legend)
+                            z_axis=z_axis, velocity=velocity, rand_seed=rand_seed)
 
-                pu.plot_density(data=part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, 
+                # Feed the previously chosen dataframe and plot its 2D density projection
+                pu.plot_density(data=part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, legend=legend,
                             grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size, velocity=velocity, vel=vel_components)
 
 
