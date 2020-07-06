@@ -113,12 +113,16 @@ def find_slab(file_name=None, center=None, side=None, thick=None, velocity=False
 def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_plot=False, grid_size=100, margin=0.5, data_augment=False, fig_size=10, velocity=False, vel=None):
     print('Plotting density slices...')
 
+    if (velocity == False) and (vel != None):
+        print('Velocity is set to false but vel= is different than None! Set velocity to True or set vel to None.')
+        return 0
+
     # Plot properties
-    colorscale = 'bwr'
     #colorscale = 'inferno'
-    #colorscale = 'gray'
+    colorscale = 'gray'
     #colorscale = 'hot'
     #colorscale = 'gist_gray'
+    #colorscale = 'bwr'
     ax0 = axes_plot[0]
     ax1 = axes_plot[1]
     coord = ['X', 'Y', 'Z']
@@ -183,36 +187,49 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
             # Loop on velocity projections
             for vx in vel:
                 file_v_out = file_name + 'V_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_' + vx
-
                 plt.hexbin(data[coord[ax0]], data[coord[ax1]], C=data[vx], gridsize=grid_size, cmap=colorscale)
                 plt.savefig(file_v_out + '.png')
                 print('File saved to: ', file_v_out + '.png')
 
     # Do some transformations on the data to increase the number of samples
     if data_augment == True:
+        print('Data augmentation is set to True, printing additional images...')
 
         file_out = file_name + 'rho_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_augment0'
         plt.axis([x_max, x_min, y_min, y_max])
         plt.hexbin(data[coord[ax0]], data[coord[ax1]], gridsize=grid_size, cmap=colorscale, bins='log')
         plt.savefig(file_out + '.png')
-        print('File saved to: ', file_out + '.png')
+        #print('File saved to: ', file_out + '.png')
 
         file_out = file_name + 'rho_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_augment1'
         plt.axis([x_min, x_max, y_max, y_min])
         plt.hexbin(data[coord[ax0]], data[coord[ax1]], gridsize=grid_size, cmap=colorscale, bins='log')
         plt.savefig(file_out + '.png')
-        print('File saved to: ', file_out + '.png')
+        #print('File saved to: ', file_out + '.png')
 
         file_out = file_name + 'rho_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_augment2'
         plt.axis([x_max, x_min, y_max, y_min])
         plt.hexbin(data[coord[ax0]], data[coord[ax1]], gridsize=grid_size, cmap=colorscale, bins='log')
         plt.savefig(file_out + '.png')
-        print('File saved to: ', file_out + '.png')
+        #print('File saved to: ', file_out + '.png')
 
+        # Print also "augmented" velocity maps in case
+        if velocity == True:
+            for vx in vel:
+                plt.axis([x_max, x_min, y_min, y_max])
+                file_v_out = file_name + 'V_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_' + vx + '_augment0'
+                plt.hexbin(data[coord[ax0]], data[coord[ax1]], C=data[vx], gridsize=grid_size, cmap=colorscale)
+                plt.savefig(file_v_out + '.png')
 
+                plt.axis([x_min, x_max, y_max, y_min])
+                file_v_out = file_name + 'V_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_' + vx + '_augment1'
+                plt.hexbin(data[coord[ax0]], data[coord[ax1]], C=data[vx], gridsize=grid_size, cmap=colorscale)
+                plt.savefig(file_v_out + '.png')
 
-
-
+                plt.axis([x_max, x_min, y_max, y_min])
+                file_v_out = file_name + 'V_no_labels_' + axis_label[ax0] + axis_label[ax1] + '_' + vx + '_augment2'
+                plt.hexbin(data[coord[ax0]], data[coord[ax1]], C=data[vx], gridsize=grid_size, cmap=colorscale)
+                plt.savefig(file_v_out + '.png')
 
 
 

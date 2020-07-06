@@ -17,7 +17,6 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-[model_run, dict_model] = cfg.lg_models()
 code_run = cfg.simu_runs()
 sub_run = cfg.sub_runs()
 
@@ -33,15 +32,17 @@ snap_path = 'snapshot_054'
 side_size = 2.0e+3
 thickness = 1.0e+3
 n_files = 1
-frac = 0.95
+frac = 1.0
 units = 'kpc'
 part_type = 1
 grid_size = 600
 rand_seed = 1
 fig_size = 12
 show_plot = False
-do_velocity = False
+velocity = False
 augment = False
+legend = True
+vel_components = ['Vx', 'Vy', 'Vz']
 
 # Input file containing all the main properties needed to do the plots
 input_all_csv = 'output/lg_pairs_2048.csv'
@@ -76,11 +77,9 @@ for code in code_run:
 
                 # Select a slab around a given axis, this function returns a dataframe
                 part_df = pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center, reduction_factor=frac, 
-                            z_axis=z_axis, velocity=do_velocity, rand_seed=rand_seed)
+                            z_axis=z_axis, velocity=velocity, rand_seed=rand_seed, legend=legend)
 
-                #pu.plot_density(data=part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, 
-                #            grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size)
                 pu.plot_density(data=part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, 
-                            grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size, )
+                            grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size, velocity=velocity, vel=vel_components)
 
 
