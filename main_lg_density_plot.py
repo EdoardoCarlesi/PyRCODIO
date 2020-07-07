@@ -66,7 +66,7 @@ for code in code_run:
         # Check that file exists
         if os.path.isfile(this_snap):
 
-            for z_axis in range(2, 3):
+            for z_axis in range(0, 3):
                 # Select particles for the plot, do a selection first. z_axis is orthogonal to the plane of the projection
                 ax0 = (z_axis + 1) % 3
                 ax1 = (z_axis + 2) % 3
