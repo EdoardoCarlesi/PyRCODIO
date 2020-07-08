@@ -14,103 +14,15 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import math
-from pygadgetreader import *
 from matplotlib import rc
-
-
-'''
-    Find the particles belonging to a slab around a given point in space.
-    Slab size, thickness and so on need to be specified.
-'''
-def find_slab(file_name=None, center=None, side=None, thick=None, velocity=False, rand_seed=69,
-        reduction_factor=1.0, z_axis=2, part_type=1, units='kpc', n_files=1):
-
-    # Set some parameters
-    kpcThresh = 1.e+4
-    kpc2Mpc = 1.e-3
-
-    minima = np.zeros((3))
-    maxima = np.zeros((3))
-
-    # TODO: fix for more files (n_files > 1 needs to be implemented)
-    if n_files > 1:
-        print('Multiple files are not supported yet.')
-        return -1       
-
-    # Do we want to read in velocity data as well? Or positions only?
-    if velocity == True:
-        print('Reading velocity and position particle info...')
-        particles = readsnap(file_name, 'pos', part_type)
-        velocities = readsnap(file_name, 'vel', part_type)
-    
-        # Concatenate the columns 
-        full_data = np.concatenate((particles, velocities), axis=1)
-        cols = ['X', 'Y', 'Z', 'Vx', 'Vy', 'Vz']
-
-    else:
-        print('Reading position particle info...')
-        particles = readsnap(file_name, 'pos', part_type)
-        full_data = particles
-        cols = ['X', 'Y', 'Z']
-
-    # Read the snapshot
-    n_part = len(full_data)
-
-    print('Found ', n_part, ' particles in total.')
-    part_df = pd.DataFrame(data=full_data, columns=cols)
-
-    # Select the two axes for the 2D projection
-    ax0 = (z_axis + 1) % 3
-    ax1 = (z_axis + 2) % 3
-    ax2 = z_axis
-
-    # Column names
-    col0 = cols[ax0]
-    col1 = cols[ax1]
-    col2 = cols[ax2]
-
-    # Sanity check on the units
-    half_n = int(n_part * 0.5)
-    sum_coord = particles[half_n][0] + particles[half_n][1] + particles[half_n][2]
-    
-    # Make sure the units are consistent
-    if sum_coord < kpcThresh:
-        side = side * kpc2Mpc
-        center = center * ([kpc2Mpc] *3) 
-        thick = thick * kpc2Mpc
-
-    # Set the minima and maxima for the particles to be used in the plot
-    minima[ax0] = center[ax0] - side * 0.5
-    minima[ax1] = center[ax1] - side * 0.5
-    minima[ax2] = center[ax2] - thick * 0.5
-
-    maxima[ax0] = center[ax0] + side * 0.5
-    maxima[ax1] = center[ax1] + side * 0.5
-    maxima[ax2] = center[ax2] + thick * 0.5
-
-    # Find the particles in the slab
-    condition_x = (part_df[col0] > minima[ax0]) & (part_df[col0] < maxima[ax0])
-    condition_y = (part_df[col1] > minima[ax1]) & (part_df[col1] < maxima[ax1])
-    condition_z = (part_df[col2] > minima[ax2]) & (part_df[col2] < maxima[ax2])
-    part_select = part_df[(condition_x) & (condition_y) & (condition_z)]
-
-    print('Found: ', len(part_select), ' particles in the slab')
-
-    # Now select a random subsample of the full particle list
-    if reduction_factor < 1.0:
-        part_select = part_select.sample(frac=reduction_factor, random_state=rand_seed)
-
-        print('The number of particles to be used has been reduced to: ', len(part_select))
-
-    # Return the selected particles' properties in a dataframe
-    return part_select
 
 
 '''
     This function plots the simple mass density starting from a particle distribution.
     The plot is a 2D projection.
 '''
-def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_plot=False, grid_size=100, margin=0.5, data_augment=False, fig_size=10, velocity=False, vel=None):
+def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_plot=False, grid_size=100, margin=0.5, data_augment=False, 
+            hex_plot = True, fig_size=10, velocity=False, vel=None):
     print('Plotting density slices...')
 
     if (velocity == False) and (vel != None):
@@ -123,6 +35,7 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     #colorscale = 'hot'
     #colorscale = 'gist_gray'
     #colorscale = 'bwr'
+
     ax0 = axes_plot[0]
     ax1 = axes_plot[1]
     coord = ['X', 'Y', 'Z']
@@ -139,8 +52,6 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
         plt.rc('ytick', labelsize=axis_size)
         plt.xlabel(r'$h^{-1}$Mpc')
         plt.ylabel(r'$h^{-1}$Mpc')
-        #plt.xlabel(axis_label[ax0]+' '+axis_units)
-        #plt.ylabel(axis_label[ax1]+' '+axis_units)
 
         file_out = file_name + 'density_' + axis_label[ax0] + axis_label[ax1]
     else:
@@ -165,15 +76,18 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     else:
         plt.tight_layout()
 
-    # Do the plot using hexagonal bins
-    plt.hexbin(data[coord[ax0]], data[coord[ax1]], gridsize=grid_size, cmap=colorscale, bins='log')
-    
+    if hex_plot == True:
+        # Do the plot using hexagonal bins
+        plt.hexbin(data[coord[ax0]], data[coord[ax1]], gridsize=grid_size, cmap=colorscale, bins='log')
+    else:
+        plt.hist2d(data[coord[ax0]], data[coord[ax1]], bins=grid_size, cmap=colorscale)
+
     # Actually show the plot, otherwise we will just save it to a .png file
     if show_plot == True:
         plt.show()
     
     # Save the file
-    if legend == False:
+    if legend == True:
         plt.tight_layout()
 
     plt.savefig(file_out + '.png')
@@ -240,18 +154,26 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
 '''
     Plot the MAH of a single halo
 '''
-def plot_mass_accretion(time, mah, f_out):
-    size_x = 20
-    size_y = 20
+def plot_mass_accretion(time, mah, f_out, size=10, scale='lin'):
+
+    # Plot properties
     lnw = 1.0
     col = 'b'
 
+    # Max & min x/y scale
     x_min = np.min(time); x_max = np.max(time)
     y_min = np.min(mah); y_max = np.max(mah)
 
+    plt.figure(figsize=(size, size))
     plt.yscale('log')
+
+    # If scale is set to log then also to the x axis in log scale
+    if scale == 'log':
+       plt.xscale('log')
+
     plt.axis([x_min, x_max, y_min, y_max])
 
+    # Do the actual plot
     plt.plot(time, mah, linewidth=lnw, color=col)
 
     # Save the figure and clean plt
@@ -267,9 +189,8 @@ def plot_mass_accretion(time, mah, f_out):
 def plot_mass_accretions(time, mahs, f_out, percentiles=[25, 50, 75], size=10, scale='lin'):
 
     # Plot properties
-    (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(size, size))
-    lnw = 1.0
-    col = 'b'
+    line_width = 1.0
+    plt.figure(figsize=(size, size))
     plt.yscale('log')
     plt.rc({'text.usetex': True})
     plt.xlabel('GYr')
@@ -323,3 +244,175 @@ def plot_mass_accretions(time, mahs, f_out, percentiles=[25, 50, 75], size=10, s
     plt.savefig(f_out)
     plt.clf()
     plt.cla()
+
+
+'''
+    Plot a given set of halo mass functions, with variance and Poissonian error bars
+'''
+def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins=10, percentiles=[25, 50, 75], Poisson=True, size=10):
+
+    # Initialize some plot properties
+    line_width = 1.0
+    color='black'
+    fill_color='grey'
+    poisson_color='red'
+
+    plt.figure(figsize=(size, size))
+
+    # This has to be initialized as a list as these bins will contain different numbers of entries (some MFs might not have haloes at large masses)
+    y_bins = [ [] for i in range(0, n_bins-1) ]
+
+    # Initialize to very high/low values so they can be reset
+    x_min = 1.e+15; x_max = 1.e+7; y_max = 1.0;
+
+    # Find the max / min values among all the mass functions
+    for im in range(0, n_mf):
+    
+        # Try - because some bins might be empty and getting a zero might cause issues
+        try:
+            x_max0 = np.max(x_m[im])
+            x_min0 = np.min(x_m[im])
+            y_max0 = np.max(y_m[im])
+            y_min0 = np.min(y_m[im])
+
+            # Set the new maxima and minima
+            if x_max0 > x_max:
+                x_max = x_max0
+
+            if x_min0 < x_min:
+                x_min = x_min0
+
+            if y_max0 > y_max:
+                y_max = y_max0
+
+        except:
+            'Do nothing just avoid crashing'
+
+    # The mass function minimum is always set to zero
+    y_min = 0.0
+
+    # Shift the maximum and minimum about an eps factor
+    eps = 0.1
+    fac_min = 1.0 - eps
+    fac_max = 1.0 + eps
+
+    # Now generate a new set of mass bins in log space
+    x_bins = np.logspace(np.log10(x_min * fac_min), np.log10(x_max * fac_max), num=n_bins, endpoint=True)
+    
+    for im in range(0, n_mf):
+        n_mm = len(x_m[im])
+
+        for jm in range(0, n_mm):
+            m0 = x_m[im][jm]
+            y0 = y_m[im][jm]
+
+            for km in range(0, n_bins-1):
+                mbin0 = x_bins[km]
+                mbin1 = x_bins[km+1]
+
+                if m0 > mbin0 and m0 < mbin1:
+                    y_bins[km].append(y0)
+
+            # At the last step set all the remaining bins above m0 to zero
+            if jm == n_mm-1:
+
+                for km in range(0, n_bins-1):
+                    mbin0 = x_bins[km]
+                    mbin1 = x_bins[km+1]
+
+                    if m0 > mbin0 and m0 < mbin1:
+                        y_bins[km].append(0.0)
+
+    if Poisson == True:
+        mf_poisson = np.zeros((2, n_bins)) 
+
+    mf_numeric = np.zeros((3, n_bins))
+    mass_bins = []
+
+    nmedStep = 0;     nminStep = 0;     nmaxStep = 0
+
+    for km in range(0, n_bins-1):
+        mbin0 = x_bins[km]
+        mbin1 = x_bins[km+1]
+        mmed0 = 0.5 * (mbin0 + mbin1)
+
+        if km == n_bins-2:
+            mmed0 = mbin0
+
+        if mbin0 > 1.e+10:
+            n_thresh = 0
+        else:
+            n_thresh = 3
+
+        if len(y_bins[km]) > n_thresh:
+            nmax0 = np.percentile(y_bins[km], percentiles[2])
+            nmin0 = np.percentile(y_bins[km], percentiles[0])
+            nmed0 = np.mean(y_bins[km])
+
+            if km == 0:
+                nmedStep = nmed0
+                nmaxStep = nmax0
+                nminStep = nmin0
+            else:
+                if nmed0 > nmedStep:
+                    nmed0 = nmedStep
+                else:
+                    nmedStep = nmed0
+
+                if nmin0 > nminStep:
+                    nmin0 = nminStep
+                else:
+                    nminStep = nmin0
+
+                if nmax0 > nmaxStep:
+                    nmax0 = nmaxStep
+                else:
+                    nmaxStep = nmax0
+
+            nmax = nmax0
+            nmin = nmin0
+            nmed = nmed0
+            mmed = np.log10(mmed0)
+
+            mass_bins.append(mmed)
+            mf_median.append(nmed)
+            mf_min.append(nmin)
+            mf_max.append(nmax)
+
+            if Poisson == True:
+               mf_poisson[1].append(nmed + np.sqrt(nmed))
+               mf_poisson[0].append(nmed - np.sqrt(nmed))
+
+    y_max = max(mf_poisson[1])
+    x_max = np.log10(x_max)
+    x_min = np.log10(x_min)
+    (fig, axs) = plt.subplots(ncols=1, nrows=1, figsize=(size, size))
+
+    plt.rc({'text.usetex': True})
+    plt.xlabel(r'$log_{10}M_{\odot} h^{-1}$')
+    #plt.ylabel('$N(>M)$')
+    axs.set_yscale('log'); 
+    #plt.ylabel(r'$log_{10}N(>6.25\times 10^7 M_{\odot})$'); y_min=1.0
+    plt.ylabel(r'$log_{10}N(>5\times 10^8 M_{\odot})$'); y_min=1.0
+
+    #y_max = 1.8 * y_max
+    axs.axis([x_min, x_max, y_min, y_max])
+
+    # Do the actual plot
+    axs.plot(mass_bins, mf_median, linewidth=3, color=color)
+    axs.fill_between(mass_bins, mf_min, mf_max, facecolor=fill_color)
+
+    # Add poissonian error bars
+    if Poisson == True:
+        axs.plot(mass_bins, mf_poisson[1], linewidth=2, dashes=[2, 5], color=poisson_col)
+        axs.plot(mass_bins, mf_poisson[0], linewidth=2, dashes=[2, 5], color=poisson_col)
+
+    # Save file and clean plt
+    plt.tight_layout()
+    plt.savefig(f_out)
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+
+

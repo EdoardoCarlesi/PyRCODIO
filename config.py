@@ -12,6 +12,14 @@ import numpy as np
 import os
 
 
+def gen_runs(ini, end):
+    runs = []
+    for i in range(ini, end):
+        run = '%02d' % i
+        runs.append(run)
+
+    return runs
+
 def sub_runs():
     sub_runs = []
 

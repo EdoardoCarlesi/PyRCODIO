@@ -30,18 +30,22 @@ thickness = 1.0e+3
 n_files = 1
 frac = 1.00
 units = 'kpc'
-part_type = 1
+part_type = [1, 2, 3, 4]
 grid_size = 400
 rand_seed = 1
-fig_size = 1.2
+fig_size = 18
 show_plot = False
-do_velocity = False
-augment = True
+velocity = False
+augment = False
 shift = False
+legend = True
+vel_components = ['Vx', 'Vy', 'Vz']
+
+n_min_part = 1000
 
 # Configure the LG model and subpaths
 code_run = cfg.simu_runs()
-sub_run = cfg.sub_runs()
+sub_run = cfg.gen_runs(0, 10)
 
 # Now loop on all the simulations and gather data
 #for code in code_run:
@@ -59,6 +63,11 @@ for code in ['09_18']:
         # Check that file exists
         if os.path.isfile(this_snap):
 
+            print('Found: ', len(these_com), ' clusters in ', this_snap)
+
+            # Read the full snapshot here
+            part_df = rf.read_snap(file_name=this_snap, velocity=velocity, part_types=part_type, n_files=1)
+
             for i, this_com in enumerate(these_com):
 
                 for z_axis in range(0, 3):
@@ -75,14 +84,14 @@ for code in ['09_18']:
                         center = this_com
                         this_fout = 'output/cluster_' + code + '_' + sub + '.' + str(i) + '.'
 
-                    print(i, 'Found: ', this_snap, ', plotting around: ', center)
                     print('Plot axes, z=', z_axis, ' ax0=', ax0, ' ax1=', ax1)
 
                     # Select a slab around a given axis, this function returns a dataframe
-                    part_df = pu.find_slab(file_name=this_snap, side=side_size, thick=thickness, center=center, reduction_factor=frac, 
-                            z_axis=z_axis, velocity=do_velocity, rand_seed=rand_seed, part_type=4)
+                    slab_part_df = t.find_slab(part_df=part_df, side=side_size, thick=thickness, center=center, reduction_factor=frac, z_axis=z_axis, rand_seed=rand_seed)
 
-                    pu.plot_density(data=part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, 
-                            grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size)
+                    # Do a plot only if there are enough particles
+                    if len(slab_part_df) > n_min_part:
 
-
+                        # Feed the previously chosen dataframe and plot its 2D density projection
+                        pu.plot_density(data=slab_part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, legend=legend,
+                            grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size, velocity=velocity, vel=vel_components)

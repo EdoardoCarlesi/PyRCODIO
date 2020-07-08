@@ -7,14 +7,10 @@
     tools.py: various utilities and simple computational routines used throughout the code
 '''
 
-import random
+import read_files as rf
 import pandas as pd
 import numpy as np
-import sys
-
-sys.path.append('pygadgetreader/')
-from pygadgetreader import *
-
+import random
 
 '''
     Compute the Euclidean distance between two points in space
@@ -162,39 +158,86 @@ def mass_function(masses):
 	return (x_m, y_n)
 
 '''
-    Read multiple gadget files (one snap split into several)
+    Find the center of mass of a particle distribution
 '''
-def readgadget(f_snap, read_type, p_type, n_files):
-    if n_files == 1:
-        print('Read snap: ', f_snap, ' read type: ', read_type, ' ptype: ', p_type)
-        parts = readsnap(f_snap, read_type, p_type)
-    else:
-        parts = np.zeros((1, 3), dtype=float)
-        size_part = 0
-        for i_file in range(0, n_files):
-            f_tmp = f_snap + '.' + str(i_file)
-            parts_tmp = readsnap(f_tmp, read_type, p_type)
+def particles_com(part_df, cols=['X', 'Y', 'Z'], mass_types=1):
+    com = [0.0] * 3
 
-            old_size = size_part
-            size_part += len(parts_tmp)
-            parts.resize((size_part, 3))
-            parts[old_size:size_part][:] = [xyz for xyz in parts_tmp[:][:]]
+    if mass_types > 1:
+        print('Error. Only available for ONE particle mass for all the distribution')
+        return 0
 
-            '''
-            for i_part in range(0, len(parts_tmp)):
-                parts[old_size + i_part, :] = parts_tmp[i_part][:]
-#                i_x = 2
-#                print(parts_tmp[i_part][i_x])
-#                print(parts[old_size + i_part][i_x])
-#                for i_x in range(0, 3):
-#                    parts[old_size + i_part, i_x] = parts_tmp[i_part][i_x]
-                    #print(parts_tmp[i_part][i_x])
-                    #print(parts[old_size + i_part][i_x])
-            '''
-    print('Found a total of ', np.shape(parts), ' particles.')
-    return parts
+    for i, col in enumerate(cols):
+        com[i] = part_df[col].mean()
+
+        # Convert to kpc in case
+        if com[i] < 1.e+4:
+            com[i] = com[i] * 1.e+3
 
 
+    return np.array(com)
+
+'''
+    Find the particles belonging to a slab around a given point in space.
+    Slab size, thickness and so on need to be specified.
+'''
+def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, reduction_factor=1.0, z_axis=2, units='kpc', cols=['X', 'Y', 'Z']):
+
+    # Set some parameters
+    kpcThresh = 1.e+4
+    kpc2Mpc = 1.e-3
+
+    minima = np.zeros((3))
+    maxima = np.zeros((3))
+
+    # Select the two axes for the 2D projection
+    ax0 = (z_axis + 1) % 3
+    ax1 = (z_axis + 2) % 3
+    ax2 = z_axis
+
+    # Column names
+    col0 = cols[ax0]
+    col1 = cols[ax1]
+    col2 = cols[ax2]
+
+    n_part = len(part_df)
+
+    # Sanity check on the units
+    half_n = int(n_part * 0.5)
+    sum_coord = part_df[col0].iloc[half_n] + part_df[col1].iloc[half_n] + part_df[col2].iloc[half_n] 
+    #print(sum_coord)
+
+    # Make sure the units are consistent
+    if sum_coord < kpcThresh:
+        side = side * kpc2Mpc
+        center = center * ([kpc2Mpc] *3) 
+        thick = thick * kpc2Mpc
+
+    # Set the minima and maxima for the particles to be used in the plot
+    minima[ax0] = center[ax0] - side * 0.5
+    minima[ax1] = center[ax1] - side * 0.5
+    minima[ax2] = center[ax2] - thick * 0.5
+
+    maxima[ax0] = center[ax0] + side * 0.5
+    maxima[ax1] = center[ax1] + side * 0.5
+    maxima[ax2] = center[ax2] + thick * 0.5
+
+    # Find the particles in the slab
+    condition_x = (part_df[col0] > minima[ax0]) & (part_df[col0] < maxima[ax0])
+    condition_y = (part_df[col1] > minima[ax1]) & (part_df[col1] < maxima[ax1])
+    condition_z = (part_df[col2] > minima[ax2]) & (part_df[col2] < maxima[ax2])
+    part_select = part_df[(condition_x) & (condition_y) & (condition_z)]
+
+    print('Found: ', len(part_select), ' particles in the slab')
+
+    # Now select a random subsample of the full particle list
+    if reduction_factor < 1.0:
+        part_select = part_select.sample(frac=reduction_factor, random_state=rand_seed)
+
+        print('The number of particles to be used has been reduced to: ', len(part_select))
+
+    # Return the selected particles' properties in a dataframe
+    return part_select
 
 
 
