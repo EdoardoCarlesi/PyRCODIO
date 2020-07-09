@@ -42,6 +42,30 @@ class Halo:
     def npart(self):
         return self.halo_df[['npart(5)']].values[0]
 
+    # Vmax
+    def vmax(self):
+        return self.halo_df[['Vmax(17)']].values[0]
+
+    # r2 (scale radius)
+    def r2(self):
+        return self.halo_df[['r2(14)']].values[0]
+
+    # lambda (scale radius)
+    def lambdap(self):
+        return self.halo_df[['lambda(20)']].values[0]
+
+    # b (triaxiality b)
+    def b(self):
+        return self.halo_df[['b(25)']].values[0]
+
+    # c (triaxiality c)
+    def c(self):
+        return self.halo_df[['c(26)']].values[0]
+
+    # c_NFW (concentration)
+    def c_NFW(self):
+        return self.halo_df[['cNFW(43)']].values[0]
+
     # Return the position vector
     def pos(self):
         return self.halo_df[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.values
@@ -252,18 +276,21 @@ class LocalGroup:
     # The constructor needs two halos (lg1, lg2)
     def __init__(self, lg1, lg2):
 
-        if lg1.m() > lg2.m():
-            self.LG1 = lg1
-            self.LG2 = lg2
-        else:
-            self.LG1 = lg2
-            self.LG2 = lg1
+        try:
+            if lg1.m() > lg2.m():
+                self.LG1 = lg1
+                self.LG2 = lg2
+            else:
+                self.LG1 = lg2
+                self.LG2 = lg1
 
-        if lg1.pos()[0] != 0 and lg2.pos()[0] != 0:
-            self.r = self.r_halos()
-            self.vrad = self.vel_radial()
-            self.vtan = self.vel_tangential()
-            self.com = self.mass_com()
+            if lg1.pos()[0] != 0 and lg2.pos()[0] != 0:
+                self.r = self.r_halos()
+                self.vrad = self.vel_radial()
+                self.vtan = self.vel_tangential()
+                self.com = self.mass_com()
+        except:
+            'We might need some void instance of LocalGroup'
 
     def rating(self):
         self.rating = rate_lg_pair(self.LG1, self.LG2)
@@ -297,7 +324,7 @@ class LocalGroup:
     def vel_tangential(self):
         vrad0 = self.vel_radial(hubble=False)
         vtot = t.vec_module(t.vec_subt(self.LG1.vel(), self.LG2.vel()))
-        self.vtan = vtot**2.0 - vrad0**2.0
+        self.vtan = np.sqrt(vtot**2.0 - vrad0**2.0)
 
         return self.vtan
 
@@ -307,31 +334,53 @@ class LocalGroup:
         else:
             return (self.LG1.m / self.LG2.m)
 
-    def header(self):
-        n_head = 0
-        header = ''
-        header += ' SimuCode('+ str(n_head) +'),' ; n_head = +1
-        header += ' ID_M31('+ str(n_head) +'),' ; n_head = +1
-        header += ' ID_MW('+ str(n_head) +'),' ; n_head = +1
-        header += ' R_MWM31('+ str(n_head) +'),' ; n_head = +1
-        header += ' Vrad('+ str(n_head) +'),' ; n_head = +1
-        header += ' Vtan('+ str(n_head) +'),' ; n_head = +1
-        header += ' Nsub_M31('+ str(n_head) +'),' ; n_head = +1
-        header += ' Nsub_MW('+ str(n_head) +'),' ; n_head = +1
-        header += ' X_com('+ str(n_head) +'),' ; n_head = +1
-        header += ' Y_com('+ str(n_head) +'),' ; n_head = +1
-        header += ' Z_com('+ str(n_head) +')' ; n_head = +1
+    def header(self, csv=True):
+        
+        if csv == True:
+            header =  'M_M31,' 
+            header += 'M_MW,'
+            header += 'R,'
+            header += 'Vrad,'
+            header += 'Vtan,'
+            header += 'Nsub_M31,'
+            header += 'Nsub_MW,'
+            header += 'Npart_M31,'
+            header += 'Npart_MW,'
+            header += 'Vmax_MW,'
+            header += 'Vmax_M31,'
+            header += 'lambda_MW,'
+            header += 'lambda_M31,'
+            header += 'cNFW_MW,'
+            header += 'Xc_LG,'
+            header += 'Yc_LG,'
+            header += 'Zc_LG,'
+            header += 'simu_code,'
+            header += 'sub_code'
+
+        else:
+            # TODO : implement some readable header
+            #header += ' X_com, '
+            #header += ' Y_com, '
+            #header += ' Z_com, '
+            n_head = 0
+            
 
         return header
 
-    def info(self, dump=True):
+    def info(self, dump=True, csv=True):
         h0 = self.hubble
         kpc = 1000.
-        file_lg_line = '%ld, %ld, %7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %5d, %5d, %5.2f, %5.2f, %5.2f, %d, %d' % \
-                       (self.LG1.ID(), self.LG2.ID(), self.LG1.m()/h0, self.LG2.m()/h0, self.r_halos()/h0, \
+
+        if csv == True:
+            file_lg_line = '%7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %d, %d, %d, %d, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f,%s' % \
+                       (self.LG1.m(), self.LG2.m(), self.r_halos(), \
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
-                        self.geo_com()[0]/kpc, self.geo_com()[1]/kpc, self.geo_com()[2]/kpc, \
-                        self.LG1.npart(), self.LG2.npart())
+                        self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),\
+                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),\
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code)
+        else:
+            # TODO : implement some readable header
+            n_head = 0
 
         # TODO implement this
         ''' 

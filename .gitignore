@@ -1,15 +1,14 @@
+activate
 *.pyc
 *.swp
 *.tgz
 *.tmp
 *.dat
-*.txt
 *png
 *.pkl
 *.bak
 output/*
 COPY/
-activate
 pygadgetreader
 ProjectsPlots
 ProjectsPlots/
