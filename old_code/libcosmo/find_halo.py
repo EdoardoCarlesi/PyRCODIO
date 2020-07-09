@@ -292,7 +292,7 @@ def locate_clusters(ahf_all, box_center, runcode):
 
 		#print cluster_pos[ic][:] 
 
-	cluster_r0 = 13000.0 #/ hubble
+	cluster_r0 = 15000.0 #/ hubble
 	cluster_m = 0.5e+14
 	
 	ahf_x = []
@@ -314,18 +314,21 @@ def locate_clusters(ahf_all, box_center, runcode):
 #			print clusters[iv].info()
 
 			if clusters[iv].m > m0:
-				#m0 = clusters[iv].m
+				m0 = clusters[iv].m
 				x0 = clusters[iv].x
 				d0 = distance(this_x, x0)
-				#print cluster_name[ic], ' ',  clusters[iv].m, clusters[iv].x, d_center/1000., d0/1000.
+				#print(cluster_name[ic], ' ',  clusters[iv].m/hubble/1.e+14, clusters[iv].x, d_center/1000.)
 				#print cluster_name[ic], ' ',  clusters[iv].m/1.e+14, \
-				print(str(runcode), '\t', cluster_name[ic], '\t\t', \
-                                clusters[iv].m/1.e+14/hubble, '\t', d0/facMpc, '\t\t', \
-				(clusters[iv].x[0]-box_center[0])/facMpc,'\t',\
-                                (clusters[iv].x[1]-box_center[1])/facMpc,'\t',\
-                                (clusters[iv].x[2]-box_center[2])/facMpc) #, \
+
+				#print(str(runcode), '\t', cluster_name[ic], '\t\t', \
+                                #clusters[iv].m/1.e+14/hubble, '\t', d0/facMpc, '\t\t', \
+				#(clusters[iv].x[0]-box_center[0])/facMpc,'\t',\
+                                #(clusters[iv].x[1]-box_center[1])/facMpc,'\t',\
+                                #(clusters[iv].x[2]-box_center[2])/facMpc) #, \
 				#clusters[iv].v[0], clusters[iv].v[1], clusters[iv].v[2],  \
 				#clusters[iv].l[0], clusters[iv].l[1], clusters[iv].l[2])#, '\n'
+				print cluster_name[ic], clusters[iv].ID, \
+					m0/1.e+14, d0/1000., x0[0] - box_center[0], x0[1] - box_center[1], x0[2] - box_center[2]
 	
 		cluster_dist.append(distance(cluster_pos[ic], x0))
 

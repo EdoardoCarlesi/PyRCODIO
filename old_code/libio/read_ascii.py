@@ -246,6 +246,129 @@ def read_ahf_mass_range(file_name, m_max, m_min):
 
     return halos_ahf
 
+#      x     y    z h^-1 Mpc         velocity[km/s]      lkl   mass h^-1 M_s  sigma  sigma_v  r_sph  delta  spin p.
+def read_fof(file_name, box_size):
+    file_fof = open(file_name, 'r')
+
+    line = file_fof.readline()
+    halos_fof = []
+    count = 0
+    half_box = 0.0 #0.5 * box_size
+
+    while line:
+        full_line = file_fof.readline()
+        line = full_line.strip()
+        column = line.split()
+        n_col = len(column)
+
+        if n_col > 1 and line[0] != "#":
+            if (float(column[1]) + float(column[2]) + float(column[3])) < 1.e+3:
+                column[1] = float(column[1]) * 1.e+3 - half_box
+                column[2] = float(column[2]) * 1.e+3 - half_box
+                column[3] = float(column[3]) * 1.e+3 - half_box
+
+            # read halo properties
+            idn = int(column[0])
+            mass = float(column[8])
+            pos = [float(column[1]), float(column[2]), float(column[3])]
+            vel = [float(column[4]), float(column[5]), float(column[6])]
+            rvir = float(column[11])
+            nsub = 0 
+            npart = int(column[7])
+            vmax = 0
+            angmom = [0, 0, 0]
+            contam = 0
+
+	#    print(mass, pos)
+
+            # initialize and append hl to the list
+            hl = Halo(); hl.line = full_line
+            hl.initialize(idn, mass, pos, vel, rvir, nsub, npart)
+            hl.update_id_index(idn, count)
+            #hl.id = idn
+            hl.contam = contam
+            hl.vmax = vmax
+            hl.m_star = 0 
+            hl.m_gas = 0 
+            hl.m_dm = npart
+            hl.nstar = 0
+            hl.ngas = 0
+            halos_fof.append(hl)
+            count += 1
+
+    n_lines = count
+    #print "read %s with a total of %d lines" % (file_name, n_lines)
+
+    return halos_fof
+
+
+
+# Reading AHF particle file
+def read_particles_chunks(file_root, file_suff, n_files, n_halos):
+    ids = dict()    # List containing all halo IDs & Particle number per halo ID - each list member is a 2 elements array
+    parts = []      # Each list member contains an array with all the particle ids
+    count_p = 0     # Total number of particles per halo
+    count_h = 0     # Total number of haloes in file
+
+    this_np = 0
+    tot_h = 0       # Double check that the total number of haloes is matched with the counter
+
+    for i_chunk in range(0, n_files):
+        this_chunk = '%04d' % i_chunk
+        file_name = file_root + this_chunk + file_suff
+        file_part = open(file_name, 'r')
+        count_l = 0     # Reset the lines to zero for each file
+
+        # First read the header, containing the total number of haloes
+        line = file_part.readline()
+        line = line.strip()
+        column = line.split()
+
+        lines_command = 'wc -l ' + file_name
+        out_os = os.popen(lines_command).read()
+        (tot_l, fname) = out_os.split()
+        tot_l = long(tot_l)
+
+        print('Reading particles %s with %ld lines and %d halos. ' % (file_name, tot_l, n_halos))
+
+        while line:
+            line = file_part.readline()
+            line = line.strip()
+            column = line.split()
+
+            if count_l > 0 and count_p < this_np:
+                this_pid = long(column[0])      # Particle ID
+                this_parts.append(this_pid)
+                count_p += 1
+                count_l += 1
+            else:
+                # All particles have been read in
+                if count_p == this_np and count_h > 0:
+                    this_parts.sort()       # Automatically sort them by ascending order!
+                    parts.append(this_parts)
+
+                # Still reading particle files
+                if count_l < tot_l-1:
+                    this_parts = []
+                    this_hid = str(column[1])       # Halo ID
+                    this_np = int(column[0])
+                    this_index = count_h
+                    #print 'Line %ld found halo %ld with %d particles' % (count_l, this_hid, this_np)
+                    ids.update({this_hid:[this_index, this_np]})
+
+                    count_l += 1
+                    count_h += 1
+                    count_p = 0                     # Reset the particle number
+
+    print('Expected %d halos, found %d ' % (count_h, n_halos))
+
+    return (ids, parts)
+
+
+
+
+
+
 #ID(1)  hostHalo(2)     numSubStruct(3) Mvir(4) npart(5)        Xc(6)   Yc(7)   Zc(8)   VXc(9)  VYc(10) VZc(11) Rvir(12)        Rmax(13)        r2(14)  mbp_offset(15)  com_offset(16)  Vmax(17)        v_esc(18)       sigV(19)        lambda(20)      lambdaE(21)     Lx(22)  Ly(23)  Lz(24)  b(25)   c(26)   Eax(27) Eay(28) Eaz(29) Ebx(30) Eby(31) Ebz(32) Ecx(33) Ecy(34) Ecz(35) ovdens(36)      nbins(37)       fMhires(38)     Ekin(39)        Epot(40)        SurfP(41)       Phi0(42)        cNFW(43)        n_gas(44)       M_gas(45)       lambda_gas(46)  lambdaE_gas(47) Lx_gas(48)      Ly_gas(49)      Lz_gas(50)      b_gas(51)       c_gas(52)       Eax_gas(53)     Eay_gas(54)     Eaz_gas(55)     Ebx_gas(56)     Eby_gas(57)     Ebz_gas(58)     Ecx_gas(59)     Ecy_gas(60)     Ecz_gas(61)     Ekin_gas(62)    Epot_gas(63)    n_star(64)      M_star(65)      lambda_star(66) lambdaE_star(67)        Lx_star(68)     Ly_star(69)     Lz_star(70)     b_star(71)      c_star(72)      Eax_star(73)    Eay_star(74)    Eaz_star(75)    Ebx_star(76)    Eby_star(77)    Ebz_star(78)    Ecx_star(79)    Ecy_star(80)    Ecz_star(81)    Ekin_star(82)   Epot_star(83)   mean_z_gas(84)  mean_z_star(85)
 
 def read_ahf(file_name):
@@ -267,7 +390,7 @@ def read_ahf(file_name):
                 column[6] = float(column[6]) * (1.e+3)
                 column[7] = float(column[7]) * (1.e+3)
 
-            # Read halo properties
+            # read halo properties
             idn = int(column[0])
             mass = float(column[3])
             pos = [float(column[5]), float(column[6]), float(column[7])]
@@ -291,11 +414,11 @@ def read_ahf(file_name):
                 mstar = 0
             #pos[0] *= 1000. ; pos[1] *= 1000. ; pos[2] *= 1000
 
-            # Initialize and append hl to the list
+            # initialize and append hl to the list
             hl = Halo(); hl.line = full_line
             hl.initialize(idn, mass, pos, vel, rvir, nsub, npart)
             hl.update_id_index(idn, count)
-            #hl.ID = idn
+            #hl.id = idn
             hl.l = angmom
             hl.contam = contam
             hl.vmax = vmax
@@ -308,7 +431,7 @@ def read_ahf(file_name):
             count += 1
 
     n_lines = count
-    #print "Read %s with a total of %d lines" % (file_name, n_lines)
+    #print "read %s with a total of %d lines" % (file_name, n_lines)
 
     return halos_ahf
 

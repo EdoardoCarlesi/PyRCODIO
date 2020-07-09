@@ -18,14 +18,12 @@ import os
 
 # Configure the LG model and subpaths
 code_run = cfg.gen_runs(0, 80)
-sub_run = cfg.gen_runs(0, 10)
-
-# Local data path
-data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
+sub_run = cfg.gen_runs(0, 40)
 
 # Full dataset
 #base_path = '/media/edoardo/data1/DATA/'
-base_path = '/media/edoardo/Elements/CLUES/DATA/ICs/'
+#base_path = '/media/edoardo/Elements/CLUES/DATA/ICs/'
+base_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
 ic_path = 'zoom_cf2_512_100.000_'
 ic_extension = '.1'
 
