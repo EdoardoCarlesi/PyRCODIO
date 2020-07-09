@@ -21,39 +21,61 @@ code_run = cfg.gen_runs(0, 80)
 sub_run = cfg.gen_runs(0, 40)
 
 # IC data
-base_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
-ic_path = 'zoom_cf2_512_100.000_'
-ic_extension = '.1'
+base_ic_path = '/home/edoardo/CLUES/DATA/ICs/'
+#base_ic_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
+n_ic_files = 2; ic_root = 'zoom_cf2_512_100.000_'
 
 # Snapshot data
+base_snap_path = '/z/carlesi/CLUES/'
+#n_snap_files = 1; snap_root = 'snapshot_054'
+n_snap_files = 8; snap_root = 'snapshot_127'
 
+# Save files in PKL format
+out_extension = '.pkl'
+
+# Look at snapshots OR ICs?
+snapshot = False
 
 # Plot properties
-n_files = 1
-frac = 1.0
-units = 'kpc'
-part_type = 1
-grid_size = 50
-log_plot = False
-rand_seed = 1
-fig_size = 1.2
-show_plot = False
 velocity = True
-augment = False
-legend = False
-hex_plot = False
-vel_components = ['Vx', 'Vy', 'Vz']
+n_files_ics = 2
+n_files_snap = 1
+part_type = [1]
+rand_state = 1
+reduce_factor = 0.33
 
 # Now loop on all the simulations and gather data
 for code in code_run:
 
     for sub in sub_run:
-        com = ['Xc_LG', 'Yc_LG', 'Zc_LG']
-        this_ic = base_path + ic_path + code + '_' + sub + ic_extension
-        this_fout = 'output/ic_' + ic_path + code + '_' + sub 
 
-        if os.path.isfile(this_ic):
-            part_df = rf.read_snap(file_name=this_ic, velocity=velocity, part_types=part_type, n_files=1)
-            center = t.particles_com(part_df)
+        if snapshot == False:
+            this_file = base_ic_path + ic_root + code + '_' + sub
+            this_fout = 'output/ic_' + code + '_' + sub + out_extension
+            n_files = n_ic_files
+    
+        # If this is not a snapshot, try reading ICs
+        else:
+            this_file = base_snap_path + code + '_' + sub + '/' + snap_root
+            this_fout = 'output/snap_' + code + '_' + sub + out_extension
+            n_files = n_snap_files
+    
+        if n_files > 1:
+            this_file_test = this_file + '.0'
+
+            # First check if file exists
+            if os.path.isfile(this_file_test):
+                print(this_file_test)
+                part_df = rf.read_snap(file_name=this_file, velocity=velocity, part_types=part_type, n_files=n_files)
+
+                # Then compress the data and save only a subset of the total particles
+                if reduce_factor < 1.0 and len(part_df) > 1000:
+                    part_df = part_df.sample(frac=reduce_factor, random_state=rand_state)
+
+                if len(part_df) > 1000:
+                    print('Saving file to: ', this_fout)
+                    part_df.to_pickle(this_fout)
+    
+
 
 
