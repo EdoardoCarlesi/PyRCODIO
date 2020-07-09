@@ -11,7 +11,12 @@ import read_files as rf
 import tools as t
 import halo_utils as hu
 import pandas as pd
+import units as u
 
+print(u.particle_density(1024, 100.0))
+
+
+'''
 file_ahf = '/media/edoardo/data1/DATA/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 file_mah = '/media/edoardo/data1/DATA/00_06/00/halo_'
 form_mah = '.allinfo'
@@ -27,7 +32,7 @@ r = 2.e+3
 
 id_list = hu.halo_ids_around_center(halos, c, r)
 mahs = rf.read_mah_halo(id_list, file_mah, time)
-
+'''
 #print(mahs)
 #mahs[1].host = mahs[0]
 #print(mahs[1].trajectory_around_host())

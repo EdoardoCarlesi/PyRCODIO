@@ -75,3 +75,11 @@ def a2Myr(a_factor):
 
 	return t_value
 
+
+def particle_density(n_grid, box):
+    
+    std_dens = np.power((n_grid / box), 3.0)
+
+    return std_dens
+
+
