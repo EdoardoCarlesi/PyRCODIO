@@ -17,8 +17,8 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-code_run = cfg.gen_runs(0, 80)
-sub_run = cfg.gen_runs(0, 40)
+code_run = cfg.gen_runs(0, 1)
+sub_run = cfg.gen_runs(0, 1)
 
 # IC data
 #base_ic_path = '/home/edoardo/CLUES/DATA/ICs/'
@@ -41,7 +41,7 @@ snapshot = True
 velocity = True
 n_files_ics = 2
 n_files_snap = 1
-part_type = [1]
+part_type = [1, 2]
 rand_state = 1
 reduce_factor = 0.33
 
@@ -68,15 +68,17 @@ for code in code_run:
             if os.path.isfile(this_file_test):
                 print(this_file_test)
                 part_df = rf.read_snap(file_name=this_file, velocity=velocity, part_types=part_type, n_files=n_files)
+                '''
+                #print(part_df.head())
 
                 # Then compress the data and save only a subset of the total particles
                 if reduce_factor < 1.0 and len(part_df) > 1000:
                     part_df = part_df.sample(frac=reduce_factor, random_state=rand_state)
-
+            
                 if len(part_df) > 1000:
                     print('Saving file to: ', this_fout)
                     part_df.to_pickle(this_fout)
     
-
+                '''
 
 
