@@ -21,12 +21,12 @@ code_run = cfg.gen_runs(0, 80)
 sub_run = cfg.gen_runs(0, 40)
 
 # IC data
-base_ic_path = '/home/edoardo/CLUES/DATA/ICs/'
-#base_ic_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
+#base_ic_path = '/home/edoardo/CLUES/DATA/ICs/'
+base_ic_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
 n_ic_files = 2; ic_root = 'zoom_cf2_512_100.000_'
 
 # Snapshot data
-base_snap_path = '/z/carlesi/CLUES/'
+base_snap_path = '/z/carlesi/CLUES/DATA/512/'
 #n_snap_files = 1; snap_root = 'snapshot_054'
 n_snap_files = 8; snap_root = 'snapshot_127'
 
@@ -34,7 +34,8 @@ n_snap_files = 8; snap_root = 'snapshot_127'
 out_extension = '.pkl'
 
 # Look at snapshots OR ICs?
-snapshot = False
+#snapshot = False
+snapshot = True
 
 # Plot properties
 velocity = True

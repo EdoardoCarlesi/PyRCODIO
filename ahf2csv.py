@@ -17,21 +17,25 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-code_run = cfg.simu_runs()
-sub_run = cfg.sub_runs()
+#code_run = cfg.simu_runs()
+#sub_run = cfg.sub_runs()
 
-#code_run = cfg.gen_runs(0, 10)
-#sub_run = cfg.gen_runs(0, 40)
+code_run = cfg.gen_runs(0, 80)
+sub_run = cfg.gen_runs(0, 40)
 
 # Local data path, file names and file format
 file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
+#file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 
 # Full dataset
-base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
+#base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
+base_path = '/z/carlesi/CLUES/DATA/512/'
+
+kpcFac = 1.0
 
 # Select a subsample from the full catalog to look for local groups
-cat_radius = 10.0e+3
-cat_center = [50.e+3] * 3
+cat_radius = 10.0 * kpcFac
+cat_center = [50.0 * kpcFac] * 3
 
 # Output file base path, save all relevant halo MAHs here
 out_base = 'output/ahf_'
@@ -40,9 +44,11 @@ out_base = 'output/ahf_'
 for code in code_run:
 
     for sub in sub_run:
-        this_path = base_path + code + '/' + sub + '/'
+#        this_path = base_path + code + '/' + sub + '/'
+        this_path = base_path + code + '_' + sub + '/'
         this_ahf = this_path + file_ahf
         out_file = out_base + code + '_' + sub + '.csv'
+#        print(this_ahf)
 
         # Check that file exists
         if os.path.isfile(this_ahf):
