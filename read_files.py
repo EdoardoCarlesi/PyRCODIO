@@ -181,8 +181,9 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
     # Make this a list if it is not already a list
     if isinstance(part_types, list) == False:
         part_types = [part_types]
-
-    full_data = None
+ 
+    # Initialize the structure that will contain all the data to None
+    full_data = None 
 
     # Loop over snapshots and particle types
     for f in range(0, n_files):
@@ -191,55 +192,60 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
         else:
             this_file = file_name
 
+        if velocity == True:
+            cols = ['X', 'Y', 'Z', 'ID', 'Type', 'Vx', 'Vy', 'Vz']
+        else:
+            cols = ['X', 'Y', 'Z', 'ID', 'Type']
+
+
         for part_type in part_types:
 
             try:
                 # Read positions only
                 particles = readsnap(this_file, 'pos', part_type)
-                print('Reading positions from file: ', this_file, ' ptype = ', part_type)
-                
+                pids = readsnap(this_file, 'pid', part_type)
+                print('Reading IDs and positions from file: ', this_file)
+
+                # Reshape the IDs for concatenation!
+                pids = pids.reshape((len(pids), 1))
+
                 # Add particle type info
                 ptype = np.zeros((len(particles), 1))
                 ptype.fill(part_type)
 
+                part_ids = np.concatenate((particles, pids), axis=1)
+                part_ids_type = np.concatenate((part_ids, ptype), axis=1)
+
                 # Do we want to read in velocity data as well? Or positions only?
                 if velocity == True:
-                    cols = ['X', 'Y', 'Z', 'Vx', 'Vy', 'Vz', 'Type']
-
                     velocities = readsnap(this_file, 'vel', part_type)
                     print('Reading velocities from file: ', this_file, ' ptype = ', part_type)
+          
+                    part_ids_type_vel = np.concatenate((part_ids_type, velocities), axis=1)
 
-                    # Convert to dataframe
                     if full_data == None:
-                        part_vel = np.concatenate((particles, velocities), axis=1)
-                        full_data = np.concatenate((part_vel, ptype), axis=1)
+                        full_data = part_ids_type_vel
                     else:
-                        new_data = np.concatenate((particles, velocities), axis=1)
-                        new_data = np.concatenate((new_data, ptype), axis=1)
-                        full_data = np.concatenate((full_data, new_data), axis=0)
+                        full_data = np.concatenate((full_data, part_ids_type_vel), axis=0)
 
                 # Reading only positions
                 else:
-                    cols = ['X', 'Y', 'Z', 'Type']
-
-                    # Concatenate
-                    if full_data == None:
-                        full_data = np.concatenate((particles, ptype), axis=1)
-                    else:
-                        new_data = np.concatenate((particles, ptype), axis=1)
-                        full_data = np.concatenate((full_data, new_data), axis=0)
-
+                    full_data = np.concatenate((full_data, part_ids_type), axis=0)
+        
             # Skip file
             except:
-                print('There are no particles of type: ', part_type, ' in file: ', this_file)
+                # TODO
+                'This should be fixed'
+                #print('There are no particles of type: ', part_type, ' in file: ', this_file)
+
 
     try:
         n_part = len(full_data)
-        print('Found ', n_part, ' particles in total, for type(s): ', part_types)
+        print('Found ', n_part, ' particles in total, for type(s): ', part_types, ' ncols: ', len(cols))
         part_df = pd.DataFrame(data=full_data, columns=cols)
 
     except:
-        print('Warning. No particles found in file: ', this_file)
+        print('Warning! ', this_file, ' could not be saved.')
         part_df = pd.DataFrame()
 
     # Return the selected particles' properties in a dataframe

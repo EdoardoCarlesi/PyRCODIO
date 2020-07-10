@@ -17,8 +17,8 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-code_run = cfg.gen_runs(0, 80)
-sub_run = cfg.gen_runs(0, 40)
+code_run = cfg.gen_runs(0, 1)
+sub_run = cfg.gen_runs(0, 1)
 
 # Full dataset
 #base_path = '/media/edoardo/data1/DATA/'
