@@ -17,8 +17,8 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-code_run = cfg.gen_runs(0, 1)
-sub_run = cfg.gen_runs(0, 1)
+code_run = cfg.gen_runs(0, 80)
+sub_run = cfg.gen_runs(0, 40)
 
 # IC data
 #base_ic_path = '/home/edoardo/CLUES/DATA/ICs/'
@@ -27,8 +27,8 @@ n_ic_files = 2; ic_root = 'zoom_cf2_512_100.000_'
 
 # Snapshot data
 base_snap_path = '/z/carlesi/CLUES/DATA/512/'
-#n_snap_files = 1; snap_root = 'snapshot_054'
-n_snap_files = 8; snap_root = 'snapshot_127'
+n_snap_files = 1; snap_root = 'snapshot_054'
+#n_snap_files = 8; snap_root = 'snapshot_127'
 
 # Save files in PKL format
 out_extension = '.pkl'
@@ -41,7 +41,7 @@ snapshot = True
 velocity = True
 n_files_ics = 2
 n_files_snap = 1
-part_type = [1, 2]
+part_type = [1]
 rand_state = 1
 reduce_factor = 0.33
 
@@ -63,12 +63,12 @@ for code in code_run:
     
         if n_files > 1:
             this_file_test = this_file + '.0'
+        else:
+            this_file_test = this_file
 
             # First check if file exists
             if os.path.isfile(this_file_test):
-                print(this_file_test)
                 part_df = rf.read_snap(file_name=this_file, velocity=velocity, part_types=part_type, n_files=n_files)
-                '''
                 #print(part_df.head())
 
                 # Then compress the data and save only a subset of the total particles
@@ -79,6 +79,3 @@ for code in code_run:
                     print('Saving file to: ', this_fout)
                     part_df.to_pickle(this_fout)
     
-                '''
-
-
