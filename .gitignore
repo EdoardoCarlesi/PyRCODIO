@@ -10,6 +10,8 @@ activate
 *.bak
 output/*
 COPY/
+\
+'\'
 pygadgetreader
 ProjectsPlots
 ProjectsPlots/

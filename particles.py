@@ -46,6 +46,28 @@ def overdensity(part_df=None, R=None, center=None, rho0=None):
     return delta
 
 
+'''
+    Data must be a dataframe and axes a list of columns
+'''
+def inertia_tensor(data=None, axes=None):
+
+    X = axes[0]
+    Y = axes[0]
+    Z = axes[0]
+
+    I = np.zeros((3, 3))
+
+    for i_ax in range(0, 3):
+        j_ax = (i_ax + 1) % 3
+        k_ax = (i_ax + 2) % 3
+
+        I[i_ax, i_ax] = np.sum(data[j_ax] ** 2.0 + data[k_ax] **2.0)
+ 
+
+    return I
+
+
+
 def triaxiality():
 
     return t

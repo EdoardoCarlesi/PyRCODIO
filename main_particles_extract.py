@@ -55,7 +55,7 @@ for code in code_run:
             this_fout = 'output/ic_' + code + '_' + sub + out_extension
             n_files = n_ic_files
     
-        # If this is not a snapshot, try reading ICs
+        # If this is not ICs, try reading a snapshot
         else:
             this_file = base_snap_path + code + '_' + sub + '/' + snap_root
             this_fout = 'output/snap_' + code + '_' + sub + out_extension
