@@ -4,7 +4,7 @@
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
-    main_lg_pca_extract.py: Analyze a previously produced csv file containing LG properties
+    main_lg_extract.py: Analyze a previously produced csv file containing LG properties
 '''
 
 import matplotlib.pyplot as plt
