@@ -33,12 +33,19 @@ for code in code_run:
 
         this_ic = base_path + '/ic_' + code + '_' + sub + '.pkl'
         this_snap = base_path + '/snap_' + code + '_' + sub + '.pkl'
-#        this_ahf = base_path + '/ahf_' + code + '_' + sub + '.csv'
+        this_lg = base_path + '/lg_' + code + '_' + sub + '.pkl'
     
         # Check if files exist
-        if os.path.isfile(this_ic) and os.path.isfile(this_snap) and os.path.isfile(this_ahf):
-            #part_ic = pd.read_pickle(this_ic)
+        if os.path.isfile(this_ic) and os.path.isfile(this_snap) and os.path.isfile(this_lg):
+            part_ic = pd.read_pickle(this_ic)
             part_snap = pd.read_pickle(this_snap)
+            lg = pd.read_pickle(this_lg)
+
+            lg.info(dump=True)
+            print('ICs head:')
+            print(part_ic.head())
+            print('snap head:')
+            print(part_snap.head())
 #            halo_ahf = pd.
             #print(this_ic)
             #print(part_ic.head())

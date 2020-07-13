@@ -95,7 +95,7 @@ class Halo:
         if r_sub == None:
             r_sub = self.r()
 
-        self.subhalos = t.find_halos(halos, self.pos(), r_sub)
+        self.subhalos = find_halos(halos, self.pos(), r_sub)
 
 
 '''
@@ -467,11 +467,27 @@ def halo_ids_around_center(halos, center, radius):
 def find_halos(catalog, center, radius):
 
     new_key = 'Distance'
+    cols = ['Xc(6)', 'Yc(7)', 'Zc(8)']
 
     def dist(x, c):
         return t.distance(x, c)
 
-    catalog[new_key] = catalog[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.apply(dist, c=center).T
+    # Check units
+    mpc2kpc = 1.0e+3
+    n_col = int(0.5 * len(catalog))
+
+    x_sum = np.sum(catalog[cols].iloc[n_col])
+    c_sum = np.sum(center)
+
+    # If units are Mpc convert to kpc and return the "right" units
+    if x_sum < 1.0e+4:
+        catalog[cols] = catalog[cols].apply(lambda x: x * mpc2kpc)
+
+        # Also the viral radius needs to be ported to the correct units
+        catalog['Rvir(12)'] = catalog['Rvir(12)'].apply(lambda x: x * mpc2kpc)
+        n_sum = np.sum(catalog[cols].iloc[n_col])
+
+    catalog[new_key] = catalog[cols].T.apply(dist, c=center).T
     
     return catalog[catalog[new_key] < radius]    
 

@@ -66,16 +66,15 @@ for code in code_run:
         else:
             this_file_test = this_file
 
-            # First check if file exists
-            if os.path.isfile(this_file_test):
-                part_df = rf.read_snap(file_name=this_file, velocity=velocity, part_types=part_type, n_files=n_files)
-                #print(part_df.head())
+        # First check if file exists
+        if os.path.isfile(this_file_test):
+            part_df = rf.read_snap(file_name=this_file, velocity=velocity, part_types=part_type, n_files=n_files)
 
-                # Then compress the data and save only a subset of the total particles
-                if reduce_factor < 1.0 and len(part_df) > 1000:
-                    part_df = part_df.sample(frac=reduce_factor, random_state=rand_state)
+            # Then compress the data and save only a subset of the total particles
+            if reduce_factor < 1.0 and len(part_df) > 1000:
+                part_df = part_df.sample(frac=reduce_factor, random_state=rand_state)
             
-                if len(part_df) > 1000:
-                    print('Saving file to: ', this_fout)
-                    part_df.to_pickle(this_fout)
+            if len(part_df) > 1000:
+                print('Saving file to: ', this_fout)
+                part_df.to_pickle(this_fout)
     
