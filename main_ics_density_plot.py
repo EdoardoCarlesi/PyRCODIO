@@ -23,7 +23,8 @@ sub_run = cfg.gen_runs(0, 1)
 # Full dataset
 #base_path = '/media/edoardo/data1/DATA/'
 #base_path = '/media/edoardo/Elements/CLUES/DATA/ICs/'
-base_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
+#base_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
+base_ic_path = '/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
 ic_path = 'zoom_cf2_512_100.000_'
 ic_extension = '.1'
 

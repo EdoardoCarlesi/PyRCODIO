@@ -488,7 +488,9 @@ def find_halos(catalog, center, radius):
         n_sum = np.sum(catalog[cols].iloc[n_col])
 
     catalog[new_key] = catalog[cols].T.apply(dist, c=center).T
-    
+    #print(radius)
+    #print(catalog[new_key])
+
     return catalog[catalog[new_key] < radius]    
 
 '''

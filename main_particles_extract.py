@@ -17,12 +17,14 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-code_run = cfg.gen_runs(0, 80)
-sub_run = cfg.gen_runs(0, 40)
+code_run = cfg.gen_runs(0, 1)
+sub_run = cfg.gen_runs(0, 10)
 
 # IC data
 #base_ic_path = '/home/edoardo/CLUES/DATA/ICs/'
 base_ic_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
+#base_ic_path = '/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
+#00_10/ICs'
 n_ic_files = 2; ic_root = 'zoom_cf2_512_100.000_'
 
 # Snapshot data
@@ -43,7 +45,7 @@ n_files_ics = 2
 n_files_snap = 1
 part_type = [1]
 rand_state = 1
-reduce_factor = 0.33
+reduce_factor = 1.0
 
 # Now loop on all the simulations and gather data
 for code in code_run:
@@ -51,6 +53,8 @@ for code in code_run:
     for sub in sub_run:
 
         if snapshot == False:
+            #this_file = base_ic_path + code + '_' + sub + '/ICs/' + ic_root + code + '_' + sub
+            #this_fout = 'output/ic_hestia_' + code + '_' + sub + out_extension
             this_file = base_ic_path + ic_root + code + '_' + sub
             this_fout = 'output/ic_' + code + '_' + sub + out_extension
             n_files = n_ic_files
