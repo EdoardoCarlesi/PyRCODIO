@@ -153,6 +153,12 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
                 plt.hexbin(data[coord[ax0]], data[coord[ax1]], C=data[vx], gridsize=grid_size, cmap=colorscale)
                 plt.savefig(file_v_out + '.png')
 
+    # Close all figures and clear stuff
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+
 
 '''
     Plot the MAH of a single halo
