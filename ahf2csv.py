@@ -26,12 +26,13 @@ sub_run = cfg.gen_runs(0, 40)
 # Local data path, file names and file format
 file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 #file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
-base_ahf = 'HESTIA_100Mpc_512_'
+base_ahf = 'AHF_output/HESTIA_100Mpc_512_'
 format_ahf = '.127.z0.000.AHF_halos'
 
 # Full dataset
 #base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
-base_path = '/z/carlesi/CLUES/DATA/512/'
+#base_path = '/z/carlesi/CLUES/DATA/512/'
+base_path = '/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
 
 #kpcFac = 1.0
 kpcFac = 1.e+3
