@@ -18,12 +18,14 @@ import os
 
 # Use AHF / csv catalogs
 csvAhf = False
+hestiaAhf = True
 
 # Configure the LG model and subpaths
 if csvAhf == True:
     code_run = cfg.gen_runs(0, 80)
     sub_run = cfg.gen_runs(0, 40)
     [model_run, dict_model] = cfg.lg_models()
+elif hestiaAhf == True:
 
 else:
     [model_run, dict_model] = cfg.lg_models()
@@ -37,6 +39,9 @@ file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 # Full dataset base path
 if csvAhf == True:
     base_path = '/media/edoardo/Elements/CLUES/DATA/Particles/512/'
+elif hestiaAhf == True:
+    data_path='/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
+    file_ahf='/AHF_output/HESTIA_100Mpc_512_08_19.127.z0.000.AHF_halos'
 else:
     base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
 
@@ -53,6 +58,9 @@ all_halo_mah = []
 if csvAhf == True:
     out_base_pkl = base_path + 'lg_'
     out_all_lgs_csv = 'output/lg_pairs_512.csv'
+if hestiaAhf == True:
+    out_base_pkl = base_path + 'lg_'
+    out_all_lgs_csv = 'output/lg_pairs_hestia_512.csv'
 else:
     out_base_pkl = 'saved/lg_pair_'
     out_all_lgs_csv = 'output/lg_pairs_2048.csv'
