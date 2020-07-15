@@ -230,7 +230,10 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
 
                 # Reading only positions
                 else:
-                    full_data = np.concatenate((full_data, part_ids_type), axis=0)
+                    if full_data == None:
+                        full_data = part_ids_type
+                    else:
+                        full_data = np.concatenate((full_data, part_ids_type), axis=0)
         
             # Skip file
             except:
@@ -245,7 +248,7 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
         part_df = pd.DataFrame(data=full_data, columns=cols)
 
     except:
-        print('Warning! ', this_file, ' could not be saved.')
+        print('Warning! ', this_file, ' could not be exported to a DataFrame.')
         part_df = pd.DataFrame()
 
     # Return the selected particles' properties in a dataframe

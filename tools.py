@@ -205,13 +205,15 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
     # Sanity check on the units
     half_n = int(n_part * 0.5)
     sum_coord = part_df[col0].iloc[half_n] + part_df[col1].iloc[half_n] + part_df[col2].iloc[half_n] 
-    #print(sum_coord)
 
     # Make sure the units are consistent
     if sum_coord < kpcThresh:
         side = side * kpc2Mpc
         center = center * ([kpc2Mpc] *3) 
         thick = thick * kpc2Mpc
+        
+        #print(part_df[part_df['Type'] == 4.0].head())
+        #print(sum_coord, center, thick)
 
     # Set the minima and maxima for the particles to be used in the plot
     minima[ax0] = center[ax0] - side * 0.5

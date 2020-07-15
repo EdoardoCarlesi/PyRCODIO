@@ -22,20 +22,23 @@ from matplotlib import rc
     The plot is a 2D projection.
 '''
 def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_plot=False, grid_size=100, margin=0.5, data_augment=False, 
-            hex_plot = True, fig_size=10, velocity=False, vel=None):
+            hex_plot = True, fig_size=10, velocity=False, vel=None, colorscale=None):
     print('Plotting density slices...')
 
     if (velocity == False) and (vel != None):
         print('Velocity is set to false but vel= is different than None! Seting vel to None...')
         vel = None
 
-    # Plot properties
-    colorscale = 'inferno'
-    #colorscale = 'gray'
-    #colorscale = 'hot'
-    #colorscale = 'gist_gray'
-    #colorscale = 'bwr'
+    # If the colorscale is undefined by the user then set a default one among those below
+    if colorscale == None:        
+        #colorscale = 'inferno'
+        colorscale = 'gray'
+        #colorscale = 'hot'
+        #colorscale = 'gist_gray'
+        #colorscale = 'bwr'
 
+
+    # Other plot properties
     ax0 = axes_plot[0]
     ax1 = axes_plot[1]
     coord = ['X', 'Y', 'Z']

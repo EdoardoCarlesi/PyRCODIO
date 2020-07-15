@@ -17,11 +17,11 @@ import tools as t
 import os
 
 # Use AHF / csv catalogs
-csvAhf = True
+csvAhf = False
 
 # Configure the LG model and subpaths
 if csvAhf == True:
-    code_run = cfg.gen_runs(17, 80)
+    code_run = cfg.gen_runs(0, 80)
     sub_run = cfg.gen_runs(0, 40)
     [model_run, dict_model] = cfg.lg_models()
 
@@ -85,6 +85,8 @@ for code in code_run:
                 print('Loading MAHs from .pkl file...')
                 out_f_pkl = open(out_file_pkl, 'rb')
                 lg = pkl.load(out_f_pkl)
+                lg.code_simu = code
+                lg.code_sub = sub
                 out_f_pkl.close()
                 print('Done.')
                 print('Writing LG properties... ')
@@ -115,6 +117,8 @@ for code in code_run:
                     # Choose only one LG 
                     these_lgs[0].info()
                     lg = these_lgs[0]
+                    lg.code_simu = code
+                    lg.code_sub = sub
 
                     print('Writing LG properties... ')
                     out_all_lgs.write(lg.info(dump=False)+'\n')

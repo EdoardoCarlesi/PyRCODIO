@@ -16,10 +16,6 @@ import pandas as pd
 import tools as t
 import os
 
-# Configure the LG model and subpaths
-code_run = cfg.simu_runs()
-sub_run = cfg.sub_runs()
-
 # Local data path
 data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
 
@@ -32,16 +28,16 @@ snap_path = 'snapshot_054'
 side_size = 2.0e+3
 thickness = 1.0e+3
 n_files = 1
-frac = 1.0
+frac = 0.25
 units = 'kpc'
-part_type = [1, 2]
-grid_size = 600
+part_type = [1]
+grid_size = 800
 rand_seed = 1
-fig_size = 15
+fig_size = 8
 show_plot = False
 velocity = False
 augment = False
-legend = True
+legend = False
 vel_components = ['Vx', 'Vy', 'Vz']
 
 # Input file containing all the main properties needed to do the plots
@@ -51,16 +47,20 @@ data_all = pd.read_csv(input_all_csv)
 code_run = data_all['simu_code'].unique()
 sub_run = data_all['sub_code'].unique()
 
-# Now loop on all the simulations and gather data
-for code in code_run[:1]:
+#print(code_run)
+#print(sub_run)
 
-    for sub in sub_run[:2]:
+# Now loop on all the simulations and gather data
+for code in code_run:
+
+    for sub in sub_run:
         com = ['Xc_LG', 'Yc_LG', 'Zc_LG']
         this_com = data_all[(data_all['sub_code'] == sub) & (data_all['simu_code'] == code)][com].values
 
         sub = '%02d' % sub
         this_path = base_path + code + '/' + sub + '/'
-        this_fout = 'output/lg_' + code + '_' + sub + '_'
+        #this_fout = 'output/lg_' + code + '_' + sub + '_'
+        this_fout = 'output/lg_fig' + str(fig_size) + '_size' + str(grid_size) + code + '_' + sub + '_'
         this_snap = this_path + snap_path
 
         # Check that file exists
@@ -69,7 +69,7 @@ for code in code_run[:1]:
             print('Found: ', this_snap, ', plotting around: ', center)
 
             # Select a slab around a given axis, this function returns a dataframe
-            part_df = rf.read_snap(file_name=this_snap, velocity=velocity, part_type=1, n_files=1)
+            part_df = rf.read_snap(file_name=this_snap, velocity=velocity, part_types=1, n_files=1)
 
             # Select particles for the plot, do a selection first. z_axis is orthogonal to the plane of the projection
             for z_axis in range(0, 3):
