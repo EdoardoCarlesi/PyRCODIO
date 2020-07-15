@@ -31,17 +31,20 @@ out_base = 'output/clusters_'
 # File and path specifications
 base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
 file_ahf = 'snapshot_full_054.z0.000.AHF_halos'
+#file_ahf = 'snapshot_full_054.z0.001.AHF_halos'
 
 # Cluster mass threshold
 m_thresh = 1.e+14
 
 # Loop on all the simulations and gather data
-#for code in code_run[1:]:
-for code in ['09_18']:
+#for code in code_run:
+for code in ['01_12']:
+#for code in ['45_17']:
 
-    for sub in sub_run:
+    for sub in sub_run[:]:
         this_path = base_path + code + '/' + sub + '/'
         this_ahf = this_path + file_ahf
+        #print(this_ahf)
 
         # Check that file exists
         if os.path.isfile(this_ahf):

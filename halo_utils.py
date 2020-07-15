@@ -270,7 +270,8 @@ class LocalGroup:
     LG1 = None
     LG2 = None
     com = None
-    code = None
+    code_simu = None
+    code_sub = None
     ahf_file = None
 
     # The constructor needs two halos (lg1, lg2)
@@ -372,12 +373,12 @@ class LocalGroup:
         kpc = 1000.
 
         if csv == True:
-            file_lg_line = '%7.2e, %7.2e, %7.2f, %7.2f, %7.2f, %d, %d, %d, %d, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f,%s' % \
+            file_lg_line = '%7.2e,%7.2e,%7.2f,%7.2f,%7.2f,%d,%d,%d,%d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%s,%s' % \
                        (self.LG1.m(), self.LG2.m(), self.r_halos(), \
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
                         self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),\
                         self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),\
-                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code)
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code_simu, self.code_sub)
         else:
             # TODO : implement some readable header
             n_head = 0
