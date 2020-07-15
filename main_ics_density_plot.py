@@ -71,7 +71,10 @@ for code in code_run:
                 # Select a slab around a given axis, this function returns a dataframe
                 slab_part_df = t.find_slab(part_df=part_df, side=side_size, thick=thickness, center=center, reduction_factor=frac, z_axis=z_axis, rand_seed=rand_seed)
 
-                # Feed the previously chosen dataframe and plot its 2D density projection
-                pu.plot_density(data=slab_part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, legend=legend, hex_plot=hex_plot,
+                try:
+                    # Feed the previously chosen dataframe and plot its 2D density projection
+                    pu.plot_density(data=slab_part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, legend=legend, hex_plot=hex_plot,
                         grid_size=grid_size, margin=0.1, data_augment=augment, fig_size=fig_size, velocity=velocity, vel=vel_components)
+                except:
+                    print('Error. Could not plot density slabs for file: ', this_ic)
 
