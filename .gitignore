@@ -12,6 +12,7 @@ output/*
 COPY/
 \
 '\'
+output
 pygadgetreader
 ProjectsPlots
 ProjectsPlots/

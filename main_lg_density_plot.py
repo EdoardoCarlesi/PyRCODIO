@@ -13,6 +13,7 @@ import plot_utils as pu
 import config as cfg
 import pickle as pkl
 import pandas as pd
+import numpy as np
 import tools as t
 import os
 
@@ -38,6 +39,7 @@ show_plot = False
 velocity = False
 augment = False
 legend = False
+extra_random = True
 vel_components = ['Vx', 'Vy', 'Vz']
 
 # Input file containing all the main properties needed to do the plots
@@ -46,9 +48,6 @@ data_all = pd.read_csv(input_all_csv)
 
 code_run = data_all['simu_code'].unique()
 sub_run = data_all['sub_code'].unique()
-
-#print(code_run)
-#print(sub_run)
 
 # Now loop on all the simulations and gather data
 for code in code_run:
@@ -78,7 +77,20 @@ for code in code_run:
 
                 print('Plot axes, z=', z_axis, ' ax0=', ax0, ' ax1=', ax1)
 
-                slab_part_df = t.find_slab(part_df=part_df, side=side_size, thick=thickness, center=center, reduction_factor=frac, z_axis=z_axis, rand_seed=rand_seed)
+                # Add some scatter to the plot properties 
+                if extra_random == True:
+                    this_fout = this_fout + 'rand_'
+                    thickness = thickness * (0.5 + 2.0 * np.random.uniform()) 
+                    side_size = side_size * (0.5 + 2.0 * np.random.uniform()) 
+
+                    for i, c in enumerate(center):
+                        center[i] = c * (0.9 + 0.3 * np.random.uniform())
+
+                
+
+                    slab_part_df = t.find_slab(part_df=part_df, side=side_size, thick=thickness, center=center, reduction_factor=frac, z_axis=z_axis, rand_seed=rand_seed)
+                else:
+                    slab_part_df = t.find_slab(part_df=part_df, side=side_size, thick=thickness, center=center, reduction_factor=frac, z_axis=z_axis, rand_seed=rand_seed)
 
                 # Feed the previously chosen dataframe and plot its 2D density projection
                 pu.plot_density(data=slab_part_df, axes_plot=[ax0, ax1], file_name=this_fout, show_plot=show_plot, legend=legend,

@@ -1,21 +1,17 @@
-<<<<<<< HEAD
-#from libpynbody.read_ahf import *
-from libcosmo.halos import *
-from libcosmo.find_halos import *
-from libio.read_ascii import *
-from pygadgetreader import *
-#import gadfly as gdf
+'''
+    Python Routines for COsmology and Data I/O
+    PyRCODIO Pandas Version
+    Edoardo Carlesi 2020
+    ecarlesi83@gmail.com
 
+    test.py: this file is used to test new routines and functionalities
+'''
+
+import read_files as rf
 import numpy as np
-#import pynbody as pyn
-#import pynbody.plot.sph as sph
-#import matplotlib.pylab as plt
 import pickle
-from config import *
 
 run = '00_06'
-ahf_file='/z/carlesi/STORE/512box100/AHF/' + run + '/merged_054.AHF_halos'
-ahf = read_ahf(ahf_file)
 r_iso = 2e+3
 r_max = 1.2e+3
 r_min = 0.4e+3
@@ -27,17 +23,23 @@ m_max = 2.5e+12
 d_max = 10.e+3
 
 #lg_model = LocalGroupModel(d_max, r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
-lg_model = LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+#lg_model = LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
 
 center = [50.e+3, 50.e+3, 50.e+3]
 
+
+f_web = '/home/edoardo/CLUES/DATA/ICs/ic_web_00_00.000064.Vweb-csv'
+
+web = rf.extract_vweb(file_name=f_web, center=center, radius=radius)
+
+
+'''
 ahf_center = find_halos_point(center, ahf, radius)
 hs = find_lg(ahf_center, lg_model)
 
 print(hs)
 
 
-'''
 #snap_path='/home/eduardo/CLUES/DATA/CF2P5/57252/snapshot_019'
 #snap_path='/home/eduardo/CLUES/DATA/01/snapshot_035'
 snap_path='/home/eduardo/CLUES/DATA/HESTIA/2048/37_11/snapshot_127'
@@ -160,11 +162,8 @@ elif oldLoad:
     print('Saving output to file: ', figname)
     plt.savefig(figname, dpi=300)
 
-'''
 
 
-
-'''
 f_ahf='/home/eduardo/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 halos = read_ahf(f_ahf)
 for ih in range (0, len(halos)):
@@ -454,9 +453,6 @@ for i in range(0, 1):
 
 plot_trajectory(all_sub_x, all_sub_y, 'x', 'y', out_path + 'test.png')
 
-'''
-
-'''
 halo = []
 
 halo.append(ahf[0])
@@ -481,17 +477,7 @@ for ih in range(0, n_halo):
 		file_name = mah_sub_file_name(out_path, num_run, ih, isb)
 		all_sub[ih][isb].dump_history(file_name)
 =======
->>>>>>> 4639ab3ea2bd03dcff17cd9e375322c3eea545a5
-'''
-    Python Routines for COsmology and Data I/O
-    PyRCODIO Pandas Version
-    Edoardo Carlesi 2020
-    ecarlesi83@gmail.com
-
-    test.py: this file is used to test new routines and functionalities
-'''
-
-import read_files as rf
+    import read_files as rf
 import tools as t
 import halo_utils as hu
 import pandas as pd
@@ -500,7 +486,6 @@ import units as u
 print(u.particle_density(1024, 100.0))
 
 
-'''
 file_ahf = '/media/edoardo/data1/DATA/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
 file_mah = '/media/edoardo/data1/DATA/00_06/00/halo_'
 form_mah = '.allinfo'
@@ -516,7 +501,6 @@ r = 2.e+3
 
 id_list = hu.halo_ids_around_center(halos, c, r)
 mahs = rf.read_mah_halo(id_list, file_mah, time)
-'''
 #print(mahs)
 #mahs[1].host = mahs[0]
 #print(mahs[1].trajectory_around_host())
@@ -563,8 +547,7 @@ print(tree[tree])
 
 #print(this_halo.info())
 #print(this_halo.distance(pos))
-"""
-
+'''
 
 
 

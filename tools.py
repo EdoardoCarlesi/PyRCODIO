@@ -243,4 +243,19 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
 
 
 
+def check_units(data=None, cols=None):
+    n_pts = int(len(data) * 0.5)
+
+    vals = data[cols].iloc[n_pts]
+
+    # If this is true, then the units are 
+    if np.sum(vals) < 1.e+4:
+        factor = 1.0e+3
+    else:
+        factor = 1.0
+
+    data[cols] = data[cols].apply(lambda x: x * factor)
+    #print(data.head())
+
+    return factor
 
