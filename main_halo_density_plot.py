@@ -48,8 +48,8 @@ code_run = cfg.simu_runs()
 sub_run = cfg.gen_runs(0, 10)
 
 # Now loop on all the simulations and gather data
-#for code in code_run:
-for code in ['09_18']:
+for code in code_run:
+#for code in ['09_18']:
 
     for sub in sub_run:
         input_all_csv = 'output/clusters_' + code + '_' + sub + '.csv' 

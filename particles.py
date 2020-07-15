@@ -18,15 +18,14 @@ import scipy as sp
     Input: parts is a data structure
 '''
 def find_particles(parts, center, radius):
-
     new_key = 'Distance'
 
     def dist(x, c):
         return t.distance(x, c)
 
-    parts[new_key] = parts[['Xc(6)', 'Yc(7)', 'Zc(8)']].T.apply(dist, c=center).T
+    parts[new_key] = parts[['X', 'Y', 'Z']].T.apply(dist, c=center).T
 
-    return catalog[catalog[new_key] < radius]
+    return parts[parts[new_key] < radius]
 
 
 '''
@@ -66,6 +65,17 @@ def inertia_tensor(data=None, axes=None):
 
     return I
 
+
+def match_particle_ids(data=None, ids=None):
+    match = []
+    n_ids = len(ids)
+
+    for i in range(0, n_ids):
+        this_id = float(ids[i])
+        #print(this_id)
+        match.append(data[data['ID'] == this_id]) 
+
+    return match
 
 
 def triaxiality():

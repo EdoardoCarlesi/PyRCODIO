@@ -76,7 +76,7 @@ class Halo:
 
     # Simply return r
     def r(self):
-        return self.halo_df[['Rvir(12)']].values[0]
+        return float(self.halo_df[['Rvir(12)']].values[0])
 
     # Simply return the mass
     def m(self):
