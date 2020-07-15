@@ -18,14 +18,15 @@ import os
 
 # Configure the LG model and subpaths
 code_run = cfg.gen_runs(0, 1)
-sub_run = cfg.gen_runs(0, 1)
+sub_run = cfg.gen_runs(13, 30)
 
 # Full dataset
 #base_path = '/media/edoardo/data1/DATA/'
 #base_path = '/media/edoardo/Elements/CLUES/DATA/ICs/'
 #base_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
 base_path = '/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
-ic_path = 'zoom_cf2_512_100.000_'
+#ic_path = 'zoom_cf2_512_100.000_'
+ic_path = 'ICs/ic_zoom_512_100.000_'
 ic_extension = '.1'
 
 # Plot properties
@@ -53,7 +54,8 @@ for code in code_run:
         com = ['Xc_LG', 'Yc_LG', 'Zc_LG']
         #this_ic = base_path + ic_path + code + '_' + sub + ic_extension
         this_ic = base_path + code + '_' + sub + '/' + ic_path + code + '_' + sub + ic_extension
-        this_fout = 'output/ic_' + ic_path + code + '_' + sub 
+        #this_fout = 'output/ic_' + ic_path + code + '_' + sub 
+        this_fout = 'output/ic_' + code + '_' + sub 
 
         if os.path.isfile(this_ic):
             part_df = rf.read_snap(file_name=this_ic, velocity=velocity, part_types=part_type, n_files=1)
