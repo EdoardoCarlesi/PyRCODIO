@@ -24,7 +24,7 @@ sub_run = cfg.gen_runs(0, 1)
 #base_path = '/media/edoardo/data1/DATA/'
 #base_path = '/media/edoardo/Elements/CLUES/DATA/ICs/'
 #base_path = '/z/carlesi/CLUES/ginnungagap/ginnungagap/ICs/'
-base_ic_path = '/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
+base_path = '/z/carlesi/HestiaNoam/RE_SIMS/512/DM_ONLY/'
 ic_path = 'zoom_cf2_512_100.000_'
 ic_extension = '.1'
 
@@ -51,7 +51,8 @@ for code in code_run:
 
     for sub in sub_run:
         com = ['Xc_LG', 'Yc_LG', 'Zc_LG']
-        this_ic = base_path + ic_path + code + '_' + sub + ic_extension
+        #this_ic = base_path + ic_path + code + '_' + sub + ic_extension
+        this_ic = base_path + code + '_' + sub + '/' + ic_path + code + '_' + sub + ic_extension
         this_fout = 'output/ic_' + ic_path + code + '_' + sub 
 
         if os.path.isfile(this_ic):
