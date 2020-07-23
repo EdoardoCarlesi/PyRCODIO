@@ -4,7 +4,7 @@
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
-    main_halo_pca_extract.py: extract halo properties to be used for PCA analysis
+    main_halo_pca_extract.py: extract halo properties and dump them to a separate file
 '''
 
 import read_files as rf

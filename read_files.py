@@ -7,6 +7,7 @@
     read_files.py: read different file formats and types 
 '''
 
+import tools as t
 import scipy as sp
 import halo_utils as hu
 import pandas as pd
@@ -253,3 +254,28 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
 
     # Return the selected particles' properties in a dataframe
     return part_df
+
+
+'''
+    Assuming vweb files are all of .csv type, we want to extract (and save) a subset of the original file around a specified point in space
+'''
+def extract_vweb(file_name=None, center=None, radius=None):
+
+    vweb = pd.read_csv(file_name)
+    new_key = 'radius'
+
+    print(vweb.head())
+
+    # Select these three columns
+    cols = ['x', 'y', 'z']
+
+    fac = t.check_units(data=vweb, cols=cols)
+
+    # Check that the units are consistent
+    vweb[new_key] = vweb[cols].T.apply(lambda x: t.distance(x, center))
+    #print(vweb.head())
+
+    select_vweb = vweb[vweb[new_key] < radius]
+
+    return select_vweb
+
