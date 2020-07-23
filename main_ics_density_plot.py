@@ -17,8 +17,8 @@ import tools as t
 import os
 
 # Configure the LG model and subpaths
-code_run = cfg.gen_runs(0, 1)
-sub_run = cfg.gen_runs(13, 30)
+code_run = cfg.gen_runs(0, 80)
+sub_run = cfg.gen_runs(10, 30)
 
 # Full dataset
 #base_path = '/media/edoardo/data1/DATA/'
@@ -55,7 +55,7 @@ for code in code_run:
         #this_ic = base_path + ic_path + code + '_' + sub + ic_extension
         this_ic = base_path + code + '_' + sub + '/' + ic_path + code + '_' + sub + ic_extension
         #this_fout = 'output/ic_' + ic_path + code + '_' + sub 
-        this_fout = 'output/ic_' + code + '_' + sub 
+        this_fout = 'output/ic_' + code + '_' + sub + '_'
 
         if os.path.isfile(this_ic):
             part_df = rf.read_snap(file_name=this_ic, velocity=velocity, part_types=part_type, n_files=1)
