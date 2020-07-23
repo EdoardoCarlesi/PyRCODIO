@@ -26,8 +26,8 @@ if csvAhf == True:
     sub_run = cfg.gen_runs(0, 40)
     [model_run, dict_model] = cfg.lg_models()
 elif hestiaAhf == True:
-
-else:
+    # TODO FIX this   
+#else:
     [model_run, dict_model] = cfg.lg_models()
     code_run = cfg.simu_runs()
     sub_run = cfg.sub_runs()

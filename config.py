@@ -44,7 +44,7 @@ def simu_runs():
     all_runs.append('17_10') 
     all_runs.append('17_13') 
     all_runs.append('34_13')
-#    all_runs.append('45_17')
+    all_runs.append('45_17')
     all_runs.append('55_02') 
     all_runs.append('09_18')
     all_runs.append('64_14')
@@ -59,90 +59,136 @@ def lg_models():
         model_count = 0
 
         this_model = '00_06'
-        r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 00_06 
+        r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '01_12'
-        r_iso = 1500.; r_max = 1500.; r_min = 200.; m_min = 5.0e+11; m_max = 8.5e+12; ratio_max = 3.5; vrad_max = 100.0	# 01_12
+        r_iso = 1500.; r_max = 1500.; r_min = 200.; m_min = 5.0e+11; m_max = 8.5e+12; ratio_max = 3.5; vrad_max = 100.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '17_10'
-        r_iso = 1700.; r_max = 1600.; r_min = 200.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = 100.0	# 17_10
+        r_iso = 1700.; r_max = 1600.; r_min = 200.; m_min = 9.0e+11; m_max = 10.e+12; ratio_max = 3.5; vrad_max = 100.0	
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '17_13'
-        r_iso = 1000.; r_max = 1900.; r_min = 150.; m_min = 5.0e+11; m_max = 10.e+12; ratio_max = 5; vrad_max = 500.0	# 17_13
+        r_iso = 1000.; r_max = 1900.; r_min = 150.; m_min = 5.0e+11; m_max = 10.e+12; ratio_max = 5; vrad_max = 500.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '34_13'; r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; 
-        m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 34_13
+        m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '45_17'; 
-        r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 45_17
+        r_iso = 1700.; r_max = 1200.; r_min = 200.; m_min = 5.0e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -1.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '55_02'
-        r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0	# 55_02
+        r_iso = 1900.; r_max = 1500.; r_min = 200.; m_min = 9.0e+11; m_max = 8.5e+12; ratio_max = 2.5; vrad_max = -1.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '64_14'
-        r_iso = 1300.; r_max = 1900.; r_min = 200.; m_min = 8.0e+11; m_max = 4.5e+12; ratio_max = 2.5; vrad_max = 100.0	# 64_14
+        r_iso = 1300.; r_max = 1900.; r_min = 200.; m_min = 8.0e+11; m_max = 4.5e+12; ratio_max = 2.5; vrad_max = 100.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '09_18'
-        r_iso = 1700.; r_max = 1900.; r_min = 200.; m_min = 0.7e+12; m_max = 7.0e+12; ratio_max = 4.5; vrad_max = 100.0	# 64_14
+        r_iso = 1700.; r_max = 1900.; r_min = 200.; m_min = 0.7e+12; m_max = 7.0e+12; ratio_max = 4.5; vrad_max = 100.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '62_14'
-        r_iso = 1500.; r_max = 1500.; r_min = 300.; m_min = 2.5e+12; m_max = 7.0e+12; ratio_max = 4.5; vrad_max = 500.0	# 64_14
+        r_iso = 1500.; r_max = 1500.; r_min = 300.; m_min = 2.5e+12; m_max = 7.0e+12; ratio_max = 4.5; vrad_max = 500.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '37_11'
-        r_iso = 1000.; r_max = 1500.; r_min = 100.; m_min = 5.0e+11; m_max = 5.0e+12; ratio_max = 2.5; vrad_max = 100.0	# 34_13
+        r_iso = 1000.; r_max = 1500.; r_min = 100.; m_min = 5.0e+11; m_max = 5.0e+12; ratio_max = 2.5; vrad_max = 100.0
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = '08_11'
-        r_iso = 1500.; r_max = 2000.; r_min = 200.; m_min = 5.0e+11; m_max = 3.0e+12; ratio_max = 2; vrad_max = 100.0	# 08_11
+        r_iso = 1500.; r_max = 2000.; r_min = 200.; m_min = 5.0e+11; m_max = 3.0e+12; ratio_max = 2; vrad_max = 100.0	
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'GENERIC'
+        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+    
+        ##################################################################
+        # Different LG models used for the "How common is the LG?" paper #
+        ##################################################################
+
+        this_model = 'M1'
+        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+
+        this_model = 'M2'
+        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+
+        this_model = 'M3'
+        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+
+        this_model = 'M4'
+        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+
+        this_model = 'M5'
+        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
+        lg_model.model_code = this_model
+        all_lg_models.append(lg_model)
+        model_index.update({this_model:model_count}) ; model_count += 1
+
+        this_model = 'M6'
         r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
