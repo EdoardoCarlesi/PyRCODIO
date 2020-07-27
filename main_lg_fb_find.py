@@ -34,10 +34,8 @@ side_buffer = 2.0 * kpcFac
 n_sub = int(box_size / radius)
 print('Subdivision in ', n_sub, ' subcubes per axis, radius: ', radius, ' and side_buffer: ', side_buffer)
 
-all_lgs = []
-
 for run in sub_runs:
-
+    all_lgs = []
     this_ahf = base_path + run + '/' + file_single
     print('Reading file: ', this_ahf)
     halos, halo_df = rf.read_ahf_halo(this_ahf, file_mpi=False)
@@ -66,6 +64,7 @@ for run in sub_runs:
 
     print(this_lg_df.head())
     this_csv = 'output/lg_fullbox_' + run + '.csv'
+    this_lg_df.drop_duplicates(inplace = True)
     this_lg_df.to_csv(this_csv)
 
     this_pkl = 'output/lg_fullbox_' + run + '.pkl'
