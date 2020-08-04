@@ -75,6 +75,17 @@ def a2Myr(a_factor):
 
 	return t_value
 
+def G():
+    G = 4.302e-6            # kpc / Msun  * 2 / s^2
+    return G
+
+def e_unit():
+    e_unit=(3.2407e-2) ** 2
+    return e_unit
+
+def km2mpc():
+    km2mpc = 3.24078e-20
+    return km2mpc
 
 def particle_density(n_grid, box):
     

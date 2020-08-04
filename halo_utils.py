@@ -7,6 +7,7 @@
     halo_utils.py: various utilities and simple computational routines used to compute halo trajectories and so on
 '''
 
+import units as u
 import tools as t
 import pandas as pd
 import numpy as np
@@ -335,6 +336,36 @@ class LocalGroup:
         else:
             return (self.LG1.m() / self.LG2.m())
 
+    def ang_mom(self):
+        v1 = self.LG1.vel()
+        v2 = self.LG2.vel()
+        x1 = self.LG1.pos()/1.e+3
+        x2 = self.LG2.pos()/1.e+3
+        m1 = self.LG1.m()
+        m2 = self.LG2.m()
+
+        am = t.module(np.cross((v1 - v2), (x1 - x2))) 
+
+        return am
+
+    def energy(self):
+        v1 = self.LG1.vel()
+        v2 = self.LG2.vel()
+        x1 = self.LG1.pos()
+        x2 = self.LG2.pos()
+        m1 = self.LG1.m()
+        m2 = self.LG2.m()
+
+        G = u.G()
+        v = t.module(v2 - v1)
+        r = t.module(x2 - x1)
+
+        e = 0.5 * v * v - G * (m1 + m2) / r
+        e = u.e_unit() * e
+
+        return e
+
+
     def header(self, csv=True, dump=True):
         
         if csv == True and dump == True:
@@ -356,13 +387,15 @@ class LocalGroup:
             header += 'Xc_LG,'
             header += 'Yc_LG,'
             header += 'Zc_LG,'
+            header += 'AngMom,'
+            header += 'Energy,'
             header += 'simu_code,'
             header += 'sub_code'
 
         else:
             header = ['M_M31','M_MW','R','Vrad','Vtan','Nsub_M31','Nsub_MW',
             'Npart_M31','Npart_MW','Vmax_MW','Vmax_M31','lambda_MW','lambda_M31','cNFW_MW', 'c_NFW_M31',
-            'Xc_LG','Yc_LG','Zc_LG','simu_code', 'sub_code']
+            'Xc_LG','Yc_LG','Zc_LG','AngMom','Energy','simu_code', 'sub_code']
             
 
         return header
@@ -372,18 +405,20 @@ class LocalGroup:
         kpc = 1000.
 
         if csv == True and dump == True:
-            file_lg_line = '%7.2e,%7.2e,%7.2f,%7.2f,%7.2f,%d,%d,%d,%d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%s,%s' % \
+            file_lg_line = '%7.2e,%7.2e,%7.2f,%7.2f,%7.2f,%d,%d,%d,%d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%s,%s' % \
                        (self.LG1.m(), self.LG2.m(), self.r_halos(), \
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
                         self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),\
                         self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),\
-                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code_simu, self.code_sub)
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], 
+                        self.ang_mom(), self.energy(), self.code_simu, self.code_sub)
         else:
-            file_lg_line = [self.LG1.m(), self.LG2.m(), self.r_halos(), \
-                        self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
-                        self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),\
-                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),\
-                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code_simu, self.code_sub]
+            file_lg_line = [self.LG1.m(), self.LG2.m(), self.r_halos(),
+                        self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(),
+                        self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),
+                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2],
+                        self.ang_mom(), self.energy(), self.code_simu, self.code_sub]
 
         # TODO implement this
         ''' 

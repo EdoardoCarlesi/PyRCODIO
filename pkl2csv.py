@@ -7,14 +7,13 @@
     pkl2csv.py: convert pickle files to csv
 '''
 
-
 import pickle as pkl
 import pandas as pd
 import config as cfg
 
 
-def convert_fb_pkl():
-    runs = cfg.gen_runs(0, 3)
+def convert_fb_pkl(vweb=False):
+    runs = cfg.gen_runs(0, 1)
 
     for run in runs:
         this_pkl = 'output/lg_fullbox_' + run + '.pkl'
@@ -25,7 +24,6 @@ def convert_fb_pkl():
         cols = all_lgs[0].header(dump=False)
         lg_df = pd.DataFrame(columns = cols)
         print(run, ') N LG Pairs: ', len(all_lgs))
-
 
         for i, lg in enumerate(all_lgs):
             this_row = lg.info(dump=False)
@@ -39,6 +37,10 @@ def convert_fb_pkl():
         print(lg_df.head())
         this_csv = 'output/lg_fullbox_' + run + '.csv'
         lg_df.to_csv(this_csv)
+
+
+
+
 
 print('Converting FullBox CSV to .pkl')
 convert_fb_pkl()

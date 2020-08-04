@@ -55,7 +55,22 @@ def module(vec):
 	for i in range(0, n_v):
 		elem += pow(vec[i], 2)
 
-	return math.sqrt(elem)
+	return np.sqrt(elem)
+
+
+def find_nearest_node_index(x, grid=None, box=None):
+    
+    cell = box / grid
+    
+    ix = np.floor(x[0] / cell)
+    iy = np.floor(x[1] / cell)
+    iz = np.floor(x[2] / cell)
+
+    index = int(ix + grid * iy + grid * grid * iz)
+
+    return index
+    
+
 
 def angle(v1, v2):
 	mv1 = [0.0] * 3	
