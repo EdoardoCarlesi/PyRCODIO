@@ -13,7 +13,7 @@ import config as cfg
 
 
 def convert_fb_pkl(vweb=False):
-    runs = cfg.gen_runs(0, 1)
+    runs = cfg.gen_runs(0, 5)
 
     for run in runs:
         this_pkl = 'output/lg_fullbox_' + run + '.pkl'
@@ -37,8 +37,6 @@ def convert_fb_pkl(vweb=False):
         print(lg_df.head())
         this_csv = 'output/lg_fullbox_' + run + '.csv'
         lg_df.to_csv(this_csv)
-
-
 
 
 

@@ -72,13 +72,12 @@ def extract_vweb_lg_cs():
 '''
     Extract the Vweb at given positions in random full box simulations
 '''
-def extract_vweb_fb():
+def extract_vweb_fb(grid_size=64):
     # configure subpaths
     sub_run = cfg.gen_runs(4, 5)
 
     # local data path, file names and file format
     base_vweb = 'vweb_'
-    grid_size  = 256
     grid = '%03d' % grid_size
     format_vweb = '.000' + grid + '.Vweb-csv'
     
@@ -89,7 +88,8 @@ def extract_vweb_fb():
     df_cols = ['ID', 'x', 'y', 'z', 'l1', 'l2', 'l3', 'dens']
 
     # full dataset
-    base_path = '/home/edoardo/CLUES/DATA/Vweb/'
+    #base_path = '/home/edoardo/CLUES/DATA/Vweb/'
+    base_path = '/media/edoardo/Elements/CLUES/DATA/FullBox/VWeb/'
     out_base = 'output/lg_fullbox_vweb_' + grid
     lg_base = 'output/lg_fullbox_'
 
@@ -124,23 +124,29 @@ def extract_vweb_fb():
 '''
     Simple eigenvalue distribution plot
 '''
-def plot_vweb_fb(grids = [32, 64, 128]):
+def plot_vweb_fb(grid=32):
     
     l1 = 'l1_'
     l2 = 'l2_'
     l3 = 'l3_'
 
     l_cols = ['l1', 'l2', 'l3', 'dens']
-    for grid in grids[2:3]:
-        this_web = rf.read_lg_vweb(grid_size = grid)
-        plt.xlim(-1.0, 1.5)
-        sns.distplot(this_web[l_cols[0]], bins=100)
-        sns.distplot(this_web[l_cols[1]], bins=100)
-        sns.distplot(this_web[l_cols[2]], bins=100)
-        print(this_web.info())
+    this_web = rf.read_lg_vweb(grid_size = grid)
+    plt.xlim(-1.0, 1.5)
+    sns.distplot(this_web[l_cols[0]], bins=100)
+    sns.distplot(this_web[l_cols[1]], bins=100)
+    sns.distplot(this_web[l_cols[2]], bins=100)
+    plt.ylabel('eigenvalues')
+    print(this_web.info())
+    
+    file_name = 'output/vweb_dist_l1l2l3_' + str(grid) + '.png'
+    plt.savefig(file_name)
+    print('Saving vweb eigenvalue distribution to: ', file_name)
+    plt.clf()
+    plt.clf()
+    plt.close()
 
-
-    plt.show()
+#    plt.show()
 
 
     ############################################################
@@ -149,5 +155,16 @@ def plot_vweb_fb(grids = [32, 64, 128]):
 
 #print('Extracting VWeb from CS.\n'); extract_vweb_cs()
 #print('Extracting VWeb at LG positions in CS.\n'); extract_vweb_lg_cs()
-#print('Extracting VWeb at LG positions from FullBox.\n'); extract_vweb_fb()
-print('Plotting VWeb at LG positions from FullBox.\n'); plot_vweb_fb()
+
+#grids = [11, 17, 20, 25, 50, 100, 200]
+#grids = [11, 17, 20, 25, 32, 50, 64, 100, 128, 200]
+grids = [256]
+
+print('Extracting VWeb at LG positions from FullBox.\n'); 
+#print('Plotting VWeb at LG positions from FullBox.\n'); 
+
+for grid in grids:
+#    extract_vweb_fb(grid_size=grid)
+    plot_vweb_fb(grid=grid)
+
+

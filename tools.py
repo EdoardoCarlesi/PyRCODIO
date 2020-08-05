@@ -257,6 +257,23 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
     return part_select
 
 
+'''
+    vweb is a DataFrame containing all the web information
+'''
+def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
+    x_col = ['x', 'y', 'z']
+    new_col = 'Distance'
+
+    
+    # Take the simple average of all points within a smoothing_length distance
+    if smooth_type == 'avg':
+        '''
+        vweb[x_col].apply(lambda x: distance(x_point))
+        smooth_length
+        '''
+
+    return smooth
+
 
 def check_units(data=None, cols=None):
     n_pts = int(len(data) * 0.5)
