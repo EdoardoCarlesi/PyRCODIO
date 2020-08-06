@@ -7,6 +7,7 @@
     halo_utils.py: various utilities and simple computational routines used to compute halo trajectories and so on
 '''
 
+import units as u
 import tools as t
 import pandas as pd
 import numpy as np
@@ -330,14 +331,44 @@ class LocalGroup:
         return self.vtan
 
     def m_ratio(self):
-        if self.LG1.m > self.LG2.m:
-            return (self.LG1.m / self.LG2.m)
+        if self.LG1.m() > self.LG2.m():
+            return (self.LG1.m() / self.LG2.m())
         else:
-            return (self.LG1.m / self.LG2.m)
+            return (self.LG1.m() / self.LG2.m())
 
-    def header(self, csv=True):
+    def ang_mom(self):
+        v1 = self.LG1.vel()
+        v2 = self.LG2.vel()
+        x1 = self.LG1.pos()/1.e+3
+        x2 = self.LG2.pos()/1.e+3
+        m1 = self.LG1.m()
+        m2 = self.LG2.m()
+
+        am = t.module(np.cross((v1 - v2), (x1 - x2))) 
+
+        return am
+
+    def energy(self):
+        v1 = self.LG1.vel()
+        v2 = self.LG2.vel()
+        x1 = self.LG1.pos()
+        x2 = self.LG2.pos()
+        m1 = self.LG1.m()
+        m2 = self.LG2.m()
+
+        G = u.G()
+        v = t.module(v2 - v1)
+        r = t.module(x2 - x1)
+
+        e = 0.5 * v * v - G * (m1 + m2) / r
+        e = u.e_unit() * e
+
+        return e
+
+
+    def header(self, csv=True, dump=True):
         
-        if csv == True:
+        if csv == True and dump == True:
             header =  'M_M31,' 
             header += 'M_MW,'
             header += 'R,'
@@ -352,18 +383,19 @@ class LocalGroup:
             header += 'lambda_MW,'
             header += 'lambda_M31,'
             header += 'cNFW_MW,'
+            header += 'cNFW_M31,'
             header += 'Xc_LG,'
             header += 'Yc_LG,'
             header += 'Zc_LG,'
+            header += 'AngMom,'
+            header += 'Energy,'
             header += 'simu_code,'
             header += 'sub_code'
 
         else:
-            # TODO : implement some readable header
-            #header += ' X_com, '
-            #header += ' Y_com, '
-            #header += ' Z_com, '
-            n_head = 0
+            header = ['M_M31','M_MW','R','Vrad','Vtan','Nsub_M31','Nsub_MW',
+            'Npart_M31','Npart_MW','Vmax_MW','Vmax_M31','lambda_MW','lambda_M31','cNFW_MW', 'c_NFW_M31',
+            'Xc_LG','Yc_LG','Zc_LG','AngMom','Energy','simu_code', 'sub_code']
             
 
         return header
@@ -372,16 +404,21 @@ class LocalGroup:
         h0 = self.hubble
         kpc = 1000.
 
-        if csv == True:
-            file_lg_line = '%7.2e,%7.2e,%7.2f,%7.2f,%7.2f,%d,%d,%d,%d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%s,%s' % \
+        if csv == True and dump == True:
+            file_lg_line = '%7.2e,%7.2e,%7.2f,%7.2f,%7.2f,%d,%d,%d,%d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%s,%s' % \
                        (self.LG1.m(), self.LG2.m(), self.r_halos(), \
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(), \
                         self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),\
                         self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),\
-                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], self.code_simu, self.code_sub)
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2], 
+                        self.ang_mom(), self.energy(), self.code_simu, self.code_sub)
         else:
-            # TODO : implement some readable header
-            n_head = 0
+            file_lg_line = [self.LG1.m(), self.LG2.m(), self.r_halos(),
+                        self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(),
+                        self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),
+                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),
+                        self.geo_com()[0], self.geo_com()[1], self.geo_com()[2],
+                        self.ang_mom(), self.energy(), self.code_simu, self.code_sub]
 
         # TODO implement this
         ''' 
@@ -465,7 +502,7 @@ def halo_ids_around_center(halos, center, radius):
     Given a center, find all the halo within a given radius
     Input: catalog is a DataFrame
 '''
-def find_halos(catalog, center, radius):
+def find_halos(catalog, center, radius, search='Sphere'):
 
     new_key = 'Distance'
     cols = ['Xc(6)', 'Yc(7)', 'Zc(8)']
@@ -488,105 +525,95 @@ def find_halos(catalog, center, radius):
         catalog['Rvir(12)'] = catalog['Rvir(12)'].apply(lambda x: x * mpc2kpc)
         n_sum = np.sum(catalog[cols].iloc[n_col])
 
-    catalog[new_key] = catalog[cols].T.apply(dist, c=center).T
-    #print(radius)
-    #print(catalog[new_key])
+    if search == 'Sphere':
+        catalog[new_key] = catalog[cols].T.apply(dist, c=center).T
+        return catalog[catalog[new_key] < radius]    
 
-    return catalog[catalog[new_key] < radius]    
+    elif search == 'Box': 
+        condition = (catalog[cols[0]] > (center[0] - radius)) & (catalog[cols[0]] < (center[0] + radius)) &\
+                (catalog[cols[1]] > (center[1] - radius)) & (catalog[cols[1]] < (center[1] + radius)) &\
+                (catalog[cols[2]] > (center[2] - radius)) & (catalog[cols[2]] < (center[2] + radius))
+
+        #print(condition)
+        new_catalog = catalog[condition]
+        #print('box:', new_catalog.head())
+
+        return new_catalog
+
 
 '''
     Given a box and a model, return a list of possible local groups
-    Taken from the old PyRCODIO routines
 '''
-def find_lg(halos, lgmod, center, radius):
-    center = lgmod.center
-    iso_radius = lgmod.d_iso
+def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere'):
+
     m_min = lgmod.m_min
     m_max = lgmod.m_max
     r_min = lgmod.r_min
     r_max = lgmod.r_max
+    iso_radius = lgmod.d_iso
     model_code = lgmod.model_code	
     vrad_max = lgmod.vrad_max
+    m_ratio = lgmod.mratio_max
 
-    # First select only halos within a given radius from the center
-    halos_center = find_halos(halos, center, radius)
+    if center_cut == True:
+        # First select only halos within a given radius from the center
+        halos_center = find_halos(halos, center, radius, search)
 
-    # Refine the selection choosing only halos above the minimum mass
-    halos_mass = halos_center[halos_center['Mvir(4)'] > m_min]
-    
+        # Refine the selection choosing only halos above the minimum mass
+        halos_mass = halos_center[halos_center['Mvir(4)'] > m_min]
+    else:
+
+        halos_mass = halos[halos['Mvir(4)'] > m_min]
+
     n_candidates = halos_mass['Mvir(4)'].count()
     print('Looking for candidates among ', n_candidates, ' halos.')
 
-    # Sanity check
-    #print(halos_mass.info())
-    #print(halos_mass.head())
-    #pos = halos_mass.iloc[1, 3:6].values
-    #print('Pos: ', pos)
+    halos_lg = []
+    for h in range(0, n_candidates):
+        halo_lg = Halo(halos_mass.iloc[h])
+        halos_lg.append(halo_lg)
 
     # These are initialized empty
     lgs = []		# Haloes paired as LG structures
+    h = 0
+    this_m = 0.0
 
     # Now loop on halo center candidates
-    for h in range(0, n_candidates):
-        # We want to create a single halo object that needs a DataFrame for the constructor
-        halo_lg0 = Halo(halos_mass[halos_mass['ID'] == halos_mass.iloc[h, -3]])
+    while (h < n_candidates):
+        halo_lg0 = halos_lg[h]
+        
         count_lg = 0    
         count_wrong = 0
-		
-        if halo_lg0.m() > m_max:
-            count_wrong = 1
-    
-        # We need to run the loop on ALL halos, in case there is a third halo lying close
-        for i in range(h+1, n_candidates):
-            halo_lg1 = Halo(halos_mass[halos_mass['ID'] == halos_mass.iloc[i, -3]])
-            dis_this = halo_lg1.distance(halo_lg0.pos())
+        h = h +1
+        this_m = halo_lg0.m()
 
-            # This is a subhalo! Keep it				
-            if dis_this < halo_lg0.r() or dis_this < r_min:
-                # Just do nothing
-                count_wrong += 0
+        if this_m < m_max:
+            for i in range(h+1, n_candidates):
+                halo_lg1 = halos_lg[i]
+                dis_this = halo_lg1.distance(halo_lg0.pos())
             
-            # This is a possible second candidate
-            elif dis_this > r_min and dis_this < r_max:
-                halo_lg2 = halo_lg1	
-                vrad = t.vel_radial(halo_lg2.pos(), halo_lg0.pos(), halo_lg2.vel(), halo_lg0.vel()) 
-                count_lg += 1
-				
-                # There are too many close-by haloes
-                if count_lg > 1:
-                    count_wrong += 1
+                # This is a possible second candidate
+                if dis_this > r_min and dis_this < r_max and halo_lg1.m() < m_max:
+                    halo_lg2 = halo_lg1	
+                    vrad = t.vel_radial(halo_lg2.pos(), halo_lg0.pos(), halo_lg2.vel(), halo_lg0.vel()) 
 
-                # Check if they satisfy the v radial condition
-                if vrad + (0.67 * dis_this * 0.1) > vrad_max:
-                    count_wrong += 1
-
-		# A new first & second LG halos have been found:
-                if count_wrong == 0 and count_lg == 1:
-                    already_there = 0
-
-                    '''
-                    for j in range(0, n_all_lgs):
-                        lg1 = halos_lg[2 * j]
-                        lg2 = halos_lg[2 * j + 1]
-			
-                        if halo_lg0.ID == lg1.ID or halo_lg0.ID == lg2.ID:
-                            already_there += 1
-                    '''
-
-                    # We have a candidate! 
-                    if already_there == 0:
-                        n_iso_radius = 0
+                    # Correct for the Hubble expansion
+                    vrad = (0.67 * dis_this * 0.1) + vrad
 
                     # Check also for third haloes within the isolation radius before adding the pair
                     this_lg = LocalGroup(halo_lg0, halo_lg2)
                     com = this_lg.geo_com()
-                    halos_iso = find_halos(halos, com, iso_radius)
+                    halos_iso = find_halos(halos_mass, com, iso_radius)
                     nh_iso = len(halos_iso)
-
-                    n_iso_radius = halos_iso[halos_iso['Mvir(4)'] > m_min]['Mvir(4)'].count()
+                    
+                    # Ths m_min is the minimum mass of the two LG member halos
+                    m_min_lg = this_lg.LG1.m() * 0.999
+                    n_iso_radius = halos_iso[halos_iso['Mvir(4)'] > m_min_lg]['Mvir(4)'].count()
 	
-                    # Make sure there are only two halos within this radius
-                    if n_iso_radius == 2: 
+                    # Make sure there are only two halos as massive as the smallest one within this radius
+                    if n_iso_radius == 2 and vrad < vrad_max and this_lg.m_ratio() < m_ratio: 
                         lgs.append(this_lg)
+
+    print('Found ', len(lgs), ' LGs ')
 
     return lgs

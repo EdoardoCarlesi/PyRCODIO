@@ -55,7 +55,22 @@ def module(vec):
 	for i in range(0, n_v):
 		elem += pow(vec[i], 2)
 
-	return math.sqrt(elem)
+	return np.sqrt(elem)
+
+
+def find_nearest_node_index(x, grid=None, box=None):
+    
+    cell = box / grid
+    
+    ix = np.floor(x[0] / cell)
+    iy = np.floor(x[1] / cell)
+    iz = np.floor(x[2] / cell)
+
+    index = int(ix + grid * iy + grid * grid * iz)
+
+    return index
+    
+
 
 def angle(v1, v2):
 	mv1 = [0.0] * 3	
@@ -241,6 +256,23 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
     # Return the selected particles' properties in a dataframe
     return part_select
 
+
+'''
+    vweb is a DataFrame containing all the web information
+'''
+def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
+    x_col = ['x', 'y', 'z']
+    new_col = 'Distance'
+
+    
+    # Take the simple average of all points within a smoothing_length distance
+    if smooth_type == 'avg':
+        '''
+        vweb[x_col].apply(lambda x: distance(x_point))
+        smooth_length
+        '''
+
+    return smooth
 
 
 def check_units(data=None, cols=None):
