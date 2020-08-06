@@ -13,6 +13,8 @@ import halo_utils as hu
 import pandas as pd
 import numpy as np
 
+import dask.dataframe as dd
+
 import sys
 sys.path.append('pygadgetreader/')
 from pygadgetreader import *
@@ -55,6 +57,7 @@ def read_ahf_halo(file_name, file_mpi=True):
 
     # Halos is a list of Halo objects, halo is a DataFrame type
     return [halos, halo]
+
 
 
 """

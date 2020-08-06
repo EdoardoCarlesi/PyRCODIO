@@ -1,5 +1,6 @@
 ./activate
 activate
+*.out
 *.pyc
 *.swp
 *.tgz

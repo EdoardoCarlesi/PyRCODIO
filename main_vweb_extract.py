@@ -16,7 +16,7 @@ import tools as t
 import os
 
 # Configure subpaths
-code_run = cfg.gen_runs(0, 1)
+code_run = cfg.gen_runs(1, 80)
 sub_run = cfg.gen_runs(0, 30)
 
 # Local data path, file names and file format
