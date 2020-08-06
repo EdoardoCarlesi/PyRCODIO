@@ -1,10 +1,7 @@
-
 Repository url:
 https://github.com/EdoardoCarlesi/PyRCODIO
 
-A few useful commands:
-git push origin master
-git commit -a
+To avoid having to put username and password every time:
 git config --global http.sslVerify false
 git config --global http.sslVerify true
 

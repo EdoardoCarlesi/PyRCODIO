@@ -25,7 +25,8 @@ models = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
 
 lg_models, index = cfg.lg_models()
 
-this_model = lg_models[index['M1']]
+#this_model = lg_models[index['M1']]
+this_model = lg_models[index['GENERIC']]
 
 kpcFac = 1.0e+3
 radius = 25.0 * kpcFac

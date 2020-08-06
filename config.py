@@ -143,7 +143,7 @@ def lg_models():
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'GENERIC'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 1500.; r_min = 250.; m_min = 4.0e+11; m_max = 4.0e+12; ratio_max = 5.0; vrad_max = 100.0	# Exremely generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
@@ -154,42 +154,42 @@ def lg_models():
         ##################################################################
 
         this_model = 'M1'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 1500.; r_min = 250.; m_min = 4.0e+11; m_max = 5.0e+12; ratio_max = 4.0; vrad_max = 50.0	# Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'M2'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 1300.; r_min = 300.; m_min = 4.5e+11; m_max = 4.0e+12; ratio_max = 3.0; vrad_max = 0.0	# Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'M3'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 1000.; r_min = 350.; m_min = 5.0e+11; m_max = 3.0e+12; ratio_max = 3.0; vrad_max = -20.0	# Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'M4'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 900.; r_min = 400.; m_min = 5.5e+11; m_max = 2.5e+12; ratio_max = 2.5; vrad_max = -40.0	# Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'M5'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 800.; r_min = 450.; m_min = 6.0e+11; m_max = 2.0e+12; ratio_max = 2.5; vrad_max = -60.0	# Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
 
         this_model = 'M6'
-        r_iso = 2000.; r_max = 1500.; r_min = 350.; m_min = 5.0e+11; m_max = 4.0e+12; ratio_max = 4.0; vrad_max = 10.0	# Generic LG Model 
+        r_iso = 2000.; r_max = 700.; r_min = 450.; m_min = 6.5e+11; m_max = 1.75e+12; ratio_max = 2.0; vrad_max = -80.0    # Generic LG Model 
         lg_model = hu.LocalGroupModel(r_iso, r_max, r_min, m_max, m_min, ratio_max, vrad_max)
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)

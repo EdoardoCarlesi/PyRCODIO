@@ -12,9 +12,7 @@ import scipy as sp
 import halo_utils as hu
 import pandas as pd
 import numpy as np
-
 import dask.dataframe as dd
-
 import sys
 sys.path.append('pygadgetreader/')
 from pygadgetreader import *
@@ -58,6 +56,22 @@ def read_ahf_halo(file_name, file_mpi=True):
     # Halos is a list of Halo objects, halo is a DataFrame type
     return [halos, halo]
 
+"""
+    Read large rockstar catalogs with dask dataframe
+"""
+def read_rockstar_dask(read_file=None, header_file=None):
+    '/srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs'
+    
+    with open(header_file, 'r') as f:
+        head = ''.join(f.readlines(1))
+
+    rs_head = head.split()
+    print(head.split())
+
+    rs_df = dd.read_csv(read_file, skiprows=16, header=None, delimiter=' ')
+    rs_df.columns = rs_head
+
+    return rs_df
 
 
 """

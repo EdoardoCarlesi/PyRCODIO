@@ -542,6 +542,32 @@ def find_halos(catalog, center, radius, search='Sphere'):
 
 
 '''
+    Refine the selection of LGs from a dataframe containing a large set of candidates
+'''
+def refine_lg_selection(lg_df=None, lg_model=None):
+
+    m_min = lg_model.m_min
+    m_max = lg_model.m_max
+    r_min = lg_model.r_min
+    r_max = lg_model.r_max
+    m_ratio = lg_model.mratio_max
+    vrad_max = lg_model.vrad_max
+
+    lg_df['ratio'] = lg_df['M_M31'] / lg_df['M_MW']
+
+    condition_m31 = (lg_df['M_M31'] > m_min) & (lg_df['M_M31'] < m_max)
+    condition_mw = (lg_df['M_MW'] > m_min) & (lg_df['M_MW'] < m_max)
+    condition_r = (lg_df['R'] > r_min) & (lg_df['R'] < r_max)
+    condition_ratio = (lg_df['ratio'] < m_ratio)
+    condition_vrad = (lg_df['Vrad'] < vrad_max)
+
+
+    lg_select_df = lg_df[condition_m31 & condition_mw & condition_r & condition_ratio & condition_vrad]
+
+    return lg_select_df
+
+
+'''
     Given a box and a model, return a list of possible local groups
 '''
 def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere'):

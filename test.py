@@ -7,10 +7,40 @@
     test.py: this file is used to test new routines and functionalities
 '''
 
+import dask.dataframe as dd
 import read_files as rf
 import numpy as np
 import pickle
+import halo_utils as hu
+import pandas as pd
+import config as cfg
 
+'''
+lg_list='output/lg_pairs_512.csv'
+lg_df = pd.read_csv(lg_list)
+
+models, index = cfg.lg_models()
+lg_model = models[index['M6']]
+
+print(lg_df.info())
+print(lg_df.head())
+
+lg_refined_df = hu.refine_lg_selection(lg_df=lg_df, lg_model=lg_model)
+
+print(lg_refined_df.info())
+print(lg_refined_df.head())
+'''
+
+rs_file='/home/edoardo/CLUES/DATA/RS/out_0.list'
+
+rs_df = rf.read_rockstar_dask(read_file=rs_file, header_file=rs_file)
+
+print(rs_df.info())
+print(rs_df.head())
+
+
+
+'''
 run = '00_06'
 r_iso = 2e+3
 r_max = 1.2e+3
@@ -33,7 +63,6 @@ f_web = '/home/edoardo/CLUES/DATA/ICs/ic_web_00_00.000064.Vweb-csv'
 web = rf.extract_vweb(file_name=f_web, center=center, radius=radius)
 
 
-'''
 ahf_center = find_halos_point(center, ahf, radius)
 hs = find_lg(ahf_center, lg_model)
 
