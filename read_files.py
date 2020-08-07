@@ -43,6 +43,8 @@ def read_ahf_halo(file_name, file_mpi=True):
     else:
         halo.rename(columns={"#ID(1)":"ID", "hostHalo(2)":"HostHalo"}, inplace=True)
 
+    # FIXME TODO should we return halos list? or only dataframe?
+    '''
     halos = []
 
     n_rows = halo.shape[0]
@@ -52,23 +54,30 @@ def read_ahf_halo(file_name, file_mpi=True):
         this_h = data=halo.loc[i]
         h = hu.Halo(this_h)
         halos.append(h)
+    '''
 
     # Halos is a list of Halo objects, halo is a DataFrame type
-    return [halos, halo]
+    return halo
 
 """
-    Read large rockstar catalogs with dask dataframe
+    Read RockStar catalogs, possibly using dask
 """
-def read_rockstar_dask(read_file=None, header_file=None):
+def read_rs_halo(read_file=None, header_file=None, with_dask=True):
     '/srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs'
     
-    with open(header_file, 'r') as f:
-        head = ''.join(f.readlines(1))
+    if header_file == None:
+        rs_head = t.rs_header()
+    else:
+        with open(header_file, 'r') as f:
+            head = ''.join(f.readlines(1))
+            rs_head = head.split()
 
-    rs_head = head.split()
-    print(head.split())
 
-    rs_df = dd.read_csv(read_file, skiprows=16, header=None, delimiter=' ')
+    if with_dask == True:
+        rs_df = dd.read_csv(read_file, skiprows=16, header=None, delimiter=' ') 
+    else:
+        rs_df = pd.read_csv(read_file, skiprows=16, header=None, delimiter=' ')
+
     rs_df.columns = rs_head
 
     return rs_df

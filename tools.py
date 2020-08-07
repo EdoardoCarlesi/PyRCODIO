@@ -274,7 +274,9 @@ def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
 
     return smooth
 
-
+'''
+    Check if the units used are consistent
+'''
 def check_units(data=None, cols=None):
     n_pts = int(len(data) * 0.5)
 
@@ -290,4 +292,85 @@ def check_units(data=None, cols=None):
     #print(data.head())
 
     return factor
+
+def ahf_header():
+    ahf_header = ['numSubStruct(3)', 'Mvir(4)', 'npart(5)', 'Xc(6)', 'Yc(7)', 'Zc(8)',
+       'VXc(9)', 'VYc(10)', 'VZc(11)', 'Rvir(12)', 'Rmax(13)', 'r2(14)',
+       'mbp_offset(15)', 'com_offset(16)', 'Vmax(17)', 'v_esc(18)', 'sigV(19)',
+       'lambda(20)', 'lambdaE(21)', 'Lx(22)', 'Ly(23)', 'Lz(24)', 'b(25)',
+       'c(26)', 'Eax(27)', 'Eay(28)', 'Eaz(29)', 'Ebx(30)', 'Eby(31)',
+       'Ebz(32)', 'Ecx(33)', 'Ecy(34)', 'Ecz(35)', 'ovdens(36)', 'nbins(37)',
+       'fMhires(38)', 'Ekin(39)', 'Epot(40)', 'SurfP(41)', 'Phi0(42)',
+       'cNFW(43)', 'n_gas(44)', 'M_gas(45)', 'lambda_gas(46)',
+       'lambdaE_gas(47)', 'Lx_gas(48)', 'Ly_gas(49)', 'Lz_gas(50)',
+       'b_gas(51)', 'c_gas(52)', 'Eax_gas(53)', 'Eay_gas(54)', 'Eaz_gas(55)',
+       'Ebx_gas(56)', 'Eby_gas(57)', 'Ebz_gas(58)', 'Ecx_gas(59)',
+       'Ecy_gas(60)', 'Ecz_gas(61)', 'Ekin_gas(62)', 'Epot_gas(63)',
+       'n_star(64)', 'M_star(65)', 'lambda_star(66)', 'lambdaE_star(67)',
+       'Lx_star(68)', 'Ly_star(69)', 'Lz_star(70)', 'b_star(71)', 'c_star(72)',
+       'Eax_star(73)', 'Eay_star(74)', 'Eaz_star(75)', 'Ebx_star(76)',
+       'Eby_star(77)', 'Ebz_star(78)', 'Ecx_star(79)', 'Ecy_star(80)',
+       'Ecz_star(81)', 'Ekin_star(82)', 'Epot_star(83)', 'Unnamed: 83', 'ID',
+       'HostHalo']
+
+    return ahf_header
+
+def rs_header():
+
+    rs_header = ['#ID', 'DescID', 'Mvir', 'Vmax', 'Vrms', 'Rvir', 'Rs', 'Np', 
+            'X', 'Y', 'Z', 'VX', 'VY', 'VZ', 'JX', 'JY', 'JZ', 'Spin', 'rs_klypin', 
+            'Mvir_all', 'M200b', 'M200c', 'M500c', 'M2500c', 'Xoff', 'Voff', 'spin_bullock', 
+            'b_to_a', 'c_to_a', 'A[x]', 'A[y]', 'A[z]', 'b_to_a(500c)', 'c_to_a(500c)', 
+            'A[x](500c)', 'A[y](500c)', 'A[z](500c)', 'T/|U|', 'M_pe_Behroozi', 'M_pe_Diemer', 'Halfmass_Radius']
+
+    return rs_header
+
+'''
+    Convert header from ahf to rockstar
+'''
+def header_rs2ahf(rs_head):
+
+    ahf_head = ahf_header()
+    #rs_head = rs_header()
+
+    rs2ahf = dict()
+
+    rs2ahf['#ID'] = ahf_head[82]
+    rs2ahf['Mvir'] = ahf_head[1]
+    rs2ahf['Vmax'] = ahf_head[14]
+    rs2ahf['Rvir'] = ahf_head[9]
+    rs2ahf['Rs'] = ahf_head[11]
+    rs2ahf['Np'] = ahf_head[2]
+    rs2ahf['X'] = ahf_head[3]
+    rs2ahf['Y'] = ahf_head[4]
+    rs2ahf['Z'] = ahf_head[5]
+    rs2ahf['VX'] = ahf_head[6]
+    rs2ahf['VY'] = ahf_head[7]
+    rs2ahf['VZ'] = ahf_head[8]
+    rs2ahf['JX'] = ahf_head[19]
+    rs2ahf['JY'] = ahf_head[20]
+    rs2ahf['JZ'] = ahf_head[21]
+    rs2ahf['b_to_a'] = ahf_head[22]
+    rs2ahf['c_to_a'] = ahf_head[23]
+    rs2ahf['spin_bullock'] = ahf_head[18]
+    rs2ahf['Spin'] = ahf_head[17]
+
+    new_header = []
+    for hd in rs_head:
+        if rs2ahf.get(hd) == None:
+            rs2ahf[hd] = hd
+
+        new_header.append(rs2ahf[hd])
+
+    return new_header
+
+# TODO
+#def header_ahf2rs
+
+
+
+
+
+
+
 

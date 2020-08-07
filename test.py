@@ -9,6 +9,7 @@
 
 import dask.dataframe as dd
 import read_files as rf
+import tools as t
 import numpy as np
 import pickle
 import halo_utils as hu
@@ -31,13 +32,28 @@ print(lg_refined_df.info())
 print(lg_refined_df.head())
 '''
 
-rs_file='/home/edoardo/CLUES/DATA/RS/out_0.list'
+rs_file = '/home/edoardo/CLUES/DATA/RS/out_0.list'
 
 rs_df = rf.read_rockstar_dask(read_file=rs_file, header_file=rs_file)
 
-print(rs_df.info())
+new_head_rs = t.header_rs2ahf(rs_df.columns)
+
+rs_df.columns = new_head_rs
+
+print(rs_df.columns)
+
+#print(rs_df.info())
 print(rs_df.head())
 
+#ahf_file = '/home/edoardo/Elements/CLUES/DATA/2048/00_06/00/snapshot_054.0000.z0.000.AHF_halos'
+
+#halos, halo_df = rf.read_ahf_halo(ahf_file)
+
+#print(halo_df.columns)
+
+
+#for hd in head_rs:
+#    print(hd)
 
 
 '''

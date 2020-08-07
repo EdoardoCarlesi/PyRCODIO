@@ -7,6 +7,7 @@
     halo_utils.py: various utilities and simple computational routines used to compute halo trajectories and so on
 '''
 
+import dask.dataframe as dd
 import units as u
 import tools as t
 import pandas as pd
@@ -560,7 +561,6 @@ def refine_lg_selection(lg_df=None, lg_model=None):
     condition_r = (lg_df['R'] > r_min) & (lg_df['R'] < r_max)
     condition_ratio = (lg_df['ratio'] < m_ratio)
     condition_vrad = (lg_df['Vrad'] < vrad_max)
-
 
     lg_select_df = lg_df[condition_m31 & condition_mw & condition_r & condition_ratio & condition_vrad]
 
