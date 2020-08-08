@@ -17,10 +17,13 @@ import tools as t
 import os
 import dask.dataframe as dd
 
-catalog = '/srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs/out_79.list'
-catalog_compress = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_79_csv'
+catalog = '/srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs/out_0.list'
+catalog_compress = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_0_csv'
 rs_df = rf.read_rs_halo(with_dask=True, read_file=catalog)
 
+print('Reading: ', catalog, ' and compressing to csv file: ', catalog_compress)
+rs_df = rf.read_rs_halo(with_dask=True, read_file=catalog)
+print('Total number of halos read: ', rs_df.shape[0].compute())
 print(rs_df.head())
 
 cols_drop = ['DescID', 'Mvir_all', 'M200b', 'M200c', 'M500c', 'M2500c', 'Xoff', 'Voff', 
@@ -30,14 +33,13 @@ rs_df = rs_df.drop(labels=cols_drop, axis=1) #, inplace=True)
 
 print('Col cut: ')
 print(rs_df.head())
-print(len(rs_df))
 
 m_cut = 4.0e+11
 
 rs_df = rs_df[rs_df['Mvir'] > m_cut]
 
+print('Total halos: ', rs_df.shape[0].compute())
 print('Mass cut: ')
-print(len(rs_df))
 print(rs_df.head())
 
 rs_df.to_csv(catalog_compress)
