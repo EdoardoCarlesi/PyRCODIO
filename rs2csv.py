@@ -18,8 +18,10 @@ import os
 import dask.dataframe as dd
 import time
 
+catalog = '/srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs/out_0.list'
+catalog_compress = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_0_csv'
+rs_df = rf.read_rs_halo(with_dask=True, read_file=catalog)
 with_dask = False
-catalog = '/home/edoardo/CLUES/DATA/RS/out_3.list'
 
 if with_dask == True:
     catalog_compress = '/home/edoardo/CLUES/DATA/RS/out_3_csv'
