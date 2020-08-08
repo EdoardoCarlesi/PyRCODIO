@@ -22,9 +22,10 @@ if use_ahf == True:
     sub_runs = cfg.gen_runs(0, 5)
 
 elif use_rs == True:
-    box_size = 3850000.0
-    file_single = 'out_2.list'
+    box_size = 2500000.0
+    file_single = '0*.part'
     base_path = '/home/edoardo/CLUES/DATA/RS/'
+    base_path = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_79_csv/'
     sub_runs = ['00']
 
 lg_models, index = cfg.lg_models()
@@ -51,7 +52,7 @@ for run in sub_runs:
         print('Reading file: ', this_rs)
         halo_df = rf.read_rockstar_dask(read_file=this_rs, header_file=this_rs)
         halo_df.columns = t.header_rs2ahf(halo_df.columns)
-        print('Found: ', len(halo_df), ' objects.')
+        #print('Found: ', len(halo_df), ' objects.')
 
     for ix in range(0, n_sub):
         for iy in range(0, n_sub):
