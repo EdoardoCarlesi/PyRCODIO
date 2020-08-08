@@ -1,3 +1,13 @@
+'''
+    Python Routines for COsmology and Data I/O
+    PyRCODIO Pandas Version
+    Edoardo Carlesi 2020
+    ecarlesi83@gmail.com
+
+    main_lg_fb_find: find local groups in full box simulations
+'''
+
+import dask.dataframe as dd
 import pandas as pd
 import numpy as np
 import halo_utils as hu
@@ -8,13 +18,14 @@ import time
 import pickle as pkl
 
 # Choose catalog type
-use_ahf = True; use_rs = False
-#use_ahf = False; use_rs = True
+#use_ahf = True; use_rs = False
+use_ahf = False; use_rs = True
 
 # Simulation & catalog
 if use_ahf == True:
     #file_single='snapshot_054.z0.000.AHF_halos'
     file_single='snapshot_full_054.z0.000.AHF_halos'
+    base_file_out = 'output/lg_fullbox_'    
     box_size = 100000.0
     #base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
     #base_path = '/home/edoardo/CLUES/DATA/FullBox/'
@@ -23,16 +34,22 @@ if use_ahf == True:
 
 elif use_rs == True:
     box_size = 2500000.0
-    file_single = '0*.part'
-    base_path = '/home/edoardo/CLUES/DATA/RS/'
-    base_path = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_79_csv/'
-    sub_runs = ['00']
+    file_single = '.part'
+    base_file_out = 'output/lg_fullbox_rs_'    
+    base_path = '/home/edoardo/CLUES/DATA/RS/out_79_csv/'
+    #base_path = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_79_csv/'
+    sub_runs = []
+
+    n_parts = 10
+    for i in range(0, n_parts):
+        sub = '%04d' % i
+        sub_runs.append(sub)
 
 lg_models, index = cfg.lg_models()
 this_model = lg_models[index['GENERIC']]
 
 kpcFac = 1.0e+3
-radius = 25.0 * kpcFac
+radius = 15.0 * kpcFac
 side_buffer = 2.0 * kpcFac
 
 n_sub = int(box_size / radius)
@@ -40,17 +57,18 @@ print('Subdivision in ', n_sub, ' subcubes per axis, radius: ', radius, ' and si
 
 for run in sub_runs:
 
+    all_lgs = []
     if use_ahf:
-        all_lgs = []
         this_ahf = base_path + run + '/' + file_single
         print('Reading file: ', this_ahf)
         halo_df = rf.read_ahf_halo(this_ahf, file_mpi=False)
         print('Found: ', len(halo_df), ' objects.')
     elif use_rs:
-        this_rs = base_path + file_single
+        this_rs = base_path + run + file_single
         
         print('Reading file: ', this_rs)
-        halo_df = rf.read_rockstar_dask(read_file=this_rs, header_file=this_rs)
+        halo_df = pd.read_csv(this_rs)
+        #halo_df = rf.read_rs_halo(read_file=this_rs, with_dask=True)
         halo_df.columns = t.header_rs2ahf(halo_df.columns)
         #print('Found: ', len(halo_df), ' objects.')
 
@@ -76,11 +94,11 @@ for run in sub_runs:
         this_lg_df = this_lg_df.append(this_series, ignore_index=True)
 
     print(this_lg_df.head())
-    this_csv = 'output/lg_fullbox_' + run + '.csv'
+    this_csv = base_file_out + run + '.csv'
     this_lg_df.drop_duplicates(inplace = True)
     this_lg_df.to_csv(this_csv)
 
-    this_pkl = 'output/lg_fullbox_' + run + '.pkl'
+    this_pkl = base_file_out + run + '.pkl'
     f_pkl = open(this_pkl, 'wb')
     pkl.dump(all_lgs, f_pkl)
 

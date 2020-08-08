@@ -72,7 +72,6 @@ def read_rs_halo(read_file=None, header_file=None, with_dask=True):
             head = ''.join(f.readlines(1))
             rs_head = head.split()
 
-
     if with_dask == True:
         rs_df = dd.read_csv(read_file, skiprows=16, header=None, delimiter=' ') 
     else:
