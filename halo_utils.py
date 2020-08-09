@@ -38,11 +38,21 @@ class Halo:
 
     # Number of subhalos
     def nsub(self):
-        return self.halo_df[['numSubStruct(3)']].values[0]
+        try: 
+            n_sub = self.halo_df[['numSubStruct(3)']].values[0]
+        except:
+            n_sub = 0
+
+        return n_sub
 
     # Number of particles
     def npart(self):
-        return self.halo_df[['npart(5)']].values[0]
+        try:
+            n_part = self.halo_df[['npart(5)']].values[0]
+        except:
+            n_part = 0
+
+        return n_part
 
     # Vmax
     def vmax(self):
@@ -66,7 +76,12 @@ class Halo:
 
     # c_NFW (concentration)
     def c_NFW(self):
-        return self.halo_df[['cNFW(43)']].values[0]
+        try:
+            c = self.halo_df[['cNFW(43)']].values[0]
+        except:
+            c = 0
+
+        return c
 
     # Return the position vector
     def pos(self):
