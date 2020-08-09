@@ -40,25 +40,26 @@ elif use_rs == True:
     #base_path = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_79_csv/'
     sub_runs = []
 
-    '''
-    n_parts = 10
-    for i in range(0, n_parts):
+    n_start = 10
+    n_parts = 20
+    for i in range(n_start, n_parts):
         sub = '%04d' % i
         sub_runs.append(sub)
     '''
-
     sub_runs = ['0011']
+    '''
 
 lg_models, index = cfg.lg_models()
 this_model = lg_models[index['GENERIC']]
 
 kpcFac = 1.0e+3
-radius = 15.0 * kpcFac
-side_buffer = 2.0 * kpcFac
+radius = 7.0 * kpcFac
+side_buffer = 1.0 * kpcFac
 
 n_sub_x = np.ceil(box_size / radius)
 n_sub_y = n_sub_x
 n_sub_z = n_sub_y
+n_tot = np.power(n_sub_x, 3)
 
 print('Subdivision in ', n_sub_x, ' subcubes per axis, radius: ', radius, ' and side_buffer: ', side_buffer)
 
@@ -98,16 +99,26 @@ for run in sub_runs:
         n_sub_x = int(np.ceil((x_max - x_min) / radius))
         n_sub_y = int(np.ceil((y_max - y_min) / radius))
         n_sub_z = int(np.ceil((z_max - z_min) / radius))
+        n_tot = n_sub_x *n_sub_y * n_sub_z
 
-        print('N subcubes ', n_sub_x, n_sub_y, n_sub_z)
+        print('N subcubes ', n_sub_x, n_sub_y, n_sub_z, ' Ntot: ', n_tot)
 
+    n_count = 0
+    old_time = time.time()
     for ix in range(0, n_sub_x):
         for iy in range(0, n_sub_y):
+            new_time = time.time()
+            dif_time = '%.3f' % (new_time - old_time)
+            percent = '%.3f' % (100.0 * n_count/n_tot) 
+            print('Done: ', percent, '% in ', dif_time, ' seconds. Tot LGs: ', len(all_lgs), flush = True)
+            #old_time = time.time()
+
             for iz in range(0, n_sub_z):
+                n_count += 1
                 this_center = np.array([radius * (0.5 + ix)+x_min, radius * (0.5 + iy)+y_min, radius * (0.5 + iz)+z_min])
                 this_radius = radius * 0.5 + side_buffer
-                print('Subbox around center: ', this_center, ' rad: ', this_radius)
-                these_lgs = hu.find_lg(halo_df, this_model, this_center, this_radius, center_cut=True, search='Box')
+                #print('Subbox around center: ', this_center, ' rad: ', this_radius, flush=True)
+                these_lgs = hu.find_lg(halo_df, this_model, this_center, this_radius, center_cut=True, search='Box', verbose=False)
 
                 for this_lg in these_lgs:
                     this_lg.code_simu = 'FB'

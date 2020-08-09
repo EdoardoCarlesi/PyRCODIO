@@ -585,7 +585,7 @@ def refine_lg_selection(lg_df=None, lg_model=None):
 '''
     Given a box and a model, return a list of possible local groups
 '''
-def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere'):
+def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verbose=True):
 
     m_min = lgmod.m_min
     m_max = lgmod.m_max
@@ -607,7 +607,9 @@ def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere'):
         halos_mass = halos[halos['Mvir(4)'] > m_min]
 
     n_candidates = halos_mass['Mvir(4)'].count()
-    print('Looking for candidates among ', n_candidates, ' halos.')
+    
+    if verbose == True:
+        print('Looking for candidates among ', n_candidates, ' halos.')
 
     halos_lg = []
     for h in range(0, n_candidates):
@@ -655,6 +657,7 @@ def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere'):
                     if n_iso_radius == 2 and vrad < vrad_max and this_lg.m_ratio() < m_ratio: 
                         lgs.append(this_lg)
 
-    print('Found ', len(lgs), ' LGs ')
+    if verbose == True:
+        print('Found ', len(lgs), ' LGs ')
 
     return lgs
