@@ -11,13 +11,19 @@ import math
 import numpy as np
 from scipy import interpolate
 
+def kpc2km():
+	kpc2km = 3.086e+16
+	return kpc2km
+
 def km2kpc():
-	km2kpc = 3.086e+16
-	return km2kpc
+	return 1.0 / kpc2km()
 
 def s2Myr():
-	s2Myr = 3.154e+13
-	return s2Myr
+	return 1.0 / Myr2s()
+
+def Myr2s():
+	Myr2s = 3.154e+13
+	return Myr2s
 
 def Myr2z(time):
 	a_value = Myr2a(time)
@@ -76,7 +82,10 @@ def a2Myr(a_factor):
 	return t_value
 
 def G():
-    G = 4.302e-6            # kpc / Msun  * 2 / s^2
+    G = 4.302e-6            # kpc / Msun  * (km 2 / s^2)
+    G_const_Mpc_Msun_s = 4.51737014558e-48
+    G = G_const_Mpc_Msun_s * (s2Myr()**-2) * 1.0e+6 # 1.0e+6 kpc to Mpc conversion
+
     return G
 
 def e_unit():
@@ -92,5 +101,3 @@ def particle_density(n_grid, box):
     std_dens = np.power((n_grid / box), 3.0)
 
     return std_dens
-
-

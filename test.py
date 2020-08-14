@@ -15,6 +15,24 @@ import pickle
 import halo_utils as hu
 import pandas as pd
 import config as cfg
+import timing_argument as ta
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+mtot = ta.mass_estimate()
+print('Mtot: ', mtot/1.0e+12)
+
+mtot = ta.mass_estimate(r=770, v=-100, t=13.5)
+print('Mtot: ', mtot/1.0e+12)
+
+mtot = ta.mass_estimate(r=1200, v=-210, t=14.75)
+print('Mtot: ', mtot/1.0e+12)
+
+#sns.lineplot(th, sc)
+#plt.show()
+
+
 
 '''
 lg_list='output/lg_pairs_512.csv'
@@ -30,7 +48,6 @@ lg_refined_df = hu.refine_lg_selection(lg_df=lg_df, lg_model=lg_model)
 
 print(lg_refined_df.info())
 print(lg_refined_df.head())
-'''
 
 rs_file = '/home/edoardo/CLUES/DATA/RS/out_0.list'
 
@@ -55,6 +72,7 @@ print(rs_df.head())
 #for hd in head_rs:
 #    print(hd)
 
+'''
 
 '''
 run = '00_06'
