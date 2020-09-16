@@ -261,8 +261,8 @@ class LocalGroupModel:
         self.mratio_max = mratio_max
         self.vrad_max = vrad_max
 
-    def info(self, dump=False):
-        lg_mod_info = "D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %.3f\n" % \
+    def info(self, dump=True):
+        lg_mod_info = "D_iso: %.3f, Rh_max: %.3f, Rh_min: %.3f, M_min: %e\n" % \
                         (self.d_iso, self.r_max, self.r_min, self.m_min)
         if dump == True:
             print(lg_mod_info)
@@ -360,7 +360,7 @@ class LocalGroup:
         m1 = self.LG1.m()
         m2 = self.LG2.m()
 
-        am = t.module(np.cross((v1 - v2), (x1 - x2))) 
+        am = 0 #t.module(np.cross((v1 - v2), (x1 - x2))) 
 
         return am
 
@@ -585,8 +585,8 @@ def refine_lg_selection(lg_df=None, lg_model=None):
 '''
     Given a box and a model, return a list of possible local groups
 '''
-def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verbose=True):
-
+def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verbose=True, mass_col='Mvir(4)'):
+    
     m_min = lgmod.m_min
     m_max = lgmod.m_max
     r_min = lgmod.r_min
@@ -596,15 +596,16 @@ def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verb
     vrad_max = lgmod.vrad_max
     m_ratio = lgmod.mratio_max
 
+    #lgmod.info()
+    #print(halos[mass_col])
+    halos = halos[halos[mass_col] > m_min]
+    #print('%e' % m_min)
+
     if center_cut == True:
         # First select only halos within a given radius from the center
-        halos_center = find_halos(halos, center, radius, search)
-
-        # Refine the selection choosing only halos above the minimum mass
-        halos_mass = halos_center[halos_center['Mvir(4)'] > m_min]
+        halos_mass = find_halos(halos, center, radius, search)
     else:
-
-        halos_mass = halos[halos['Mvir(4)'] > m_min]
+        halos_mass = halos
 
     n_candidates = halos_mass['Mvir(4)'].count()
     
@@ -648,14 +649,19 @@ def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verb
                     com = this_lg.geo_com()
                     halos_iso = find_halos(halos_mass, com, iso_radius)
                     nh_iso = len(halos_iso)
-                    
+
                     # Ths m_min is the minimum mass of the two LG member halos
-                    m_min_lg = this_lg.LG1.m() * 0.999
+                    #m_min_lg = min([this_lg.LG1.m(), this_lg.LG2.m()]) * 0.999
+                    m_min_lg = this_lg.LG2.m() * 0.999
                     n_iso_radius = halos_iso[halos_iso['Mvir(4)'] > m_min_lg]['Mvir(4)'].count()
 	
                     # Make sure there are only two halos as massive as the smallest one within this radius
                     if n_iso_radius == 2 and vrad < vrad_max and this_lg.m_ratio() < m_ratio: 
                         lgs.append(this_lg)
+                    #else:
+                        #print('nh: %d, n iso radius: %d, vrad: %.3f, ratio: %.3f' % 
+                        #        (nh_iso, n_iso_radius, vrad, this_lg.m_ratio()))
+                        #this_lg.info()
 
     if verbose == True:
         print('Found ', len(lgs), ' LGs ')
