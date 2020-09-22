@@ -154,7 +154,9 @@ if mode == 'plots':
     df_rm = pd.concat(df_rm_all)
     print(df_rm.head())
 
-    
+    slopes = []
+    masses = []
+    vtans = []
     for rs in r_str[0:6]:
         f_out = 'output/masses_lg_r' + rs + '.png'
         sns.distplot(np.log10(df_rm[rs]))
@@ -174,19 +176,47 @@ if mode == 'plots':
         n_cluster = len(df_rm[df_rm[rs] > m_cluster])
 
         print('Fractions of LG at ', rs, ' from a cluster: ',  n_cluster/len(df_rm), ' (', n_cluster, '/', len(df_rm), ')')
-
         
-        x = np.log10(df_rm[rs]/1.0e+12) 
-        #y = np.log10(df_rm['Vtan']/100.0) 
+        x = np.log10(df_rm[rs]) #/1.0e+12) 
+        y = np.log10(df_rm['Vtan']/100.0) 
         #y = np.log10(-df_rm['Vrad']/100.0) 
-        y = np.log10((df_rm['M_MW'] + df_rm['M_M31'])/1.0e+12) 
+        #y = np.log10((df_rm['M_MW'] + df_rm['M_M31'])/1.0e+12) 
 
-        #sns.scatterplot(x, y)
+        f_out = 'output/masses_kde_lg_' + rs + '.png'
+        sns.scatterplot(x, y)
         sns.kdeplot(x, y)
-        slope = np.polyfit(x, y, 1)
-        print('slope: ', slope[0])
-        #plt.show(block=False)
-        #plt.pause(3)
-        plt.close()
 
+        #plt.plot()
+        
+        slope = np.polyfit(x, y, 1)
+        print('params: ', slope)
+        #print('slope: ', slope[0])
+        slopes.append(slope[0])
+        masses.append(med[0])
+
+        plt.xlabel(r'$\log_{10} M_{max}$')
+        plt.ylabel(r'$\log_{10} (V_{tan}/100)$')
+        plt.title(rs)
+        plt.tight_layout()
+        '''
+        plt.show(block=False)
+        plt.pause(3)
+        plt.close()
+        '''
+        plt.savefig(f_out)
+        plt.cla()
+        plt.clf()
+
+print(masses)
+print(slopes)
+
+plt.plot(masses, slopes, color='black')
+plt.xlabel(r'$\log_{10} M_{max}$')
+plt.ylabel(r'b')
+plt.tight_layout()
+plt.savefig('output/masses_vs_vtancorr.png')
+plt.pause(3)
+plt.close()
+plt.cla()
+plt.clf()
 
