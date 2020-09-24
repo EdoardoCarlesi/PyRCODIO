@@ -12,12 +12,19 @@ import swifter
 import os
 
 
-def apply_dist(data=None, center=None, cols=None):
+def apply_dist(data=None, center=None, cols=None, box=100.0):
     dist = np.zeros((len(data)))
 
-    for i, d in enumerate((data[cols].values - center)):
-        dist[i] = np.sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])
+    dd = data[cols].values - center
+    dp = (data[cols].values + box - center) % box 
+    
+    # FIXME check this implementation of periodic boundary conditions
+    for i, d in enumerate(dd):
+        d0 = np.sqrt(dd[0]*dd[0] + dd[1]*dd[1] + dd[2]*dd[2])
+        d1 = np.sqrt(dp[i][0]**2 + dp[i][1]**2 + dp[i][2]**2)
 
+        dist[i] = np.min([d0, d1])
+    
     return dist
 
 
@@ -40,7 +47,7 @@ i_end = 5
 mode = 'plots'
 
 # Max and min radius to look for stuff
-r_max = 8000.0
+r_max = 15000.0
 radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype='float') * 1.e+3 
  
 r_str = []
@@ -89,7 +96,7 @@ for i_cat in range(i_ini, i_end):
         df_ahf = pd.read_csv(this_ahf_csv)
         print(df_ahf[x_col_ahf])
     
-        # initialize a string containing all the radii - this will be the dataframe column with the max halo mass
+        # Initialize a string containing all the radii - this will be the dataframe column with the max halo mass
         radii_str = []
         for rad in radii:
                 r_str = 'R_' + str(rad)
