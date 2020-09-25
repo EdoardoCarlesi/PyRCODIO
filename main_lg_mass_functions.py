@@ -12,18 +12,13 @@ import swifter
 import os
 
 
-def apply_dist(data=None, center=None, cols=None, box=100.0):
+def apply_dist(data=None, center=None, cols=None):
     dist = np.zeros((len(data)))
 
     dd = data[cols].values - center
-    dp = (data[cols].values + box - center) % box 
     
-    # FIXME check this implementation of periodic boundary conditions
     for i, d in enumerate(dd):
-        d0 = np.sqrt(dd[0]*dd[0] + dd[1]*dd[1] + dd[2]*dd[2])
-        d1 = np.sqrt(dp[i][0]**2 + dp[i][1]**2 + dp[i][2]**2)
-
-        dist[i] = np.min([d0, d1])
+        dist[i] = np.sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])
     
     return dist
 
@@ -32,13 +27,15 @@ def apply_dist(data=None, center=None, cols=None, box=100.0):
 #ahf_base = '/media/edoardo/Elements/CLUES/DATA/FullBox/'
 ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
 ahf_file = 'snapshot_054.z0.000.AHF_halos'
-ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'
+#ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_'
+#ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_'
+ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_25mpc_'
 #lgs_base = 'output/lg_fullbox_'
 lgs_base = 'output/lg_fb_new_'
 
 # Loop over these catalogs
 i_ini = 0
-i_end = 5
+i_end = 1
 
 # Read AHF from original and export to CSV or not
 #mode = 'export_csv'
@@ -47,8 +44,12 @@ i_end = 5
 mode = 'plots'
 
 # Max and min radius to look for stuff
-r_max = 15000.0
-radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype='float') * 1.e+3 
+r_max = 25000.0
+box_size = 1.0e+5
+radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 
+    21.0, 22.0, 23.0, 24.0, 25.0], dtype='float') * 1.e+3 
+
+#radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0], dtype='float') * 1.e+3 
  
 r_str = []
 for r in radii:
@@ -61,8 +62,8 @@ x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
 x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
 m_col = ['Mvir(4)']
 d_col = 'Dist'
-m_min = 5.0e+11
-v_max = -1.0
+m_min = 4.0e+11
+v_max = -0.0
 
 # Loop over halo catalogs and lg lists
 for i_cat in range(i_ini, i_end):
@@ -81,17 +82,18 @@ for i_cat in range(i_ini, i_end):
     df_lgs = df_lgs[df_lgs['Vrad'] < v_max]
     print('N post: ', len(df_lgs))
 
+    this_ahf_csv = 'output/full.' + i_str + '.' + ahf_file_csv
+
     # Read AHF and export it to CSV 
     if mode == 'export_csv': 
         print('AHF FILE: ', this_ahf)
         df_ahf = rf.read_ahf_halo(this_ahf)
+        df_ahf = t.periodic_boundaries(data=df_ahf, slab_size=r_max, box=box_size)
         print('AHF FILE TO CSV: ', this_ahf_csv)
         df_ahf.to_csv(this_ahf_csv)
 
     # Read CSV ahf files and extract mass functions around LG candidates
     elif mode == 'read_csv':
-        this_ahf_csv = 'output/full.' + i_str + '.' + ahf_file_csv
-
         print('AHF CSV FILE: ', this_ahf_csv)
         df_ahf = pd.read_csv(this_ahf_csv)
         print(df_ahf[x_col_ahf])
@@ -109,7 +111,7 @@ for i_cat in range(i_ini, i_end):
 
             x_lg = row[x_col].values
             df_ahf[d_col] = apply_dist(data=df_ahf, center=x_lg, cols=x_col_ahf)
-            lg_csv = 'output/LG_HALOS/halos_simu_' + i_str + '_lg_' + str(i_lg) + '.csv'  
+            lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
         
             df_tmp = pd.DataFrame()
             df_tmp = df_ahf[df_ahf[d_col] < r_max]
@@ -125,7 +127,7 @@ for i_cat in range(i_ini, i_end):
         
         # Loop over the mass functions already extracted 
         for i_lg, row in df_lgs.iterrows():
-            lg_csv = 'output/LG_HALOS/halos_simu_' + i_str + '_lg_' + str(i_lg) + '.csv'  
+            lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
 
             if os.path.isfile(lg_csv):
                 df_tmp = pd.read_csv(lg_csv)
@@ -163,7 +165,7 @@ if mode == 'plots':
 
     slopes = []
     masses = []
-    vtans = []
+    fracs = []
 
     for ir, rs in enumerate(r_str):
         f_out = 'output/masses_lg_r' + rs + '.png'
@@ -176,18 +178,16 @@ if mode == 'plots':
         plt.cla()
         plt.clf()
 
-        #tot = np.sum(df_rm[rs])
-        #vol = 4.0 * (radii[ir] ** 3.0) * np.pi / 3.0
-        #print('Mtot: ', tot, ' rho: ', tot/vol)
         med = np.percentile(np.log10(df_rm[rs]), [20, 50, 80])
         medians = '%.3f_{%.3f}^{+%.3f}' % (med[1], med[0]-med[1], med[2]-med[1]) 
         print(medians)
     
         m_cluster = 1.0e+14
         n_cluster = len(df_rm[df_rm[rs] > m_cluster])
+        f_cluster = n_cluster / len(df_rm)
+        print('Fractions of LG at ', rs, ' from a cluster: ',  f_cluster) 
+        fracs.append(f_cluster)
 
-        print('Fractions of LG at ', rs, ' from a cluster: ',  n_cluster/len(df_rm), ' (', n_cluster, '/', len(df_rm), ')')
-        
         x = np.log10(df_rm[rs]) #/1.0e+12) 
         y = np.log10(df_rm['Vtan']/100.0) 
         #y = np.log10(-df_rm['Vrad']/100.0) 
@@ -203,7 +203,7 @@ if mode == 'plots':
         print('params: ', slope)
         #print('slope: ', slope[0])
         slopes.append(slope[0])
-        masses.append(med[0])
+        masses.append(med[1])
 
         plt.xlabel(r'$\log_{10} M_{max}$')
         plt.ylabel(r'$\log_{10} (V_{tan}/100)$')
@@ -218,16 +218,33 @@ if mode == 'plots':
         plt.cla()
         plt.clf()
 
-print(masses)
-print(slopes)
+    # Still in 'plots' mode
+    print(masses)
+    print(slopes)
+    print(fracs)
 
-plt.plot(masses, slopes, color='black')
-plt.xlabel(r'$\log_{10} M_{max}$')
-plt.ylabel(r'b')
-plt.tight_layout()
-plt.savefig('output/masses_vs_vtancorr.png')
-plt.pause(3)
-plt.close()
-plt.cla()
-plt.clf()
+    plt.plot(masses, slopes, color='black')
+    plt.xlabel(r'$\log_{10} M_{max}$')
+    plt.ylabel(r'b')
+    plt.tight_layout()
+    plt.savefig('output/masses_vs_vtancorr.png')
+    #plt.pause(3)
+    plt.close()
+    plt.cla()
+    plt.clf()
+
+    plt.plot(radii, fracs, color='black')
+    plt.xlabel(r'$R [Mpc h^{-1}]$')
+    plt.ylabel(r'$n_{cl}(< R) / n_{tot}$')
+    plt.tight_layout()
+    plt.savefig('output/frac_cl_vs_r.png')
+    #plt.pause(3)
+    plt.close()
+    plt.cla()
+    plt.clf()
+
+
+
+
+
 

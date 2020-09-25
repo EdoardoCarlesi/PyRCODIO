@@ -293,6 +293,7 @@ def check_units(data=None, cols=None):
 
     return factor
 
+
 def ahf_header():
     ahf_header = ['numSubStruct(3)', 'Mvir(4)', 'npart(5)', 'Xc(6)', 'Yc(7)', 'Zc(8)',
        'VXc(9)', 'VYc(10)', 'VZc(11)', 'Rvir(12)', 'Rmax(13)', 'r2(14)',
@@ -314,6 +315,7 @@ def ahf_header():
        'HostHalo']
 
     return ahf_header
+
 
 def rs_header():
 
@@ -364,14 +366,46 @@ def header_rs2ahf(rs_head):
 
     return new_header
 
+'''
+    Copy the halos at the boundaries 
+'''
+def periodic_boundaries(data=None, slab_size=10.0, box=100.0, x_cols=['Xc(6)', 'Yc(7)', 'Zc(8)']):
+    
+    df_all_tmp = []
+    slab_other = box - slab_size
+    half_box = 0.5 * box
 
-#def periodic_boundaries(data=None, slab_size=10.0)
+    # Find all the halos within the buffer regions
+    for col in x_cols:
+        df_tmp = data[(data[col] < slab_size) | (data[col] > slab_other)]
+        df_all_tmp.append(df_tmp)
+
+    # Merge them into a new DF
+    df_tmp_new = pd.concat(df_all_tmp)
+    #print(len(df_tmp_new))
+    df_tmp_new.drop_duplicates(inplace=True)
+    #print(len(df_tmp_new))
+
+    def rescale_pos(x):
+        if x < slab_size:
+            x = float(x + box)
+        elif x > slab_other:
+            x = float(x - box)
+        
+        return x
+
+    # Now correct for the new positions that mirror the periodic boundaries
+    for col in x_cols:
+        #print(df_tmp_new[col].apply(lambda x: rescale_pos(x)))
+        df_tmp_new[col] = df_tmp_new[col].apply(lambda x: rescale_pos(x))
+
+    print(df_tmp_new[x_cols].head(20))
+
+    # Add them all to the old dataframe
+    df_new = pd.concat([data, df_tmp_new])
 
 
-
-# TODO
-#def header_ahf2rs
-
+    return df_new
 
 
 

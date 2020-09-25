@@ -20,6 +20,25 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+'''
+ahf_csv = '/home/edoardo/CLUES/PyRCODIO/output/full.00.snapshot_054.z0.000.AHF_halos.csv'
+df_ahf = pd.read_csv(ahf_csv)
+ahf_csv_out = '/home/edoardo/CLUES/PyRCODIO/output/full.00.snapshot_054.z0.000.AHF_halos.small.csv'
+print(len(df_ahf))
+df_ahf = df_ahf[df_ahf['Mvir(4)'] > 5e+10]
+print(len(df_ahf))
+df_ahf.to_csv(ahf_csv_out)
+'''
+
+ahf_csv = '/home/edoardo/CLUES/PyRCODIO/output/full.00.snapshot_054.z0.000.AHF_halos.small.csv'
+df_ahf = pd.read_csv(ahf_csv)
+#print(len(df_ahf))
+
+new_df = t.periodic_boundaries(data=df_ahf, slab_size=10000.0, box=100000.0)
+
+#print(len(new_df))
+
+'''
 mtot = ta.mass_estimate()
 print('Mtot: ', mtot/1.0e+12)
 
@@ -34,7 +53,6 @@ print('Mtot: ', mtot/1.0e+12)
 
 
 
-'''
 lg_list='output/lg_pairs_512.csv'
 lg_df = pd.read_csv(lg_list)
 
