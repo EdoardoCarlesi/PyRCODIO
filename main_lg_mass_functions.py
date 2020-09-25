@@ -157,7 +157,8 @@ if mode == 'plots':
     slopes = []
     masses = []
     vtans = []
-    for rs in r_str[0:6]:
+
+    for ir, rs in enumerate(r_str):
         f_out = 'output/masses_lg_r' + rs + '.png'
         sns.distplot(np.log10(df_rm[rs]))
         title = 'LG masses at R = ' + rs 
@@ -168,6 +169,9 @@ if mode == 'plots':
         plt.cla()
         plt.clf()
 
+        #tot = np.sum(df_rm[rs])
+        #vol = 4.0 * (radii[ir] ** 3.0) * np.pi / 3.0
+        #print('Mtot: ', tot, ' rho: ', tot/vol)
         med = np.percentile(np.log10(df_rm[rs]), [20, 50, 80])
         medians = '%.3f_{%.3f}^{+%.3f}' % (med[1], med[0]-med[1], med[2]-med[1]) 
         print(medians)
