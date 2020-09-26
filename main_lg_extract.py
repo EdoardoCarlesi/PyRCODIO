@@ -34,9 +34,13 @@ elif hiResAhf == True:
 data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
 file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 
+#resolution = '512'
+resolution = '1024'
+
 # Full dataset base path
 if csvAhf == True:
-    base_path = '/home/edoardo/Elements/CLUES/DATA/CSV/512/'
+    #base_path = '/home/edoardo/Elements/CLUES/DATA/CSV/' + resolution + '/'
+    base_path = '/home/edoardo/CLUES/DATA/LGF/' + resolution + '/CSV/'
 elif hiResAhf == True:
     base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
 
@@ -53,7 +57,7 @@ all_halo_mah = []
 # Output files 
 if csvAhf == True:
     out_base_pkl = base_path + 'lg_'
-    out_all_lgs_csv = 'output/lg_pairs_512.csv'
+    out_all_lgs_csv = 'output/lg_pairs_' + resolution + '.csv'
 if hiResAhf == True:
     out_base_pkl = 'saved/lg_pair_'
     out_all_lgs_csv = 'output/lg_pairs_2048.csv'
@@ -69,7 +73,7 @@ for code in code_run:
 
     for sub in sub_run:
 
-        out_file_pkl = 'output/lg_' + code + '_' + sub + '.pkl'
+        out_file_pkl = 'output/lg_' + resolution + '_' + code + '_' + sub + '.pkl'
         these_lgs = []
 
         if csvAhf == True:
