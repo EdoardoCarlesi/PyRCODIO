@@ -11,7 +11,6 @@ import halo_utils as hu
 import numpy as np
 import os
 
-
 def gen_runs(ini, end):
     runs = []
     for i in range(ini, end):
@@ -19,6 +18,20 @@ def gen_runs(ini, end):
         runs.append(run)
 
     return runs
+
+def gen_all_runs(i0, i1, g0, g1):
+    runs = []
+
+    main = gen_runs(i0, i1)
+    subs = gen_runs(g0, g1)
+
+    for m in main:
+        for s in subs:
+            r = m + '_' + s
+            runs.append(r)
+
+    return runs
+
 
 def sub_runs():
     sub_runs = []

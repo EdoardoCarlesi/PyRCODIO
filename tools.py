@@ -12,6 +12,72 @@ import pandas as pd
 import numpy as np
 import random
 
+
+'''
+    Count the number of entries of a data structure given an array of bins
+'''
+def check_df_bins(data=None, bins=None, col='Mvir(4)', binmode='log'):
+    nbins = len(bins)
+    nperbin = np.zeros((nbins-1))
+    binvals = np.zeros((nbins-1))
+    col_bin = 'binned'
+
+    for i in range(0, nbins-1):
+        if binmode == 'log':
+            nperbin[i] = len(data[np.log10(data[col]) > bins[i]])
+
+    '''
+        else:
+            nperbin[i] = len(data[(data[col] > bins[i]) & (data[col] < bins[i+1])])
+    '''
+
+    for i in range(0, nbins-1):
+        binvals[i] = 0.5 * (bins[i] + bins[i+1])
+    
+    #data[col_bin] = pd.cut(np.log10(data[col]), bins=bins)
+    #nperbin = data.groupby(col_bin).count().values
+    
+    return (binvals, nperbin)
+
+'''
+    Simple tool to generate bin intervals
+'''
+def gen_bins(nbins=None, binmax=None, binmin=None, binmode='log'):
+    
+    if binmode == 'log':
+        bmax = np.log10(binmax)
+        bmin = np.log10(binmin)
+
+    else:
+        bmax = binmax
+        bmin = binmin
+
+    bins = np.zeros((nbins))
+    step = (bmax - bmin) / float(nbins)
+    bins[0] = bmin
+    print(bmax, bmin, nbins, step)
+    for i in range(1, nbins):
+        bins[i] = bins[i-1] + step
+
+    return bins
+
+'''
+    Given a halo df and a volume determine the matter density
+'''
+def density(data=None, size=None, col='Mvir(4)', shape='cube'):
+
+    mtot = np.sum(data[col])
+
+    if shape == 'cube':
+        vol = size ** 3.0
+
+    elif shape == 'sphere':
+        vol = 4.0 / 3.0 * (np.pi) * (size ** 3.0)
+
+    dens = mtot / vol
+    return dens
+
+
 '''
     Compute the Euclidean distance between two points in space
 '''
