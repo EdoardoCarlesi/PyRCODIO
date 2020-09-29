@@ -22,34 +22,47 @@ def apply_dist(data=None, center=None, cols=None):
     
     return dist
 
+#simu = 'fullbox'
+simu = 'lgf'
+
+print('SimuType: ', simu)
 
 # Base path for halo catalogs and identified LGs
-#ahf_base = '/media/edoardo/Elements/CLUES/DATA/FullBox/'
-ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
-ahf_file = 'snapshot_054.z0.000.AHF_halos'
-#ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_'
-#ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_'
-ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_25mpc_'
-#lgs_base = 'output/lg_fullbox_'
-lgs_base = 'output/lg_fb_new_'
+if simu == 'fullbox':
+    #ahf_base = '/media/edoardo/Elements/CLUES/DATA/FullBox/'
+    ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
+    ahf_file = 'snapshot_054.z0.000.AHF_halos'
+    #ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_'
+    ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_'
+    #ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_25mpc_'
+    #lgs_base = 'output/lg_fullbox_'
+    lgs_base = 'output/lg_fb_new_'
 
-# Loop over these catalogs
-i_ini = 0
-i_end = 1
+    # Loop over these catalogs
+    i_ini = 0
+    i_end = 1
+    r_max = 25000.0
+    box_size = 1.0e+5
+    #radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 
+    #               21.0, 22.0, 23.0, 24.0, 25.0], dtype='float') * 1.e+3 
+    radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], dtype='float') * 1.e+3 
+
+elif simu == 'lgf':
+    i_ini = 0
+    i_end = 1
+
+    ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
+    lg_csv_file = 'output/LG_1024/lg_center_'
+    lgs_base = 'output/lg_pairs_1024'
+    box_size = 1.0e+5
+    r_max = 10000.0
+    radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], dtype='float') * 1.e+3 
 
 # Read AHF from original and export to CSV or not
 #mode = 'export_csv'
 #mode = 'read_csv'
-#mode = 'analysis'
-mode = 'plots'
-
-# Max and min radius to look for stuff
-r_max = 25000.0
-box_size = 1.0e+5
-radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 
-    21.0, 22.0, 23.0, 24.0, 25.0], dtype='float') * 1.e+3 
-
-#radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0], dtype='float') * 1.e+3 
+mode = 'analysis'
+#mode = 'plots'
  
 r_str = []
 for r in radii:
@@ -69,9 +82,14 @@ v_max = -0.0
 for i_cat in range(i_ini, i_end):
     i_str = '%02d' % i_cat
 
-    this_ahf = ahf_base + i_str + '/' + ahf_file
-    this_lgs = lgs_base + i_str + '.csv'  
- 
+    if simu == 'fullbox':
+        this_ahf = ahf_base + i_str + '/' + ahf_file
+        this_lgs = lgs_base + i_str + '.csv'  
+        this_ahf_csv = 'output/full.' + i_str + '.' + ahf_file_csv
+
+    elif simu == 'lgf':
+        this_lgs = lgs_base + '.csv'
+
     print('LGS FILE: ', this_lgs)
     df_lgs_orig = pd.read_csv(this_lgs)
     n_lgs_pre = len(df_lgs_orig)
@@ -81,8 +99,6 @@ for i_cat in range(i_ini, i_end):
     df_lgs = df_lgs[df_lgs['M_M31'] > m_min]
     df_lgs = df_lgs[df_lgs['Vrad'] < v_max]
     print('N post: ', len(df_lgs))
-
-    this_ahf_csv = 'output/full.' + i_str + '.' + ahf_file_csv
 
     # Read AHF and export it to CSV 
     if mode == 'export_csv': 
@@ -127,7 +143,17 @@ for i_cat in range(i_ini, i_end):
         
         # Loop over the mass functions already extracted 
         for i_lg, row in df_lgs.iterrows():
-            lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
+
+            if simu == 'fullbox':
+                lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
+                this_lgs_rad = lgs_base + i_str + '_radii.csv'  
+                
+            elif simu == 'lgf':
+                num = str('%02d' % int(row['simu_code']))
+                sub = str('%02d' % int(row['sub_code']))
+                lg_x = row[x_col].values
+                lg_csv = lg_csv_file + num + '_' + sub + '.' + str(i_lg) + '.csv'
+                this_lgs_rad = lgs_base + '_radii.csv'  
 
             if os.path.isfile(lg_csv):
                 df_tmp = pd.read_csv(lg_csv)
@@ -141,35 +167,38 @@ for i_cat in range(i_ini, i_end):
         for i_r, r_col in enumerate(r_str):
             df_lgs_orig[r_col] = m_rad[:, i_r]
 
-        this_lgs_rad = lgs_base + i_str + '_radii.csv'  
         print('Saving to: ', this_lgs_rad)
         df_lgs_orig.to_csv(this_lgs_rad)
 
-    elif mode == 'plots':
+if mode == 'plots':
 
-        this_lgs_rad = lgs_base + i_str + '_radii.csv'  
+    # Load FB data
+    for i_cat in range(i_ini_tot, i_end_tot):
+        i_str = '%02d' % i_cat
+        this_lgs_rad = lgs_base_fb + i_str + '_radii.csv'  
+
         print('Reading from : ', this_lgs_rad)
         df_rad = pd.read_csv(this_lgs_rad)
         df_rad = df_rad[df_rad[r_str[0]] > 0.0]
-
         df_rm_all.append(df_rad)
 
-        #print(df_rad.head())
-
-
-if mode == 'plots':
-    
     print('Merge all DFs...')
-    df_rm = pd.concat(df_rm_all)
-    print(df_rm.head())
+    df_fb = pd.concat(df_rm_all)
+    print(df_fb.head())
 
-    slopes = []
-    masses = []
-    fracs = []
+    # Load CS data
+    lgs_rad = lgs_base + '_radii.csv'  
+
+    print('Reading from : ', lgs_rad)
+    df_rad = pd.read_csv(lgs_rad)
+    df_lg = df_rad[df_rad[r_str[0]] > 0.0]
+
+    slopes_fb = []; masses_fb = []; fracs_fb = []
+    slopes_lg = []; masses_lg = []; fracs_lg = []
 
     for ir, rs in enumerate(r_str):
         f_out = 'output/masses_lg_r' + rs + '.png'
-        sns.distplot(np.log10(df_rm[rs]))
+        sns.distplot(np.log10(df_fb[rs]))
         title = 'LG masses at R = ' + rs 
         plt.title(title)
         plt.tight_layout()
@@ -178,20 +207,20 @@ if mode == 'plots':
         plt.cla()
         plt.clf()
 
-        med = np.percentile(np.log10(df_rm[rs]), [20, 50, 80])
+        med = np.percentile(np.log10(df_fb[rs]), [20, 50, 80])
         medians = '%.3f_{%.3f}^{+%.3f}' % (med[1], med[0]-med[1], med[2]-med[1]) 
         print(medians)
     
         m_cluster = 1.0e+14
-        n_cluster = len(df_rm[df_rm[rs] > m_cluster])
-        f_cluster = n_cluster / len(df_rm)
+        n_cluster = len(df_fb[df_fb[rs] > m_cluster])
+        f_cluster = n_cluster / len(df_fb)
         print('Fractions of LG at ', rs, ' from a cluster: ',  f_cluster) 
         fracs.append(f_cluster)
 
-        x = np.log10(df_rm[rs]) #/1.0e+12) 
-        y = np.log10(df_rm['Vtan']/100.0) 
-        #y = np.log10(-df_rm['Vrad']/100.0) 
-        #y = np.log10((df_rm['M_MW'] + df_rm['M_M31'])/1.0e+12) 
+        x = np.log10(df_fb[rs]) #/1.0e+12) 
+        y = np.log10(df_fb['Vtan']/100.0) 
+        #y = np.log10(-df_fb['Vrad']/100.0) 
+        #y = np.log10((df_fb['M_MW'] + df_fb['M_M31'])/1.0e+12) 
 
         f_out = 'output/masses_kde_lg_' + rs + '.png'
         sns.scatterplot(x, y)

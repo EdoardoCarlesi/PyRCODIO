@@ -35,8 +35,8 @@ x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
 m_col = ['Mvir(4)']
 d_col = 'Dist'
 m_min = 4.0e+11
-v_max = -0.0
-d_max = 5000.0
+v_max = 10.0
+d_max = 7000.0
 
 n_bin = 100
 m_max = 0.75e+14
@@ -47,10 +47,14 @@ mbins = t.gen_bins(nbins=n_bin, binmax=m_max, binmin=m_min)
 all_bins = [[] for i in range(0, n_bin-1)]
 
 #mode='fullbox'
-mode='lgf'
-#mode='plots' 
+#mode='lgf'
+mode='plots' 
 
 if mode == 'fullbox':
+    
+    # FIXME
+    lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_fb_new_'
+    #lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_simu_periodic_'
 
     # Loop over halo catalogs and lg lists
     for i_cat in range(i_ini, i_end):
@@ -87,9 +91,13 @@ if mode == 'fullbox':
 
                     if v > 0:
                         all_bins[ib].append(v)
+                        break
 
     f_out = 'output/all_mass_functions_fullbox.pkl'
     print('Saving output to: ', f_out)
+    pkl.dump(all_bins, open(f_out, 'wb'))
+
+    f_out = 'output/all_mass_functions_x_bin_fullbox.pkl'
     pkl.dump(all_bins, open(f_out, 'wb'))
 
 elif mode == 'lgf':
@@ -103,42 +111,104 @@ elif mode == 'lgf':
     # Select a halo subsample
     df_lgs = df_lgs[df_lgs['Vrad'] < v_max]
     print('TotLen: ', len(df_lgs))
+    box_center = [5.0e+4]*3
 
-    x_cols = ['Xc_LG', 'Yc_LG', 'Zc_LG']
-    df_lgs['Dist'] = df_lgs[x_cols].T.apply(lambda x: t.distance(x, box_center))
-    df_lgs = df_lgs[df_lgs['Dist'] < d_max]
+    df_lgs[d_col] = df_lgs[x_col].T.apply(lambda x: t.distance(x, box_center))
+    df_lgs = df_lgs[df_lgs[d_col] < d_max]
     print('TotLen: ', len(df_lgs))
 
+    n_lgs = len(df_lgs)
     print('Analyzing fullbox LG candidates mass functions ...')
     
     # Loop over halo catalogs and lg lists
     for ilg, row in df_lgs.iterrows():
         num = str('%02d' % int(row['simu_code']))
         sub = str('%02d' % int(row['sub_code']))
+        this_x = row[x_col].values
         
         this_lg = lgs_lgf_base + num + '_' + sub + '.' + str(ilg) + '.csv'
 
         if os.path.isfile(this_lg):
             df_tmp = pd.read_csv(this_lg)
-            #df_tmp = pkl.load(open(this_lg, 'rb'))
-            print(df_tmp)
+            #print(df_tmp)
             #print(df_tmp.head())
+            print('Reading ', this_lg)
+            df_tmp[d_col] = df_tmp[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
+            df_tmp = df_tmp[df_tmp[d_col] < r_max]
 
-            # Find the halo list
-            #df_tmp = df_tmp[df_tmp[d_col] < r_max]
+            x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
 
-            '''
-                x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
+            for ib in range(0, n_bin-1):
+                v = y_bin[ib]
 
-                for ib in range(0, n_bin-1):
+                if v > 0:
+                    all_bins[ib].append(v)
 
-                    v = y_bin[ib]
-
-                    if v > 0:
-                        all_bins[ib].append(v)
-
-    f_out = 'output/all_mass_functions_lgf.pkl'
+    #print(all_bins[0])
+    #f_out = 'output/all_mass_functions_lgf.pkl'
+    f_out = 'output/all_mass_functions_lgf.' + str(n_lgs) + '.pkl'
     print('Saving output to: ', f_out)
-    pkl.dump(all_bins, open(f_out, 'wb'))
+    #pkl.dump(all_bins, open(f_out, 'wb'))
+    
+    # Save the x bin values 
+    f_out = 'output/all_mass_functions_x_bin_lgf.pkl'
+    pkl.dump(x_bin, open(f_out, 'wb'))
 
-            '''
+
+elif mode == 'plots':
+
+  
+    y_fb = 'output/all_mass_functions_fullbox.pkl'
+    x_lg = 'output/all_mass_functions_x_bin_lgf.pkl'
+    y_lg = 'output/all_mass_functions_lgf.160.pkl'
+    #y_lg = 'output/all_mass_functions_lgf.338.pkl'
+    #y_fb = 'output/all_mass_functions_lgf.223.pkl'
+
+#    x_bin_fb = pkl.load(open(x_fb, 'rb'))
+#    print(x_bin_fb)
+    #print(y_bin_fb)
+    x_bin_lg = pkl.load(open(x_lg, 'rb'))
+    #print(x_bin_lg)
+    y_bin_lg = pkl.load(open(y_lg, 'rb'))
+    y_bin_fb = pkl.load(open(y_fb, 'rb'))
+    #print(y_bin_lg)
+
+    n_bins = len(x_bin_lg)
+    perc_bins_y_lg = np.zeros((n_bins, 3))
+    perc_bins_y_fb = np.zeros((n_bins, 3))
+    percs = [10, 50, 90]
+
+    radius = 5.0
+    vol = 4.0 / 3.0 * np.pi * (radius ** 3.0)
+
+    for i in range(0, n_bins):
+        this_bin_lg = y_bin_lg[i]
+        this_bin_fb = y_bin_fb[i]
+
+        if len(this_bin_lg) > 2:
+            pbin_lg = np.percentile(this_bin_lg, percs)
+            perc_bins_y_lg[i] = pbin_lg / vol
+
+        if len(this_bin_fb) > 2:
+            pbin_fb = np.percentile(this_bin_fb, percs)
+            perc_bins_y_fb[i] = pbin_fb / vol
+
+    #plt.axis([9.5, 13.0, -0.1/vol, 3.25/vol])
+    plt.axis([9.5, 13.0, -2.6, 0.65])
+    plt.xlabel(r'$\log_{10} M \quad [M_{\odot} h^{-1}]$')
+    plt.ylabel(r'$\log_{10} n \quad [h^3 Mpc^{-3}]$')
+    plt.plot(x_bin_lg, np.log10(perc_bins_y_lg[:,1]), color='black')
+    plt.plot(x_bin_lg, np.log10(perc_bins_y_fb[:,1]), color='red')
+    plt.fill_between(x_bin_lg, np.log10(perc_bins_y_fb[:, 0]), np.log10(perc_bins_y_fb[:, 2]), facecolor='orange', alpha=0.3)
+    plt.fill_between(x_bin_lg, np.log10(perc_bins_y_lg[:, 0]), np.log10(perc_bins_y_lg[:, 2]), facecolor='grey', alpha=0.2)
+    plt.tight_layout()
+
+    out_fig = 'output/mass_functions_5mpc_cs_vs_fb.png'
+    plt.savefig(out_fig)
+    plt.show(block=False)
+    plt.pause(3)
+    plt.close()
+    
+
+
+
