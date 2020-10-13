@@ -56,19 +56,25 @@ elif simu == 'lgf':
     lgs_base = 'output/lg_pairs_1024'
     box_size = 1.0e+5
     r_max = 10000.0
+    d_max = 6000.0
     radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], dtype='float') * 1.e+3 
 
 # Read AHF from original and export to CSV or not
 #mode = 'export_csv'
 #mode = 'read_csv'
-mode = 'analysis'
-#mode = 'plots'
- 
+#mode = 'analysis'
+mode = 'plots'
+
 r_str = []
 for r in radii:
     r_str.append('R_' + str(r))
 
 df_rm_all = []
+
+# These data will be used for the 'plots'
+lgs_base_fb = 'output/lg_fb_new_'
+i_ini_tot = 0
+i_end_tot = 5
 
 # Column coordinates
 x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
@@ -172,6 +178,9 @@ for i_cat in range(i_ini, i_end):
 
 if mode == 'plots':
 
+    label_fb = 'RAND'
+    label_lg = 'CS'
+
     # Load FB data
     for i_cat in range(i_ini_tot, i_end_tot):
         i_str = '%02d' % i_cat
@@ -189,17 +198,26 @@ if mode == 'plots':
     # Load CS data
     lgs_rad = lgs_base + '_radii.csv'  
 
-    print('Reading from : ', lgs_rad)
+    print('Reading from : ', lgs_rad, ' n_tot: ', len(lgs_rad))
     df_rad = pd.read_csv(lgs_rad)
     df_lg = df_rad[df_rad[r_str[0]] > 0.0]
+    box_center = [5.0e+4] * 3
+    df_lg['Dist'] = df_lg[x_col].T.apply(lambda x: t.distance(x, box_center))
+    df_lg = df_lg[df_lg['Dist'] < d_max]
+    print('New number: ', len(df_lg))
 
     slopes_fb = []; masses_fb = []; fracs_fb = []
     slopes_lg = []; masses_lg = []; fracs_lg = []
+    meds_lg = np.zeros((len(r_str), 3))
+    meds_fb = np.zeros((len(r_str), 3)) 
 
     for ir, rs in enumerate(r_str):
-        f_out = 'output/masses_lg_r' + rs + '.png'
-        sns.distplot(np.log10(df_fb[rs]))
-        title = 'LG masses at R = ' + rs 
+        f_out = 'output/masses_lg_cs_fb_' + rs + '.png'
+        sns.distplot(np.log10(df_fb[rs]), color='orange', label=label_fb)
+        sns.distplot(np.log10(df_lg[rs]), color='grey', label=label_lg)
+        plt.xlabel(r'$\log_{10}M\quad [M_{\odot} h^{-1}]$')
+        plt.legend()
+        title = r'Max mass at R: ' + str(radii[ir]/1.e+3) + ' $h^{-1}$ Mpc'
         plt.title(title)
         plt.tight_layout()
         print('Saving file to: ', f_out)
@@ -207,51 +225,78 @@ if mode == 'plots':
         plt.cla()
         plt.clf()
 
-        med = np.percentile(np.log10(df_fb[rs]), [20, 50, 80])
-        medians = '%.3f_{%.3f}^{+%.3f}' % (med[1], med[0]-med[1], med[2]-med[1]) 
-        print(medians)
+        percs = [10, 50, 90]
+
+        med = np.percentile(np.log10(df_fb[rs]), percs)
+        meds_fb[ir] = med
+        masses_fb.append(med[1])
+        medians_fb = '%.3f_{%.3f}^{+%.3f}' % (med[1], med[0]-med[1], med[2]-med[1]) 
+
+        med = np.percentile(np.log10(df_lg[rs]), percs)
+        meds_lg[ir] = med
+        masses_lg.append(med[1])
+        medians_lg = '%.3f_{%.3f}^{+%.3f}' % (med[1], med[0]-med[1], med[2]-med[1]) 
+        print('LG:', medians_lg)
+        print('FB:', medians_fb)
     
         m_cluster = 1.0e+14
         n_cluster = len(df_fb[df_fb[rs] > m_cluster])
         f_cluster = n_cluster / len(df_fb)
+        print('Fractions of FB at ', rs, ' from a cluster: ',  f_cluster) 
+        fracs_fb.append(f_cluster)
+
+        n_cluster = len(df_lg[df_lg[rs] > m_cluster])
+        f_cluster = n_cluster / len(df_lg)
         print('Fractions of LG at ', rs, ' from a cluster: ',  f_cluster) 
-        fracs.append(f_cluster)
+        fracs_lg.append(f_cluster)
 
-        x = np.log10(df_fb[rs]) #/1.0e+12) 
-        y = np.log10(df_fb['Vtan']/100.0) 
-        #y = np.log10(-df_fb['Vrad']/100.0) 
-        #y = np.log10((df_fb['M_MW'] + df_fb['M_M31'])/1.0e+12) 
+        # FIXME: these fits are fishy and inconsistent, do not use them atm
 
-        f_out = 'output/masses_kde_lg_' + rs + '.png'
-        sns.scatterplot(x, y)
-        sns.kdeplot(x, y)
+        '''
+        x_fb = np.log10(df_fb[rs]) 
+        y_fb = np.log10(df_fb['Vtan']/100.0) 
+        x_lg = np.log10(df_lg[rs])
+        y_lg = np.log10(df_lg['Vtan']/100.0) 
 
-        #plt.plot()
-        
-        slope = np.polyfit(x, y, 1)
-        print('params: ', slope)
-        #print('slope: ', slope[0])
-        slopes.append(slope[0])
-        masses.append(med[1])
+        slope = np.polyfit(x_fb, y_fb, 1)
+        slopes_fb.append(slope[0])
 
+        f_out = 'output/masses_kde_FB_' + rs + '.png'
         plt.xlabel(r'$\log_{10} M_{max}$')
         plt.ylabel(r'$\log_{10} (V_{tan}/100)$')
-        plt.title(rs)
         plt.tight_layout()
-        '''
-        plt.show(block=False)
-        plt.pause(3)
-        plt.close()
-        '''
+        sns.scatterplot(x_fb, y_fb)
+        sns.kdeplot(x_fb, y_fb)
         plt.savefig(f_out)
         plt.cla()
         plt.clf()
 
-    # Still in 'plots' mode
-    print(masses)
-    print(slopes)
-    print(fracs)
+        slope = np.polyfit(x_lg, y_lg, 1)
+        slopes_lg.append(slope[0])
 
+        f_out = 'output/masses_kde_LG_' + rs + '.png'
+        plt.xlabel(r'$\log_{10} M_{max}$')
+        plt.ylabel(r'$\log_{10} (V_{tan}/100)$')
+        plt.tight_layout()
+        sns.scatterplot(x_lg, y_lg)
+        sns.kdeplot(x_lg, y_lg)
+        plt.savefig(f_out)
+        plt.cla()
+        plt.clf()
+        '''
+
+    # Still in 'plots' mode
+    print('FB: ')
+    print(masses_fb)
+    print(slopes_fb)
+    print(fracs_fb)
+
+    print('LG: ')
+    print(masses_lg)
+    print(slopes_lg)
+    print(fracs_lg)
+
+    '''
     plt.plot(masses, slopes, color='black')
     plt.xlabel(r'$\log_{10} M_{max}$')
     plt.ylabel(r'b')
@@ -261,18 +306,29 @@ if mode == 'plots':
     plt.close()
     plt.cla()
     plt.clf()
+    '''
 
-    plt.plot(radii, fracs, color='black')
-    plt.xlabel(r'$R [Mpc h^{-1}]$')
-    plt.ylabel(r'$n_{cl}(< R) / n_{tot}$')
+    plt.plot(radii, masses_fb, color='red', label = label_fb)
+    plt.fill_between(radii, meds_fb[:, 0], meds_fb[:, 2], color='orange', alpha=0.3)
+    plt.plot(radii, masses_lg, color='black', label = label_lg)
+    plt.fill_between(radii, meds_lg[:, 0], meds_lg[:, 2], color='grey', alpha=0.2)
+    plt.xlabel(r'$R \quad [Mpc h^{-1}]$')
+    plt.ylabel(r'$\log_{10}M \quad [M_{\odot} h^{-1}]$')
     plt.tight_layout()
-    plt.savefig('output/frac_cl_vs_r.png')
+    f_out = 'output/m_max_R_cs_vs_fb.png'
+    plt.savefig(f_out) 
+
+    delta_masses = (np.array(masses_fb) - np.array(masses_lg)) / np.array(masses_lg)
+    delta_m = (np.array(masses_fb) - np.array(masses_lg)) 
+    ratio_m = (np.array(masses_fb) / np.array(masses_lg)) 
+    print(delta_masses)
+    print(ratio_m)
+    print(10 ** delta_m)
+    #plt.savefig('output/frac_cl_vs_r.png')
     #plt.pause(3)
-    plt.close()
-    plt.cla()
-    plt.clf()
-
-
+    #plt.close()
+    #plt.cla()
+    #plt.clf()
 
 
 

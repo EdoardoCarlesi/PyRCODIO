@@ -13,6 +13,23 @@ import numpy as np
 import random
 
 
+def spatial_pca(data=None, cols=None):
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.decomposition import PCA
+
+    scaler = StandardScaler()
+    x = data[cols].values
+    x = scaler.fit_transform(x)
+
+    pca = PCA(n_components=3) 
+    principal = pca.fit_transform(x)
+    axs = pca.explained_variance_ratio_
+    
+    axx = axs / axs[0]
+
+    return axx
+
+
 '''
     Count the number of entries of a data structure given an array of bins
 '''

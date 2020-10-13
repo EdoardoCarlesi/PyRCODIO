@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import tools as t
 import swifter
+import pickle
 import os
 
 
@@ -42,19 +43,23 @@ n_bin = 100
 m_max = 0.75e+14
 m_min = 1.59e+9
 
+masscut_pca = 5.0e+10
+
 mbins = t.gen_bins(nbins=n_bin, binmax=m_max, binmin=m_min) 
 
 all_bins = [[] for i in range(0, n_bin-1)]
 
-#mode='fullbox'
+mode='fullbox'
 #mode='lgf'
-mode='plots' 
+#mode='plots' 
 
 if mode == 'fullbox':
     
     # FIXME
     lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_fb_new_'
     #lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_simu_periodic_'
+
+    all_pca = []
 
     # Loop over halo catalogs and lg lists
     for i_cat in range(i_ini, i_end):
@@ -76,6 +81,7 @@ if mode == 'fullbox':
         # Loop over the mass functions already extracted 
         for i_lg, row in df_lgs.iterrows():
             lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
+            this_x = row[x_col].values
 
             if os.path.isfile(lg_csv):
                 df_tmp = pd.read_csv(lg_csv)
@@ -83,6 +89,26 @@ if mode == 'fullbox':
                 # Find the halo list
                 df_tmp = df_tmp[df_tmp[d_col] < r_max]
 
+                df_tmp[d_col] = df_tmp[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
+                df_tmp = df_tmp[df_tmp[d_col] < r_max]
+
+                pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
+                print('PCA result: ', pca)
+            
+                df_tmp = df_tmp[df_tmp['Mvir(4)'] > masscut_pca] 
+                pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
+                print('PCA result mass: ', pca)
+        
+                all_pca.append(pca)
+
+    f_pca = 'output/pca_fullbox.pkl'
+    pickle.dump(all_pca, open(f_pca, 'wb'))
+
+    print('Output PCA written to: ', f_pca)
+
+
+
+    '''
                 x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
 
                 for ib in range(0, n_bin-1):
@@ -99,6 +125,7 @@ if mode == 'fullbox':
 
     f_out = 'output/all_mass_functions_x_bin_fullbox.pkl'
     pkl.dump(all_bins, open(f_out, 'wb'))
+    '''
 
 elif mode == 'lgf':
 
@@ -120,6 +147,8 @@ elif mode == 'lgf':
     n_lgs = len(df_lgs)
     print('Analyzing fullbox LG candidates mass functions ...')
     
+    all_pca = []
+
     # Loop over halo catalogs and lg lists
     for ilg, row in df_lgs.iterrows():
         num = str('%02d' % int(row['simu_code']))
@@ -130,11 +159,27 @@ elif mode == 'lgf':
 
         if os.path.isfile(this_lg):
             df_tmp = pd.read_csv(this_lg)
-            #print(df_tmp)
-            #print(df_tmp.head())
+
             print('Reading ', this_lg)
             df_tmp[d_col] = df_tmp[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
             df_tmp = df_tmp[df_tmp[d_col] < r_max]
+
+            pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
+            print('PCA result: ', pca)
+            
+            df_tmp = df_tmp[df_tmp['Mvir(4)'] > masscut_pca]
+            pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
+            print('PCA result mass: ', pca)
+        
+            all_pca.append(pca)
+
+    f_pca = 'output/lgf_pca.pkl'
+    pickle.dump(all_pca, open(f_pca, 'wb'))
+
+    print('Output PCA written to: ', f_pca)
+
+    '''
+        # FIXME this is commented just for the moment when computing spatial distribution of halos
 
             x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
 
@@ -153,7 +198,7 @@ elif mode == 'lgf':
     # Save the x bin values 
     f_out = 'output/all_mass_functions_x_bin_lgf.pkl'
     pkl.dump(x_bin, open(f_out, 'wb'))
-
+    '''
 
 elif mode == 'plots':
 
