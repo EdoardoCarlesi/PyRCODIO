@@ -49,9 +49,10 @@ mbins = t.gen_bins(nbins=n_bin, binmax=m_max, binmin=m_min)
 
 all_bins = [[] for i in range(0, n_bin-1)]
 
-mode='fullbox'
+#mode='fullbox'
 #mode='lgf'
-#mode='plots' 
+#mode='plots_mf'
+mode='plots_pca' 
 
 if mode == 'fullbox':
     
@@ -105,8 +106,6 @@ if mode == 'fullbox':
     pickle.dump(all_pca, open(f_pca, 'wb'))
 
     print('Output PCA written to: ', f_pca)
-
-
 
     '''
                 x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
@@ -173,7 +172,7 @@ elif mode == 'lgf':
         
             all_pca.append(pca)
 
-    f_pca = 'output/lgf_pca.pkl'
+    f_pca = 'output/pca_lgf.pkl'
     pickle.dump(all_pca, open(f_pca, 'wb'))
 
     print('Output PCA written to: ', f_pca)
@@ -200,8 +199,7 @@ elif mode == 'lgf':
     pkl.dump(x_bin, open(f_out, 'wb'))
     '''
 
-elif mode == 'plots':
-
+elif mode == 'plots_mf':
   
     y_fb = 'output/all_mass_functions_fullbox.pkl'
     x_lg = 'output/all_mass_functions_x_bin_lgf.pkl'
@@ -254,6 +252,21 @@ elif mode == 'plots':
     plt.pause(3)
     plt.close()
     
+elif mode == 'plots_pca':
+
+    f_pca_lgf = 'output/pca_lgf.pkl'
+    f_pca_fullbox = 'output/pca_fullbox.pkl'
+    pca_lg = pickle.load(open(f_pca_lgf, 'rb'))
+    pca_fb = pickle.load(open(f_pca_fullbox, 'rb'))
+
+    pca_lg = np.array(pca_lg)
+    pca_fb = np.array(pca_fb)
+
+    sns.distplot(pca_lg[:,1])
+    sns.distplot(pca_fb[:,1])
+    sns.distplot(pca_lg[:,2])
+    sns.distplot(pca_fb[:,2])
+    plt.show()
 
 
 

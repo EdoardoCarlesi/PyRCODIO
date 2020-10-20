@@ -13,6 +13,9 @@ import numpy as np
 import random
 
 
+'''
+    Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution
+'''
 def spatial_pca(data=None, cols=None):
     from sklearn.preprocessing import StandardScaler
     from sklearn.decomposition import PCA
@@ -28,6 +31,15 @@ def spatial_pca(data=None, cols=None):
     axx = axs / axs[0]
 
     return axx
+
+'''
+    Compute the moment of inertia of a mass distribution of halos and get the eigenvalues
+'''
+def inertia_tensor(data=None, cols=None, weighted=False):
+    
+    for ih, row in data.iterrows():
+
+
 
 
 '''
