@@ -1,6 +1,5 @@
 '''
-    Python Routines for COsmology and Data I/O
-    PyRCODIO Pandas Version
+    Python Routines for COsmology and Data I/O (PyRCODIO) v0.2
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
@@ -11,13 +10,17 @@ import halo_utils as hu
 import numpy as np
 import os
 
+
 def gen_runs(ini, end):
+    ''' Very easy '''
+
     runs = []
     for i in range(ini, end):
         run = '%02d' % i
         runs.append(run)
 
     return runs
+
 
 def gen_all_runs(i0, i1, g0, g1):
     runs = []
@@ -49,6 +52,7 @@ def sub_runs():
 
     return sub_runs
 
+
 def simu_runs():
     all_runs = [] 
 
@@ -65,6 +69,7 @@ def simu_runs():
     all_runs.append('62_14')
 
     return all_runs
+
 
 def lg_models():
         all_lg_models = []
@@ -207,7 +212,6 @@ def lg_models():
         lg_model.model_code = this_model
         all_lg_models.append(lg_model)
         model_index.update({this_model:model_count}) ; model_count += 1
-
 
         return (all_lg_models, model_index)
 

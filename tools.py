@@ -24,10 +24,10 @@ def spatial_pca(data=None, cols=None):
     x = data[cols].values
     x = scaler.fit_transform(x)
 
-    pca = PCA(n_components=3) 
+    pca = PCA(n_components=3)
     principal = pca.fit_transform(x)
     axs = pca.explained_variance_ratio_
-    
+
     axx = axs / axs[0]
 
     return axx
@@ -37,7 +37,7 @@ def inertia_tensor(data=None, cols=None, weighted=False):
     '''
     Compute the moment of inertia of a mass distribution of halos and get the eigenvalues
     '''
-    
+
     # TODO ... maybe use some external precomputed function
     #for ih, row in data.iterrows():
 
@@ -59,18 +59,18 @@ def check_df_bins(data=None, bins=None, col='Mvir(4)', binmode='log'):
             nperbin[i] = len(data[np.log10(data[col]) > bins[i]])
 
     # TODO why is this commented?
-    ''' 
-        
+    '''
+
         else:
             nperbin[i] = len(data[(data[col] > bins[i]) & (data[col] < bins[i+1])])
     '''
 
     for i in range(0, nbins-1):
         binvals[i] = 0.5 * (bins[i] + bins[i+1])
-    
+
     #data[col_bin] = pd.cut(np.log10(data[col]), bins=bins)
     #nperbin = data.groupby(col_bin).count().values
-    
+
     return (binvals, nperbin)
 
 
@@ -115,19 +115,12 @@ def density(data=None, size=None, col='Mvir(4)', shape='cube'):
     return dens
 
 
-def distance(x, center):
+def distance(x, c):
     '''
     Compute the Euclidean distance between two points in space
     '''
 
-    dist = 0;
-
-    for i in range(0, len(x)):
-        dist += (x[i] - center[i])**2.0
-
-    dist = np.sqrt(dist)
-
-    return dist
+    return np.sqrt(np.sum((x-c)**2.0))
 
 
 def shift(center, r):
@@ -153,7 +146,7 @@ def module(vec):
     elem = 0.0
 
     for v in vec:
-	elem += pow(v, 2)
+        elem += pow(v, 2)
 
     return np.sqrt(elem)
 
@@ -164,7 +157,7 @@ def find_nearest_node_index(x=None, grid=None, box=None):
     '''
 
     cell = box / grid
-    
+
     ix = np.floor(x[0] / cell)
     iy = np.floor(x[1] / cell)
     iz = np.floor(x[2] / cell)
@@ -172,21 +165,21 @@ def find_nearest_node_index(x=None, grid=None, box=None):
     index = int(ix + grid * iy + grid * grid * iz)
 
     return index
-    
+
 
 def angle(v1, v2):
     '''
     Returns the angle between two vectors
     '''
 
-    mv1 = [0.0] * 3	
+    mv1 = [0.0] * 3
     mv2 = [0.0] * 3
     mod1 = module(v1)
     mod2 = module(v2)
 
     for i in range(0, 3):
-	mv1[i] = v1[i] / mod1
-	mv2[i] = v2[i] / mod2
+        mv1[i] = v1[i] / mod1
+        mv2[i] = v2[i] / mod2
 
     v12 = dot_prod(mv1, mv2)
 
@@ -199,15 +192,15 @@ def center_of_mass(m,x):
     '''
 
     n = len(m)
-    com = [0.0] * 3 
-	
-    for j in range(0, 3):
-	mtot = 0.0
+    com = [0.0] * 3
 
-	for i in range(0, n):
-	    mtot += m[i] 
-	    com[j] += x[i][j] * m[i]
-		
+    for j in range(0, 3):
+        mtot = 0.0
+
+        for i in range(0, n):
+            mtot += m[i]
+            com[j] += x[i][j] * m[i]
+
     com[j] /= mtot
 
     return com
@@ -218,11 +211,11 @@ def vel_radial(x1, x2, v1, v2):
     Radial velocity component of a two-object system
     '''
 
-    x12 = vec_subt(x2, x1)	
+    x12 = vec_subt(x2, x1)
     n12 = np.sqrt(dot_prod(x12, x12))
-    r12 = dot_prod(vec_subt(v2, v1), x12) 
+    r12 = dot_prod(vec_subt(v2, v1), x12)
     nr12 = r12 / n12
-    
+
     return nr12
 
 
@@ -236,7 +229,7 @@ def mass_function(masses):
     x_m = sorted(masses)
 
     for im in range(0, n_m):
-	y_n[im] = n_m - im
+        y_n[im] = n_m - im
 
     return x_m, y_n
 
@@ -289,14 +282,14 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
 
     # Sanity check on the units
     half_n = int(n_part * 0.5)
-    sum_coord = part_df[col0].iloc[half_n] + part_df[col1].iloc[half_n] + part_df[col2].iloc[half_n] 
+    sum_coord = part_df[col0].iloc[half_n] + part_df[col1].iloc[half_n] + part_df[col2].iloc[half_n]
 
     # Make sure the units are consistent
     if sum_coord < kpcThresh:
         side = side * kpc2Mpc
-        center = center * ([kpc2Mpc] *3) 
+        center = center * ([kpc2Mpc] *3)
         thick = thick * kpc2Mpc
-        
+
         #print(part_df[part_df['Type'] == 4.0].head())
         #print(sum_coord, center, thick)
 
@@ -335,7 +328,7 @@ def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
     # TODO this needs to be completed
     x_col = ['x', 'y', 'z']
     new_col = 'Distance'
-    
+
     # Take the simple average of all points within a smoothing_length distance
     if smooth_type == 'avg':
         '''
@@ -356,7 +349,7 @@ def check_units(data=None, cols=None):
 
     vals = data[cols].iloc[n_pts]
 
-    # If this is true, then the units are 
+    # If this is true, then the units are
     if np.sum(vals) < 1.e+4:
         factor = 1.0e+3
     else:
@@ -400,10 +393,10 @@ def rs_header():
     RockStar file header
     '''
 
-    rs_header = ['#ID', 'DescID', 'Mvir', 'Vmax', 'Vrms', 'Rvir', 'Rs', 'Np', 
-            'X', 'Y', 'Z', 'VX', 'VY', 'VZ', 'JX', 'JY', 'JZ', 'Spin', 'rs_klypin', 
-            'Mvir_all', 'M200b', 'M200c', 'M500c', 'M2500c', 'Xoff', 'Voff', 'spin_bullock', 
-            'b_to_a', 'c_to_a', 'A[x]', 'A[y]', 'A[z]', 'b_to_a(500c)', 'c_to_a(500c)', 
+    rs_header = ['#ID', 'DescID', 'Mvir', 'Vmax', 'Vrms', 'Rvir', 'Rs', 'Np',
+            'X', 'Y', 'Z', 'VX', 'VY', 'VZ', 'JX', 'JY', 'JZ', 'Spin', 'rs_klypin',
+            'Mvir_all', 'M200b', 'M200c', 'M500c', 'M2500c', 'Xoff', 'Voff', 'spin_bullock',
+            'b_to_a', 'c_to_a', 'A[x]', 'A[y]', 'A[z]', 'b_to_a(500c)', 'c_to_a(500c)',
             'A[x](500c)', 'A[y](500c)', 'A[z](500c)', 'T/|U|', 'M_pe_Behroozi', 'M_pe_Diemer', 'Halfmass_Radius']
 
     return rs_header
@@ -453,7 +446,7 @@ def periodic_boundaries(data=None, slab_size=10.0, box=100.0, x_cols=['Xc(6)', '
     '''
     Take into account the halos at the boundaries adding them as a sort of buffer to the existing box
     '''
-    
+
     df_all_tmp = []
     slab_other = box - slab_size
     half_box = 0.5 * box
@@ -474,7 +467,7 @@ def periodic_boundaries(data=None, slab_size=10.0, box=100.0, x_cols=['Xc(6)', '
             x = float(x + box)
         elif x > slab_other:
             x = float(x - box)
-        
+
         return x
 
     # Now correct for the new positions that mirror the periodic boundaries
@@ -493,10 +486,3 @@ def periodic_boundaries(data=None, slab_size=10.0, box=100.0, x_cols=['Xc(6)', '
 if __name__ == '__main__':
     ''' Use this for testing local functions '''
     pass
-
-
-
-
-
-
-

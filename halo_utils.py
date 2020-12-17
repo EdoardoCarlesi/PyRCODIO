@@ -237,20 +237,12 @@ class HaloHistory:
 
         return tah
 
-'''
+
+class LocalGroupModel:
+    '''
     A Local Group model is a way of selecting LG like pairs based on a series of criteria.
     They are all listed here with some generic numerical values
-'''
-class LocalGroupModel:
-    d_iso = 2000.
-    r_max = 1250.
-    r_min = 250.
-    m_max = 5.e+12
-    m_min = 5.e+11
-    mtot_max = 8.e+12
-    mratio_max = 4.
-    vrad_max = -1.0
-    center = [50000.0] * 3
+    '''
 
     def __init__(self, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
         self.d_iso = d_iso
@@ -270,10 +262,11 @@ class LocalGroupModel:
         return lg_mod_info
 
 
-'''
-    A local group object is a pair of halos, we use this class to be able to quickly compute some of their properties.
-'''
 class LocalGroup:
+    '''
+    A local group object is a pair of halos, we use this class to be able to quickly compute some of their properties.
+    '''
+
     # Initialize to some numerical value
     vrad = -100.
     vtan = 0.
@@ -514,17 +507,15 @@ def halo_ids_around_center(halos, center, radius):
 
     return ids
 
-'''
+
+def find_halos(data=None, center=None, radius=None, search='Sphere'):
+    '''
     Given a center, find all the halo within a given radius
     Input: catalog is a DataFrame
-'''
-def find_halos(catalog, center, radius, search='Sphere'):
+    '''
 
     new_key = 'Distance'
     cols = ['Xc(6)', 'Yc(7)', 'Zc(8)']
-
-    def dist(x, c):
-        return t.distance(x, c)
 
     # Check units
     mpc2kpc = 1.0e+3
@@ -557,10 +548,10 @@ def find_halos(catalog, center, radius, search='Sphere'):
         return new_catalog
 
 
-'''
-    Refine the selection of LGs from a dataframe containing a large set of candidates
-'''
 def refine_lg_selection(lg_df=None, lg_model=None):
+    '''
+    Refine the selection of LGs from a dataframe containing a large set of candidates
+    '''
 
     m_min = lg_model.m_min
     m_max = lg_model.m_max
@@ -582,10 +573,10 @@ def refine_lg_selection(lg_df=None, lg_model=None):
     return lg_select_df
 
 
-'''
-    Given a box and a model, return a list of possible local groups
-'''
 def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verbose=True, mass_col='Mvir(4)'):
+    '''
+    Given a box and a model, return a list of possible local groups
+    '''
     
     m_min = lgmod.m_min
     m_max = lgmod.m_max
