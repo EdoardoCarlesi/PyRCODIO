@@ -18,10 +18,12 @@ import pandas as pd
 import tools as t
 import os
 
-'''
-    Extract the eigenvalues at the box center in constrained simulations
-'''
+
 def extract_vweb_cs():
+    '''
+    Extract the eigenvalues at the box center in constrained simulations
+    '''
+
     # configure subpaths
     code_run = cfg.gen_runs(0, 1)
     sub_run = cfg.gen_runs(0, 30)
@@ -46,7 +48,6 @@ def extract_vweb_cs():
 
     # now loop on all the simulations and gather data
     for code in code_run:
->>>>>>> e2590f7edd6a6e5cf51279cdabbf7803b7e91069
 
         for sub in sub_run:
             this_vweb = base_path + base_vweb + code + '_' + sub + format_vweb
@@ -61,19 +62,22 @@ def extract_vweb_cs():
             else: 
                 print(this_vweb, ' not found')
 
-'''
-    Extract the eigenvalues/vectors at LG positions in CS simulations
-'''
+
 def extract_vweb_lg_cs():
+    '''
+    Extract the eigenvalues/vectors at LG positions in CS simulations
+    '''
+
+    # TODO
     out_path = ''
     sub_runs = cfg.gen_runs(0, 100)
-    # TODO
 
     
-'''
-    Extract the Vweb at given positions in random full box simulations
-'''
 def extract_vweb_fb(grid_size=64):
+    '''
+    Extract the Vweb at given positions in random full box simulations
+    '''
+
     # configure subpaths
     sub_run = cfg.gen_runs(4, 5)
 
@@ -122,10 +126,11 @@ def extract_vweb_fb(grid_size=64):
         print('Saving file to csv: ', out_file_csv)
         lg_ev_df.to_csv(out_file_csv)
 
-'''
-    Simple eigenvalue distribution plot
-'''
+
 def plot_vweb_fb(grid=32):
+    '''
+    Simple eigenvalue distribution plot
+    '''
     
     l1 = 'l1_'
     l2 = 'l2_'
@@ -146,26 +151,24 @@ def plot_vweb_fb(grid=32):
     plt.clf()
     plt.clf()
     plt.close()
+    #plt.show()
 
-#    plt.show()
 
+if __name__ == '__main__':
+    ''' Wrapper to execute the functions in correct order '''
 
-    ############################################################
-    #      Main program: Choose what kind of web to extract    #
-    ############################################################
+    #print('Extracting VWeb from CS.\n'); extract_vweb_cs()
+    #print('Extracting VWeb at LG positions in CS.\n'); extract_vweb_lg_cs()
 
-#print('Extracting VWeb from CS.\n'); extract_vweb_cs()
-#print('Extracting VWeb at LG positions in CS.\n'); extract_vweb_lg_cs()
+    #grids = [11, 17, 20, 25, 50, 100, 200]
+    #grids = [11, 17, 20, 25, 32, 50, 64, 100, 128, 200]
+    grids = [256]
 
-#grids = [11, 17, 20, 25, 50, 100, 200]
-#grids = [11, 17, 20, 25, 32, 50, 64, 100, 128, 200]
-grids = [256]
+    print('Extracting VWeb at LG positions from FullBox.\n'); 
+    #print('Plotting VWeb at LG positions from FullBox.\n'); 
 
-print('Extracting VWeb at LG positions from FullBox.\n'); 
-#print('Plotting VWeb at LG positions from FullBox.\n'); 
-
-for grid in grids:
-#    extract_vweb_fb(grid_size=grid)
-    plot_vweb_fb(grid=grid)
+    for grid in grids:
+    #    extract_vweb_fb(grid_size=grid)
+        plot_vweb_fb(grid=grid)
 
 

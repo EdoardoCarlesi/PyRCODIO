@@ -1,6 +1,5 @@
 '''
-    Python Routines for COsmology and Data I/O
-    PyRCODIO Pandas Version
+    Python Routines for COsmology and Data I/O (PyRCODIO) v0.2
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
@@ -17,12 +16,13 @@ import math
 from matplotlib import rc
 
 
-'''
-    This function plots the simple mass density starting from a particle distribution.
-    The plot is a 2D projection.
-'''
 def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_plot=False, grid_size=100, margin=0.5, data_augment=False, 
             hex_plot = True, fig_size=10, velocity=False, vel=None, colorscale=None):
+    '''
+    This function plots the simple mass density starting from a particle distribution.
+    The plot is a 2D projection.
+    '''
+
     print('Plotting density slices...')
 
     if (velocity == False) and (vel != None):
@@ -159,11 +159,10 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     plt.close()
 
 
-
-'''
-    Plot the MAH of a single halo
-'''
 def plot_mass_accretion(time, mah, f_out, size=10, scale='lin'):
+    '''
+    Plot the MAH of a single halo
+    '''
 
     # Plot properties
     lnw = 1.0
@@ -192,10 +191,10 @@ def plot_mass_accretion(time, mah, f_out, size=10, scale='lin'):
     plt.close()
 
 
-'''
-    Plot the MAH for an ensamble of halos
-'''
 def plot_mass_accretions(time, mahs, f_out, percentiles=[25, 50, 75], size=10, scale='lin'):
+    '''
+    Plot the MAH for an ensamble of halos
+    '''
 
     # Plot properties
     line_width = 1.0
@@ -255,10 +254,10 @@ def plot_mass_accretions(time, mahs, f_out, percentiles=[25, 50, 75], size=10, s
     plt.cla()
 
 
-'''
-    Plot a given set of halo mass functions, with variance and Poissonian error bars
-'''
 def plot_massfunctions(x_m, y_m, n_mf, f_out, n_bins=10, percentiles=[25, 50, 75], Poisson=True, size=10):
+    '''
+    Plot a given set of halo mass functions, with variance and Poissonian error bars
+    '''
 
     # Initialize some plot properties
     line_width = 1.0

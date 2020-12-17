@@ -1,6 +1,5 @@
 '''
-    Python Routines for COsmology and Data I/O (PyRCODIO)
-    Pandas Upgrade
+    Python Routines for COsmology and Data I/O (PyRCODIO) v0.2
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
 
@@ -12,13 +11,14 @@ import pandas as pd
 import numpy as np
 import random
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
-'''
-    Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution
-'''
+
 def spatial_pca(data=None, cols=None):
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.decomposition import PCA
+    '''
+    Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution
+    '''
 
     scaler = StandardScaler()
     x = data[cols].values
@@ -32,20 +32,23 @@ def spatial_pca(data=None, cols=None):
 
     return axx
 
-'''
-    Compute the moment of inertia of a mass distribution of halos and get the eigenvalues
-'''
+
 def inertia_tensor(data=None, cols=None, weighted=False):
+    '''
+    Compute the moment of inertia of a mass distribution of halos and get the eigenvalues
+    '''
     
-    for ih, row in data.iterrows():
+    # TODO ... maybe use some external precomputed function
+    #for ih, row in data.iterrows():
+
+    pass
 
 
-
-
-'''
-    Count the number of entries of a data structure given an array of bins
-'''
 def check_df_bins(data=None, bins=None, col='Mvir(4)', binmode='log'):
+    '''
+    Count the number of entries of a data structure given an array of bins
+    '''
+
     nbins = len(bins)
     nperbin = np.zeros((nbins-1))
     binvals = np.zeros((nbins-1))
@@ -55,7 +58,9 @@ def check_df_bins(data=None, bins=None, col='Mvir(4)', binmode='log'):
         if binmode == 'log':
             nperbin[i] = len(data[np.log10(data[col]) > bins[i]])
 
-    '''
+    # TODO why is this commented?
+    ''' 
+        
         else:
             nperbin[i] = len(data[(data[col] > bins[i]) & (data[col] < bins[i+1])])
     '''
@@ -68,11 +73,12 @@ def check_df_bins(data=None, bins=None, col='Mvir(4)', binmode='log'):
     
     return (binvals, nperbin)
 
-'''
-    Simple tool to generate bin intervals
-'''
+
 def gen_bins(nbins=None, binmax=None, binmin=None, binmode='log'):
-    
+    '''
+    Simple tool to generate bin intervals
+    '''
+
     if binmode == 'log':
         bmax = np.log10(binmax)
         bmin = np.log10(binmin)
@@ -90,10 +96,11 @@ def gen_bins(nbins=None, binmax=None, binmin=None, binmode='log'):
 
     return bins
 
-'''
-    Given a halo df and a volume determine the matter density
-'''
+
 def density(data=None, size=None, col='Mvir(4)', shape='cube'):
+    '''
+    Given a halo df and a volume determine the matter density
+    '''
 
     mtot = np.sum(data[col])
 
@@ -104,13 +111,15 @@ def density(data=None, size=None, col='Mvir(4)', shape='cube'):
         vol = 4.0 / 3.0 * (np.pi) * (size ** 3.0)
 
     dens = mtot / vol
+
     return dens
 
 
-'''
-    Compute the Euclidean distance between two points in space
-'''
 def distance(x, center):
+    '''
+    Compute the Euclidean distance between two points in space
+    '''
+
     dist = 0;
 
     for i in range(0, len(x)):
@@ -120,10 +129,12 @@ def distance(x, center):
 
     return dist
 
-'''
-    Given a set of coordinates, randomly shift them by a maximum of 'r' amount
-'''
+
 def shift(center, r):
+    '''
+    Given a set of coordinates, randomly shift them by a maximum of 'r' amount
+    '''
+
     new_c = []
 
     for c in center:
@@ -134,27 +145,24 @@ def shift(center, r):
     return np.array(new_c)
 
 
-'''
-    Below is a series of simple functions copied from the old utils.py
-'''
-
-
-def rad2deg():
-	coeff = 180.0 / np.pi
-	return coeff
-
 def module(vec):
-	n_v = len(vec)	
-	elem = 0.0
+    '''
+    Very basic operation, there is for sure some quicker way of implementing this but whatever
+    '''
 
-	for i in range(0, n_v):
-		elem += pow(vec[i], 2)
+    elem = 0.0
 
-	return np.sqrt(elem)
+    for v in vec:
+	elem += pow(v, 2)
+
+    return np.sqrt(elem)
 
 
-def find_nearest_node_index(x, grid=None, box=None):
-    
+def find_nearest_node_index(x=None, grid=None, box=None):
+    '''
+    Given a point x in space, find the nearest grid point once a grid has been placed on the box
+    '''
+
     cell = box / grid
     
     ix = np.floor(x[0] / cell)
@@ -166,111 +174,78 @@ def find_nearest_node_index(x, grid=None, box=None):
     return index
     
 
-
 def angle(v1, v2):
-	mv1 = [0.0] * 3	
-	mv2 = [0.0] * 3
-	mod1 = module(v1)
-	mod2 = module(v2)
+    '''
+    Returns the angle between two vectors
+    '''
 
-	for i in range(0, 3):
-		mv1[i] = v1[i] / mod1
-		mv2[i] = v2[i] / mod2
+    mv1 = [0.0] * 3	
+    mv2 = [0.0] * 3
+    mod1 = module(v1)
+    mod2 = module(v2)
 
-	v12 = dot_prod(mv1, mv2)
-	return v12
+    for i in range(0, 3):
+	mv1[i] = v1[i] / mod1
+	mv2[i] = v2[i] / mod2
+
+    v12 = dot_prod(mv1, mv2)
+
+    return v12
+
 
 def center_of_mass(m,x):
-	n = len(m)
-	com = [0.0] * 3 
+    '''
+    Yet another simple function
+    '''
+
+    n = len(m)
+    com = [0.0] * 3 
 	
-	for j in range(0, 3):
-		mtot = 0.0
-
-		for i in range(0, n):
-			mtot += m[i] 
-			com[j] += x[i][j] * m[i]
-		
-		com[j] /= mtot
-
-	return com
-	
-def vec_subt(x1, x2):
-	vs = [x1[0] - x2[0], x1[1] - x2[1], x1[2] - x2[2]]
-	return vs
-
-def dot_prod(x1, x2):
-	dp = x1[0]*x2[0] + x1[1]*x2[1] + x1[2]*x2[2] 
-	return dp
-
-def vec_divide(x, fac):
-	n = len(x)
-	nx = [0] * n
+    for j in range(0, 3):
+	mtot = 0.0
 
 	for i in range(0, n):
-		nx[i] = x[i] / fac
-
-	return nx
-	
-def center_of_mass(m,x):
-	n = len(m)
-	com = [0.0] * 3 
-	
-	for j in range(0, 3):
-		mtot = 0.0
-
-		for i in range(0, n):
-			mtot += m[i] 
-			com[j] += x[i][j] * m[i]
+	    mtot += m[i] 
+	    com[j] += x[i][j] * m[i]
 		
-		com[j] /= mtot
+    com[j] /= mtot
 
-	return com
+    return com
 
-def vec_module(v):
-	vmod = dot_prod(v, v)
-	return np.sqrt(vmod)
-
-def vec_distance(x, y):
-	vsub = vec_subt(x, y)
-	vdis = vec_module(vsub)
-	return vdis
-
-def vec_norm(x):
-	n = len(x)
-	norm = 0.0
-	vn = []
-
-	for ix in range(0, n):
-		norm += x[ix] * x[ix]
-	norm = np.sqrt(norm)	
-
-	for ix in range(0, n):
-		vn.append(x[ix] / norm)
-
-	return vn
 
 def vel_radial(x1, x2, v1, v2):
-	x12 = vec_subt(x2, x1)	
-	n12 = np.sqrt(dot_prod(x12, x12))
-	r12 = dot_prod(vec_subt(v2, v1), x12) 
-	nr12 = r12 / n12
-	return nr12
+    '''
+    Radial velocity component of a two-object system
+    '''
+
+    x12 = vec_subt(x2, x1)	
+    n12 = np.sqrt(dot_prod(x12, x12))
+    r12 = dot_prod(vec_subt(v2, v1), x12) 
+    nr12 = r12 / n12
+    
+    return nr12
+
 
 def mass_function(masses):
-	n_m = len(masses)
-	y_n = [0 for im in range(0, n_m)]
-	x_m = sorted(masses)
+    '''
+    Given a vector of masses, it returns a tuple of mass vs cumulative number of objects
+    '''
 
-	for im in range(0, n_m):
-		y_n[im] = n_m - im
+    n_m = len(masses)
+    y_n = [0 for im in range(0, n_m)]
+    x_m = sorted(masses)
 
-	return (x_m, y_n)
+    for im in range(0, n_m):
+	y_n[im] = n_m - im
 
-'''
-    Find the center of mass of a particle distribution
-'''
+    return x_m, y_n
+
+
 def particles_com(part_df, cols=['X', 'Y', 'Z'], mass_types=1):
+    '''
+    Compute the center of mass of a particle distribution
+    '''
+
     com = [0.0] * 3
 
     if mass_types > 1:
@@ -284,14 +259,14 @@ def particles_com(part_df, cols=['X', 'Y', 'Z'], mass_types=1):
         if com[i] < 1.e+4:
             com[i] = com[i] * 1.e+3
 
-
     return np.array(com)
 
-'''
+
+def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, reduction_factor=1.0, z_axis=2, units='kpc', cols=['X', 'Y', 'Z']):
+    '''
     Find the particles belonging to a slab around a given point in space.
     Slab size, thickness and so on need to be specified.
-'''
-def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, reduction_factor=1.0, z_axis=2, units='kpc', cols=['X', 'Y', 'Z']):
+    '''
 
     # Set some parameters
     kpcThresh = 1.e+4
@@ -352,13 +327,14 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
     return part_select
 
 
-'''
-    vweb is a DataFrame containing all the web information
-'''
 def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
+    '''
+    vweb is a DataFrame containing all the web information
+    '''
+
+    # TODO this needs to be completed
     x_col = ['x', 'y', 'z']
     new_col = 'Distance'
-
     
     # Take the simple average of all points within a smoothing_length distance
     if smooth_type == 'avg':
@@ -366,13 +342,16 @@ def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
         vweb[x_col].apply(lambda x: distance(x_point))
         smooth_length
         '''
+        pass
 
     return smooth
 
-'''
-    Check if the units used are consistent
-'''
+
 def check_units(data=None, cols=None):
+    '''
+    Check if the units used are consistent
+    '''
+
     n_pts = int(len(data) * 0.5)
 
     vals = data[cols].iloc[n_pts]
@@ -390,6 +369,10 @@ def check_units(data=None, cols=None):
 
 
 def ahf_header():
+    '''
+    Just in case you were wondering how the header of an AHF file looks like...
+    '''
+
     ahf_header = ['numSubStruct(3)', 'Mvir(4)', 'npart(5)', 'Xc(6)', 'Yc(7)', 'Zc(8)',
        'VXc(9)', 'VYc(10)', 'VZc(11)', 'Rvir(12)', 'Rmax(13)', 'r2(14)',
        'mbp_offset(15)', 'com_offset(16)', 'Vmax(17)', 'v_esc(18)', 'sigV(19)',
@@ -413,6 +396,9 @@ def ahf_header():
 
 
 def rs_header():
+    '''
+    RockStar file header
+    '''
 
     rs_header = ['#ID', 'DescID', 'Mvir', 'Vmax', 'Vrms', 'Rvir', 'Rs', 'Np', 
             'X', 'Y', 'Z', 'VX', 'VY', 'VZ', 'JX', 'JY', 'JZ', 'Spin', 'rs_klypin', 
@@ -422,10 +408,11 @@ def rs_header():
 
     return rs_header
 
-'''
-    Convert header from ahf to rockstar
-'''
+
 def header_rs2ahf(rs_head):
+    '''
+    Convert header from ahf to rockstar
+    '''
 
     ahf_head = ahf_header()
     #rs_head = rs_header()
@@ -461,10 +448,11 @@ def header_rs2ahf(rs_head):
 
     return new_header
 
-'''
-    Copy the halos at the boundaries 
-'''
+
 def periodic_boundaries(data=None, slab_size=10.0, box=100.0, x_cols=['Xc(6)', 'Yc(7)', 'Zc(8)']):
+    '''
+    Take into account the halos at the boundaries adding them as a sort of buffer to the existing box
+    '''
     
     df_all_tmp = []
     slab_other = box - slab_size
@@ -499,8 +487,12 @@ def periodic_boundaries(data=None, slab_size=10.0, box=100.0, x_cols=['Xc(6)', '
     # Add them all to the old dataframe
     df_new = pd.concat([data, df_tmp_new])
 
-
     return df_new
+
+
+if __name__ == '__main__':
+    ''' Use this for testing local functions '''
+    pass
 
 
 

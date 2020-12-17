@@ -1,7 +1,6 @@
 '''
-    Python Routines for Cosmology and Data I/O (PyRCODIO) 
-    Pandas Version
-    Edoardo Carlesi 2020
+    Python Routines for Cosmology and Data I/O (PyRCODIO) v0.2
+    Edoardo Carlesi (2020)
     ecarlesi83@gmail.com
     
     read_files.py: read different file formats and types 
@@ -16,12 +15,14 @@ import dask.dataframe as dd
 import sys
 sys.path.append('pygadgetreader/')
 from pygadgetreader import *
+    
 
-"""
+def read_ahf_halo(file_name, file_mpi=True):
+    '''
     This function assumes that the halo catalog format is AHF and is correcting accordingly.
     This can be of course very easily modified
-"""
-def read_ahf_halo(file_name, file_mpi=True):
+    '''
+
     halo = pd.read_csv(file_name, sep='\t')
     halo.shift(1, axis=1)
 
@@ -56,14 +57,15 @@ def read_ahf_halo(file_name, file_mpi=True):
         halos.append(h)
     '''
 
-    # Halos is a list of Halo objects, halo is a DataFrame type
+    # halo is a DataFrame type
     return halo
 
-"""
-    Read RockStar catalogs, possibly using dask
-"""
+
 def read_rs_halo(read_file=None, header_file=None, with_dask=True):
-    '/srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs'
+    '''
+    Read RockStar catalogs, possibly using dask
+    /srv/cosmdata/multidark/BigMD_3840_Planck1/ROCKSTAR/catalogs/
+    '''
     
     if header_file == None:
         rs_head = t.rs_header()
@@ -82,11 +84,12 @@ def read_rs_halo(read_file=None, header_file=None, with_dask=True):
     return rs_df
 
 
-"""
+def read_mah_halo(id_list, mah_path, time):
+    '''
     Read directly the full MAH of every single halo once the AHF file is given.
     We also need to pass the time data about a/z/t that will be read by each object.
-"""
-def read_mah_halo(id_list, mah_path, time):
+    '''
+
     mah_format = '.allinfo'
     all_mah = []
     cols = None
@@ -144,27 +147,28 @@ def read_mah_halo(id_list, mah_path, time):
 
             all_mah.append(halo_mah)
 
-        except:
+        except ValueError:
             'The output file for this halo was not produced (too few particles to be traced, most likely). Do nothing'
+            pass
 
     return all_mah
 
 
-
-"""
-    This is sort of useless but allows to keep some simmetry in the program reading routines
-"""
 def read_csv_tree(file_name):
+    '''
+    This is sort of useless but allows to keep some simmetry in the program reading routines
+    '''
+
     tree = pd.read_csv(file_name)
 
     return tree
 
 
-
-"""
-    Read a redshift file (containing the z info of each snapshot) and a tabulated file containing a(t) each 5 Myrs
-"""
 def read_time(data_path):
+    '''
+    Read a redshift file (containing the z info of each snapshot) and a tabulated file containing a(t) each 5 Myrs
+    ''' 
+
     f_a2myr = data_path + 'output_list_5Myr.txt'
     f_z = data_path + 'redshifts_sims.txt'
 
@@ -199,10 +203,10 @@ def read_time(data_path):
     return time
 
 
-'''
-    Return the full particle content of a snapshot as a dataframe
-'''
 def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
+    '''
+    Return the full particle content of a snapshot as a dataframe
+    '''
 
     # Make this a list if it is not already a list
     if isinstance(part_types, list) == False:
@@ -267,7 +271,6 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
                 'This should be fixed'
                 #print('There are no particles of type: ', part_type, ' in file: ', this_file)
 
-
     try:
         n_part = len(full_data)
         print('Found ', n_part, ' particles in total, for type(s): ', part_types, ' ncols: ', len(cols))
@@ -281,10 +284,10 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
     return part_df
 
 
-'''
-    Assuming vweb files are all of .csv type, we want to extract (and save) a subset of the original file around a specified point in space
-'''
 def extract_vweb(file_name=None, center=None, radius=None):
+    '''
+    Assuming vweb files are all of .csv type, we want to extract (and save) a subset of the original file around a specified point in space
+    '''
 
     vweb = pd.read_csv(file_name)
     new_key = 'radius'
@@ -305,10 +308,10 @@ def extract_vweb(file_name=None, center=None, radius=None):
     return select_vweb
 
 
-'''
-    Read all the LGF / Hestia simulation LG data
-'''
 def read_lg_lgf(TA=False):
+    '''
+    Read all the LGF / Hestia simulation LG data
+    '''
 
     if TA == True:
         data_file = '/home/edoardo/CLUES/PyRCODIO/output/lg_pairs_512_TA.csv'
@@ -319,10 +322,10 @@ def read_lg_lgf(TA=False):
     return data
 
 
-'''
-    Read all the fullbox LG data for each box, without VWeb information
-'''
 def read_lg_fullbox(file_base='/home/edoardo/CLUES/PyRCODIO/output/lg_fullbox', TA=False):
+    '''
+    Read all the fullbox LG data for each box, without VWeb information
+    '''
 
     if TA == True:
         data_ta = file_base + '_TA.csv'
@@ -344,10 +347,11 @@ def read_lg_fullbox(file_base='/home/edoardo/CLUES/PyRCODIO/output/lg_fullbox', 
     
     return data
 
-'''
-    Read all the fullbox LG data for each box, without VWeb information
-'''
+
 def read_lg_rs_fullbox(file_base='/home/edoardo/CLUES/PyRCODIO/output/lg_fullbox_rs', lgf_data=False, lgf_hires_data=False, files=[0, 20], TA=False):
+    '''
+    Read all the fullbox LG data for each box, without VWeb information
+    '''
 
     all_data = []
     for i in range(files[0], files[1]):
@@ -361,15 +365,14 @@ def read_lg_rs_fullbox(file_base='/home/edoardo/CLUES/PyRCODIO/output/lg_fullbox
             'Skip this data'
 
     data = pd.concat(all_data) 
+
     return data
 
 
-
-
-'''
-    Read vweb ONLY at the LG position
-'''
 def read_lg_vweb(grid_size=64, file_base='/home/edoardo/CLUES/PyRCODIO/output/lg_fullbox_vweb_'):
+    '''
+    Read vweb ONLY at the LG position
+    '''
     
     grid = '%03d' % grid_size
     file_base = file_base + grid
@@ -389,10 +392,12 @@ def read_lg_vweb(grid_size=64, file_base='/home/edoardo/CLUES/PyRCODIO/output/lg
 
     return data
 
-'''
-    Read both vweb and lg data, concatenate the sets   
-'''
+
 def read_lg_fullbox_vweb(grids = [64]):
+    '''
+    Read both vweb and lg data, concatenate the sets 
+    grids is a list type
+    '''
 
     # First read the full data for each LG
     data = read_lg_fullbox()
@@ -410,4 +415,9 @@ def read_lg_fullbox_vweb(grids = [64]):
 
     return data
 
+
+if __name__ == '__main__':
+    ''' Locally test some function '''
+    
+    pass
 

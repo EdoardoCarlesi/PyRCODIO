@@ -1,7 +1,6 @@
 '''
-    Python Routines for COsmology and Data I/O (PyRCODIO)
-    Pandas Upgrade
-    Edoardo Carlesi 2020
+    Python Routines for COsmology and Data I/O (PyRCODIO) v0.2
+    Edoardo Carlesi (2020)
     ecarlesi83@gmail.com
 
     particles.py: functions and more to manipulate ensambles of particles
@@ -13,11 +12,13 @@ import numpy as np
 import scipy as sp
 
 
-'''
+def find_particles(parts=None, center=None, radius=None):
+    '''
     Given a point in space return the particles around it.
     Input: parts is a data structure
-'''
-def find_particles(parts, center, radius):
+    Output: particles within radius
+    '''
+
     new_key = 'Distance'
 
     def dist(x, c):
@@ -28,10 +29,10 @@ def find_particles(parts, center, radius):
     return parts[parts[new_key] < radius]
 
 
-'''
-    Given a dataframe of particles, compute the overdensity around a given center, at a given radius
-'''
 def overdensity(part_df=None, R=None, center=None, rho0=None):
+    '''
+    Given a dataframe of particles, compute the overdensity around a given center, at a given radius
+    '''
 
     if center == None:
         center = 'center of mass'
@@ -45,10 +46,10 @@ def overdensity(part_df=None, R=None, center=None, rho0=None):
     return delta
 
 
-'''
-    Data must be a dataframe and axes a list of columns
-'''
 def inertia_tensor(data=None, axes=None):
+    '''
+    Data must be a dataframe and axes a list of columns
+    '''
 
     X = axes[0]
     Y = axes[0]
@@ -61,29 +62,36 @@ def inertia_tensor(data=None, axes=None):
         k_ax = (i_ax + 2) % 3
 
         I[i_ax, i_ax] = np.sum(data[j_ax] ** 2.0 + data[k_ax] **2.0)
- 
 
     return I
 
 
 def match_particle_ids(data=None, ids=None):
-    match = []
-    n_ids = len(ids)
+    '''
+    Given a dataset with particle data (positions and IDS) 
+    Returns the matched particles properties
+    '''
 
-    for i in range(0, n_ids):
-        this_id = float(ids[i])
-        #print(this_id)
-        match.append(data[data['ID'] == this_id]) 
+    match = []
+
+    for this_id in ids:
+        match.append(data[data['ID'] == this_id].values) 
 
     return match
 
 
-def triaxiality():
+# TODO 
+def triaxiality(data=None):
+    '''
+    Work in progress
+    '''
 
     return t
 
 
 def simu_rho0(box=None, npart=None):
+    '''
+    '''
 
     rho0 = np.power(npart/box, 3)
 
