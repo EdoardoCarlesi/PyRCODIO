@@ -511,7 +511,7 @@ def halo_ids_around_center(halos, center, radius):
 def find_halos(data=None, center=None, radius=None, search='Sphere'):
     '''
     Given a center, find all the halo within a given radius
-    Input: catalog is a DataFrame
+    Input: data is a DataFrame
     '''
 
     new_key = 'Distance'
@@ -519,33 +519,33 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
 
     # Check units
     mpc2kpc = 1.0e+3
-    n_col = int(0.5 * len(catalog))
+    n_col = int(0.5 * len(data))
 
-    x_sum = np.sum(catalog[cols].iloc[n_col])
+    x_sum = np.sum(data[cols].iloc[n_col])
     c_sum = np.sum(center)
 
     # If units are Mpc convert to kpc and return the "right" units
     if x_sum < 1.0e+4:
-        catalog[cols] = catalog[cols].apply(lambda x: x * mpc2kpc)
+        data[cols] = data[cols].apply(lambda x: x * mpc2kpc)
 
         # Also the viral radius needs to be ported to the correct units
-        catalog['Rvir(12)'] = catalog['Rvir(12)'].apply(lambda x: x * mpc2kpc)
-        n_sum = np.sum(catalog[cols].iloc[n_col])
+        data['Rvir(12)'] = data['Rvir(12)'].apply(lambda x: x * mpc2kpc)
+        n_sum = np.sum(data[cols].iloc[n_col])
 
     if search == 'Sphere':
-        catalog[new_key] = catalog[cols].T.apply(dist, c=center).T
-        return catalog[catalog[new_key] < radius]    
+        data[new_key] = data[cols].T.apply(dist, c=center).T
+        return data[data[new_key] < radius]    
 
     elif search == 'Box': 
-        condition = (catalog[cols[0]] > (center[0] - radius)) & (catalog[cols[0]] < (center[0] + radius)) &\
-                (catalog[cols[1]] > (center[1] - radius)) & (catalog[cols[1]] < (center[1] + radius)) &\
-                (catalog[cols[2]] > (center[2] - radius)) & (catalog[cols[2]] < (center[2] + radius))
+        condition = (data[cols[0]] > (center[0] - radius)) & (data[cols[0]] < (center[0] + radius)) &\
+                (data[cols[1]] > (center[1] - radius)) & (data[cols[1]] < (center[1] + radius)) &\
+                (data[cols[2]] > (center[2] - radius)) & (data[cols[2]] < (center[2] + radius))
 
         #print(condition)
-        new_catalog = catalog[condition]
-        #print('box:', new_catalog.head())
+        new_data = data[condition]
+        #print('box:', new_data.head())
 
-        return new_catalog
+        return new_data
 
 
 def refine_lg_selection(lg_df=None, lg_model=None):

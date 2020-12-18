@@ -1042,7 +1042,10 @@ def lg_density_lgf():
 
 
 def halo_density_lgf():
-       
+    '''
+    How many haloes do we have per mass range
+    '''
+
     lg_models, lgmd = cfg.lg_models()
     lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
     this_model = lg_models[lgmd['M2']]
@@ -1060,7 +1063,6 @@ def halo_density_lgf():
 
     all_dens = []
     all_mtot = []
-    all_mf = []
 
     for i, row in lgs.iterrows():
         
@@ -1076,18 +1078,21 @@ def halo_density_lgf():
             
             #box_dens = data['Mvir(4)'].sum() / ((1.e+5) ** 3.0)
             
+            mf_r = []
+            dens_r = []
             for r in radii:
                 select = data[data['D'] < r]
                 vol = (r ** 3.0) * 4.0 / 3.0 * np.pi
                 masses = select['Mvir(4)'].values
                 mtot = select['Mvir(4)'].sum()
                 dens = mtot / vol
-                all_mtot.append(mtot)
-                all_mf.append(masses)
+                mf_r.append(masses)
+                dens_r.append(mtot/vol)
 
                 #print(f'{this_run}, R:{r}, d:{dens}, median={box_dens}')
 
     return all_mtot, all_mf
+
 
 def select_lgs(data=None, lg_model=None, lgf=False):
     '''
