@@ -15,12 +15,13 @@ def sincos(theta=None, radians=False):
 
     return sc
 
-def vt_r(v=None, t=None, r=None):
 
+def vt_r(v=None, t=None, r=None):
     '''
-        Velocity [km/s]
-        Time [Gyr]
-        R [kpc]
+    Input values:
+        v = Velocity [km/s]
+        t = Time [Gyr]
+        r = R [kpc]
     '''
 
     v = v * us.s2Myr() / 1.e+3 / us.km2kpc()
@@ -29,12 +30,14 @@ def vt_r(v=None, t=None, r=None):
 
     return vtr
 
+
 def Rmax(r=None, theta=None, radians=False):
 
     if radians == False:
         theta = np.deg2rad(theta)
 
     return 2 * r / (1.0 - np.cos(theta))
+
 
 def mass_estimate(r=710, v=-118, t=13.75, n_pts=5000):
     
@@ -69,8 +72,8 @@ def mass_estimate(r=710, v=-118, t=13.75, n_pts=5000):
 
     return Mtot
 
-# TODO: correct the wrong masses extrapolated with the Timing Argument
 def wrong_ta_correction(data=None):
+    # TODO: correct the wrong masses extrapolated with the Timing Argument
 
     data['M_TA']
 
@@ -80,56 +83,45 @@ def wrong_ta_correction(data=None):
     return data
 
 
-
-'''
-    ======= MAIN PROGRAM
+if __name__ == '__main__':
+    '''
+    MAIN PROGRAM:
     Read files and add timing argument column
-'''
+    '''
 
-import seaborn as sns
-import matplotlib.pyplot as plt
+    import seaborn as sns
+    import matplotlib.pyplot as plt
 
-vrad_max = -1.0
-#lg_df = rf.read_lg_lgf(); file_out = 'output/lg_pairs_512_TA.csv'
-#lg_df = rf.read_lg_fullbox(); file_out = 'output/lg_fullbox_TA.csv'
-#lg_df = rf.read_lg_rs_fullbox([0, 10]); file_out = 'output/lg_fullbox_rs_0010_TA.csv'
+    vrad_max = -1.0
+    #lg_df = rf.read_lg_lgf(); file_out = 'output/lg_pairs_512_TA.csv'
+    #lg_df = rf.read_lg_fullbox(); file_out = 'output/lg_fullbox_TA.csv'
+    #lg_df = rf.read_lg_rs_fullbox([0, 10]); file_out = 'output/lg_fullbox_rs_0010_TA.csv'
 
-#lg_df = dd.from_pandas(lg_df_pd, npartitions=3)
-#lg_df = lg_df[lg_df['Vrad'] < vrad_max]
-#lg_df = pd.read_csv('output/lg_pairs_2048_TA.csv')
+    #lg_df = dd.from_pandas(lg_df_pd, npartitions=3)
+    #lg_df = lg_df[lg_df['Vrad'] < vrad_max]
+    #lg_df = pd.read_csv('output/lg_pairs_2048_TA.csv')
 
-#lg_df['M_TA'] = lg_df.apply(lambda x: mass_estimate(r=x['R'], v=x['Vrad']), axis=1)
-#file_out = 'output/lg_fullbox_rs_TA_0010.csv'
-#lg_df.to_csv(file_out)
+    #lg_df['M_TA'] = lg_df.apply(lambda x: mass_estimate(r=x['R'], v=x['Vrad']), axis=1)
+    #file_out = 'output/lg_fullbox_rs_TA_0010.csv'
+    #lg_df.to_csv(file_out)
 
+    #lg_df = rf.read_lg_lgf(TA=True); out_file='output/ta_vs_true_lgf.png'
+    #lg_df = rf.read_lg_rs_fullbox(TA=True); out_file='output/ta_vs_true_rs.png'
+    lg_df = rf.read_lg_fullbox(TA=True); out_file='output/ta_vs_true_rs.png'
+    lg_df = lg_df[lg_df['Vrad'] < vrad_max]
+    lg_df['Mtot'] = lg_df['M_MW'] + lg_df['M_M31']
+    ta_wrong = lg_df[lg_df['M_TA'] < 0.0]
+    mass_norm = 1.0e+12
 
-#lg_df = rf.read_lg_lgf(TA=True); out_file='output/ta_vs_true_lgf.png'
-#lg_df = rf.read_lg_rs_fullbox(TA=True); out_file='output/ta_vs_true_rs.png'
-lg_df = rf.read_lg_fullbox(TA=True); out_file='output/ta_vs_true_rs.png'
-lg_df = lg_df[lg_df['Vrad'] < vrad_max]
-lg_df['Mtot'] = lg_df['M_MW'] + lg_df['M_M31']
-ta_wrong = lg_df[lg_df['M_TA'] < 0.0]
-mass_norm = 1.0e+12
+    sns.scatterplot(np.log10(lg_df['Mtot']/mass_norm), np.log10(lg_df['M_TA']/mass_norm))
+    sns.kdeplot(np.log10(lg_df['Mtot']/mass_norm), np.log10(lg_df['M_TA']/mass_norm), n_levels=4)
 
-sns.scatterplot(np.log10(lg_df['Mtot']/mass_norm), np.log10(lg_df['M_TA']/mass_norm))
-sns.kdeplot(np.log10(lg_df['Mtot']/mass_norm), np.log10(lg_df['M_TA']/mass_norm), n_levels=4)
+    slopes = np.polyfit(np.log10(lg_df['Mtot']/mass_norm), np.log10(lg_df['M_TA']/mass_norm), 1)
+    print(slopes)
 
-slopes = np.polyfit(np.log10(lg_df['Mtot']/mass_norm), np.log10(lg_df['M_TA']/mass_norm), 1)
+    title = 'Sim vs. TA Mass. Slope: ' + '%.3f' % slopes[0]
+    plt.title(title)
 
-print(slopes)
-
-title = 'Sim vs. TA Mass. Slope: ' + '%.3f' % slopes[0]
-plt.title(title)
-
-plt.savefig(out_file)
-
-#plt.show()
-'''
-'''
-
-
-
-
-
-
+    plt.savefig(out_file)
+    #plt.show()
 

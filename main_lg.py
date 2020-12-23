@@ -17,128 +17,41 @@ import tools as t
 import os
 
 
-# Set some global variables
+# Set some important global variables
 global simu, ahf_base, ahf_file, ahf_file_csv, lgs_base
 global i_ini_tot, i_end_tot, x_col, x_col_ahf, m_col, d_col
 global m_min, v_max, masscut_pca
 
 
-# FIXME TODO 
-def set_variables():
-    '''
-    Maximum mass 
-    '''
+if __name__ == "__main__":
+    ''' Wrapper for LG operations '''
 
-    # Base path for halo catalogs and identified LGs
-    if simu == 'fullbox':
-        #ahf_base = '/media/edoardo/Elements/CLUES/DATA/FullBox/'
-        #ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_'
-        #ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_25mpc_'
-        #lgs_base = 'output/lg_fullbox_'
-        ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
-        ahf_file = 'snapshot_054.z0.000.AHF_halos'
-        ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_'
-        lgs_base = 'output/lg_fb_new_'
-
-        # Loop over these catalogs
-        i_ini = 0
-        i_end = 1
-        r_max = 10000.0
-        box_size = 1.0e+5
-        radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], dtype='float') * 1.e+3 
-
-    elif simu == 'lgf':
-        i_ini = 0
-        i_end = 1
-
-        ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
-        lg_csv_file = 'output/LG_1024/lg_center_'
-        lgs_base = 'output/lg_pairs_1024'
-        box_size = 1.0e+5
-        r_max = 10000.0
-        d_max = 6000.0
-        radii = np.array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], dtype='float') * 1.e+3 
-
-    # Read AHF from original and export to CSV or not
-    r_str = []
-    for r in radii:
-        r_str.append('R_' + str(r))
-
-    df_rm_all = []
-
-    # These data will be used for the 'plots'
-    lgs_base_fb = 'output/lg_fb_new_'
-    i_ini_tot = 0
-    i_end_tot = 5
-
-    # Column coordinates
+    # Define the global variables here
+    simu = 'fullbox'
     x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
     x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
-    m_col = ['Mvir(4)']
-    d_col = 'Dist'
-    m_min = 4.0e+11
-    v_max = -0.0
+    n_fb = lg_density_fb()
+    n_lgf = lg_density_lgf()
+    n_simu_fb = 5
+    n_simu_lgf = 715
+    r = 6.0
+    box = 100.0
 
+    vol_fb = (box ** 3.0) * n_simu_fb
+    vol_lgf = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf
 
-def select_lgs():
+    print(f'FB: {vol_fb}, LGF: {vol_lgf}')
 
-    # Loop over halo catalogs and lg lists
-    for i_cat in range(i_ini, i_end):
-        i_str = '%02d' % i_cat
+    for i in range(0, 6):
+        print(f'{i} {n_fb[i]/vol_fb} {n_lgf[i]/vol_lgf}')
 
-        if simu == 'fullbox':
-            this_ahf = ahf_base + i_str + '/' + ahf_file
-            this_lgs = lgs_base + i_str + '.csv'  
-            this_ahf_csv = 'output/full.' + i_str + '.' + ahf_file_csv
+    halo_density_lgf()
 
-        elif simu == 'lgf':
-            this_lgs = lgs_base + '.csv'
-
-        print('LGS FILE: ', this_lgs)
-        df_lgs_orig = pd.read_csv(this_lgs)
-        n_lgs_pre = len(df_lgs_orig)
-
-        print('N pre: ', n_lgs_pre)
-        df_lgs = df_lgs_orig.drop_duplicates(subset=['M_M31'])
-        df_lgs = df_lgs[df_lgs['M_M31'] > m_min]
-        df_lgs = df_lgs[df_lgs['Vrad'] < v_max]
-        print('N post: ', len(df_lgs))
-    
-        # If this CSV file exists then read it 
-        if os.path.isfile(this_ahf_csv):
-
-            print('AHF CSV FILE: ', this_ahf_csv)
-            df_ahf = pd.read_csv(this_ahf_csv)
-            print(df_ahf[x_col_ahf])
-
-        # If the CSV file does not Read AHF and export it to CSV 
-        else:
-            print('AHF FILE: ', this_ahf)
-            df_ahf = rf.read_ahf_halo(this_ahf)
-            df_ahf = t.periodic_boundaries(data=df_ahf, slab_size=r_max, box=box_size)
-            print('AHF FILE TO CSV: ', this_ahf_csv)
-            df_ahf.to_csv(this_ahf_csv)
-
-        # Initialize a string containing all the radii - this will be the dataframe column with the max halo mass
-        radii_str = []
-        for rad in radii:
-                r_str = 'R_' + str(rad)
-                radii_str.append(r_str)
-
-        m_rad = np.zeros((len(radii), len(df_lgs)))
-
-        # Loop over LGs
-        for i_lg, row in df_lgs.iterrows():
-
-                x_lg = row[x_col].values
-                df_ahf[d_col] = apply_dist(data=df_ahf, center=x_lg, cols=x_col_ahf)
-                lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
-            
-                df_tmp = pd.DataFrame()
-                df_tmp = df_ahf[df_ahf[d_col] < r_max]
-
-                print('Exporting: ', lg_csv)
-                df_tmp.to_csv(lg_csv)
+    '''
+    density_plots()
+    fb_find()
+    lgf_find()
+    '''
 
 
 def analyze_mass_max():
@@ -180,9 +93,7 @@ def analyze_mass_max():
 
 
 def plot_mass_max():
-    '''
-    Plot the results of the analysis
-    '''
+    """ Plot the results of the analysis """
 
     label_fb = 'RAND'
     label_lg = 'CS'
@@ -302,52 +213,8 @@ def plot_mass_max():
     #plt.clf()
 
 
-def set_mass_functions():
-    '''
-    Set some paths and global variables
-    '''
-
-    # Base path for halo catalogs and identified LGs
-    ahf_base = '/home/edoardo/CLUES/DATA/FullBox/'
-    #ahf_file = 'snapshot_054.z0.000.AHF_halos'
-
-    #ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_'
-    ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_'
-    #ahf_file_csv = 'snapshot_054.z0.000.AHF_halos.periodic.csv'; lg_csv_file = 'output/LG_HALOS/halos_simu_periodic_'
-
-    # Loop over these catalogs
-    i_ini = 0
-    i_end = 5
-
-    # Max and min radius to look for stuff
-    r_max = 5000.0
-    box_size = 1.0e+5
-    radii = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], dtype='float') * 1.e+3 
-
-    # Column coordinates
-    x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
-    x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
-    m_col = ['Mvir(4)']
-    d_col = 'Dist'
-    m_min = 4.0e+11
-    v_max = 10.0
-    d_max = 7000.0
-
-    n_bin = 100
-    m_min = 1.59e+9
-    m_max = 0.75e+14
-
-    masscut_pca = 5.0e+10
-
-    mbins = t.gen_bins(nbins=n_bin, binmax=m_max, binmin=m_min) 
-
-    # In each bin we will append the halo masses
-    all_bins = [[] for i in range(0, n_bin-1)]
-
-
-def fb_mass_functions():
-    '''
-    '''
+def fb_mass_functions(lg_model=None):
+    """ Extract the mass functions around LG candidates in FB simulations """
 
     # FIXME
     lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_fb_new_'
@@ -368,8 +235,7 @@ def fb_mass_functions():
 
         print('N pre: ', n_lgs_pre)
         df_lgs = df_lgs_orig.drop_duplicates(subset=['M_M31'])
-        df_lgs = df_lgs[df_lgs['M_M31'] > m_min]
-        df_lgs = df_lgs[df_lgs['Vrad'] < v_max]
+        df_lgs = select_lgs(data=df_lgs, lg_model=lg_model)
         print('N post: ', len(df_lgs))
 
         # Loop over the mass functions already extracted 
@@ -394,13 +260,6 @@ def fb_mass_functions():
                 print('PCA result mass: ', pca)
         
                 all_pca.append(pca)
-
-    f_pca = 'output/pca_fullbox.pkl'
-    pickle.dump(all_pca, open(f_pca, 'wb'))
-
-    print('Output PCA written to: ', f_pca)
-
-    '''
                 x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
 
                 for ib in range(0, n_bin-1):
@@ -409,36 +268,44 @@ def fb_mass_functions():
 
                     if v > 0:
                         all_bins[ib].append(v)
-                        break
+
+    f_pca = 'output/pca_fullbox.pkl'
+    pickle.dump(all_pca, open(f_pca, 'wb'))
+    print('Output PCA written to: ', f_pca)
 
     f_out = 'output/all_mass_functions_fullbox.pkl'
-    print('Saving output to: ', f_out)
     pkl.dump(all_bins, open(f_out, 'wb'))
+    print('Saving output MF to: ', f_out)
 
     f_out = 'output/all_mass_functions_x_bin_fullbox.pkl'
-    pkl.dump(all_bins, open(f_out, 'wb'))
-    '''
+    pkl.dump(x_bin, open(f_out, 'wb'))
+    print('Saving output MF x_bin to: ', f_out)
 
-def lgf_mass_functions():
 
-    lgs_lgf_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_1024/lg_center_'
+def lgf_mass_functions(resolution='1024', lg_model=None, d_max=5000.0, mbins=20):
+    """ Read the individual mass functions and then dump them to a pkl file """
+
+    lgs_lgf_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_' + resolution + '/lg_center_'
 
     # Read the full list of halos
-    df_lgs = pd.read_csv('output/lg_pairs_1024.csv')
-    print('TotLen: ', len(df_lgs))
+    df_lgs = pd.read_csv('output/lg_pairs_' + resolution + '.csv')
+    print('TotLen Original File: ', len(df_lgs))
 
     # Select a halo subsample
-    df_lgs = df_lgs[df_lgs['Vrad'] < v_max]
-    print('TotLen: ', len(df_lgs))
-    box_center = [5.0e+4]*3
+    df_lgs = select_lgs(data=df_lgs, lg_model=lg_model, lgf=True)
+    print('TotLen After selection: ', len(df_lgs))
 
+    box_center = [5.0e+4]*3
+    
     df_lgs[d_col] = df_lgs[x_col].T.apply(lambda x: t.distance(x, box_center))
     df_lgs = df_lgs[df_lgs[d_col] < d_max]
-    print('TotLen: ', len(df_lgs))
+    print(f'TotLen within R={d_max}, n={len(df_lgs)}')
 
     n_lgs = len(df_lgs)
     print('Analyzing fullbox LG candidates mass functions ...')
     
+    # Set some binning-related variables
+    all_bins = [[] for i in range(0, mbins)]
     all_pca = []
 
     # Loop over halo catalogs and lg lists
@@ -455,44 +322,41 @@ def lgf_mass_functions():
             print('Reading ', this_lg)
             df_tmp[d_col] = df_tmp[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
             df_tmp = df_tmp[df_tmp[d_col] < r_max]
-
-            pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
-            print('PCA result: ', pca)
-            
-            df_tmp = df_tmp[df_tmp['Mvir(4)'] > masscut_pca]
-            pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
-            print('PCA result mass: ', pca)
-        
-            all_pca.append(pca)
-
-    f_pca = 'output/pca_lgf.pkl'
-    pickle.dump(all_pca, open(f_pca, 'wb'))
-
-    print('Output PCA written to: ', f_pca)
-
-    '''
-        # FIXME this is commented just for the moment when computing spatial distribution of halos
-
+    
+            # Bin the mass function
             x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
-
+            
             for ib in range(0, n_bin-1):
                 v = y_bin[ib]
 
                 if v > 0:
                     all_bins[ib].append(v)
+        
+            #pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
+            df_tmp = df_tmp[df_tmp['Mvir(4)'] > masscut_pca]
+            pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
+            all_pca.append(pca)
 
-    #print(all_bins[0])
-    #f_out = 'output/all_mass_functions_lgf.pkl'
-    f_out = 'output/all_mass_functions_lgf.' + str(n_lgs) + '.pkl'
-    print('Saving output to: ', f_out)
-    #pkl.dump(all_bins, open(f_out, 'wb'))
-    
+    # Save the PCA values
+    f_pca = 'output/pca_lgf.pkl'
+    pickle.dump(all_pca, open(f_pca, 'wb'))
+    print('Output PCA written to: ', f_pca)
+
+    # Save the full mass function
+    f_out = 'output/all_mass_functions_lgf_' + resolution + '.' + str(n_lgs) + '.pkl'
+    pkl.dump(all_bins, open(f_out, 'wb'))
+    print('Saving LGF MF output to: ', f_out)
+
     # Save the x bin values 
-    f_out = 'output/all_mass_functions_x_bin_lgf.pkl'
+    f_out = 'output/all_mass_functions_x_bin_lgf_' + resolution + ' .pkl'
     pkl.dump(x_bin, open(f_out, 'wb'))
-    '''
- 
+    print('Saving LGF MF x_bin output to: ', f_out)
+
+    return x_bin, all_bins
+
+
 def plot_mass_functions():
+    """ Take the binned mass functions and do some plots """ 
 
     y_fb = 'output/all_mass_functions_fullbox.pkl'
     x_lg = 'output/all_mass_functions_x_bin_lgf.pkl'
@@ -550,6 +414,10 @@ def plots_pca():
     '''
     Once the PCA has been applied to the halos' coordinates to look for flatness of the distribution, do a plot
     '''
+    # TODO this does the full pca thing now
+    '''
+            MOVE THE PCA STUFF SOMEWHERE ELSE
+        '''
 
     f_pca_lgf = 'output/pca_lgf.pkl'
     f_pca_fullbox = 'output/pca_fullbox.pkl'
@@ -960,6 +828,8 @@ def lgf_find():
 
 
 def lg_density_fb():
+    """ Compute the density of LGs in a series of FB random simulations """
+
     i_simu_start = 0
     i_simu_end = 5
     
@@ -988,42 +858,37 @@ def lg_density_fb():
     return tot_lgs
 
 
-def halo_density_fb():
+def halo_density_fb(lg_models=None)
+    """ Density of halos within a given mass range in FB random simulations """
+
     i_simu_start = 0
     i_simu_end = 5
-    
-    lg_models, lgmd = cfg.lg_models()
-    lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
     tot_lgs = np.zeros(6, dtype=int)
 
     for i_simu in range(i_simu_start, i_simu_end):
         
         lg_file_csv = 'output/lg_fb_new_0' + str(i_simu) + '.csv'  
         fb_file_csv = '/home/edoardo/CLUES/DATA/FullBox/0' + str(i_simu) + '.csv'  
-        data = pd.read_csv(lg_file_csv)
-        data = data.drop_duplicates()
+        data = pd.read_csv(fb_file_csv)
 
-        for i, model in enumerate(lg_model_names):
-            this_model = lg_models[lgmd[model]]
-
-            lgs = select_lgs(data=data, lg_model=this_model)
-            n_lgs = len(lgs)
-
-            tot_lgs[i] += n_lgs
+        for i, lg_model in enumerate(lg_models):
+            select = data[(data['Mvir(4)'] > lg_model.m_min) & (data['Mvir(4)'] < lg_model.m_max)]
+            tot_lgs[i] += len(select)
 
     for i in range(0, 6):
-        print(f'{lg_model_names[i]} {tot_lgs[i]}')
+        print(f'M{i} {tot_lgs[i]}')
 
     return tot_lgs
 
 
-def lg_density_lgf():
-    
+def lg_density_lgf(resolution='1024'):
+    """ Density of LGs in LGF simulations """
+
     lg_models, lgmd = cfg.lg_models()
     lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
     tot_lgs = np.zeros(6, dtype=int) 
     
-    lg_file_csv = 'output/lg_pairs_512.csv'  
+    lg_file_csv = 'output/lg_pairs_' + resolution + '.csv'  
     data = pd.read_csv(lg_file_csv)
     data = data.drop_duplicates()
 
@@ -1036,27 +901,28 @@ def lg_density_lgf():
         tot_lgs[i] += n_lgs
 
     for i in range(0, 6):
-        print(f'{lg_model_names[i]} {tot_lgs[i]}')
+        print(f'res={resolution}, M{i}: {tot_lgs[i]}')
 
     return tot_lgs
 
 
-def halo_density_lgf():
-    '''
-    How many haloes do we have per mass range
-    '''
+def halo_density_lgf(resolution='512'): 
+    """ Density of haloes within a given mass range in LGF runs """
+
+    # FIXME halo density is A PRIORI so that we DO NOT have to read LG pairs.
+    # We only look for haloes within 5/6 Mpcs of the box center!
+
+    print(f'Running halo_density_lgf() for resolution={resolution}')
 
     lg_models, lgmd = cfg.lg_models()
     lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
-    this_model = lg_models[lgmd['M2']]
+    vol = (r ** 3.0) * 4.0 / 3.0 * np.pi
 
-    ahf_halo_path = '/media/edoardo/Elements/CLUES/DATA/CSV/1024/ahf_'
-    lg_file_csv = 'output/lg_pairs_1024.csv'  
+    #loc_center_path = '/media/edoardo/Elements/CLUES/DATA/CSV/' + resolution + '/ahf_'
+    lg_file_csv = 'output/lg_pairs_' +  resolution + '.csv'  
     data = pd.read_csv(lg_file_csv)
     data = data.drop_duplicates()
 
-    lgs = select_lgs(data=data, lg_model=this_model, lgf=True)
-    
     r_min = 2
     r_max = 10
     radii = [float(i * 1.e+3) for i in range(r_min, r_max+1)]
@@ -1064,37 +930,37 @@ def halo_density_lgf():
     all_dens = []
     all_mtot = []
 
-    for i, row in lgs.iterrows():
-        
-        run = '%02d' % row['simu_code']
-        sub = '%02d' % row['sub_code']
-        this_c = row[x_col].T.values
-        this_run = run + '_' + sub
-        this_file = ahf_halo_path + this_run + '.csv'
+    for lg_model in lg_models:
+        lgs = select_lgs(data=data, lg_model=this_model, lgf=True)
 
-        if os.path.isfile(this_file):
-            data = pd.read_csv(this_file)
-            data['D'] = data[x_col_ahf].T.apply(lambda x: t.distance(x, this_c))
-            
-            #box_dens = data['Mvir(4)'].sum() / ((1.e+5) ** 3.0)
-            
-            mf_r = []
-            dens_r = []
-            for r in radii:
-                select = data[data['D'] < r]
-                vol = (r ** 3.0) * 4.0 / 3.0 * np.pi
+        for i, row in lgs[0:10].iterrows():
+            run = '%02d' % row['simu_code']
+            sub = '%02d' % row['sub_code']
+            this_run = run + '_' + sub
+            this_file = loc_center_path + this_run + '.csv'
+
+            if os.path.isfile(this_file):
+                data = pd.read_csv(this_file)
+                data['D'] = data[x_col_ahf].T.apply(lambda x: t.distance(x, this_c))
+ 
+                for r in radii:
+                    select = data[data['D'] < r]
+
+                # This is needed to compute the density 
                 masses = select['Mvir(4)'].values
                 mtot = select['Mvir(4)'].sum()
                 dens = mtot / vol
-                mf_r.append(masses)
-                dens_r.append(mtot/vol)
 
-                #print(f'{this_run}, R:{r}, d:{dens}, median={box_dens}')
+                # Just count the halos in this mass interval
+                ntot = len(select[(select['Mvir(4)'] < this_model.m_max) & (select['Mvir(4)'] > this_model.m_min)])
 
-    return all_mtot, all_mf
+    # Put all the data in a dataframe and save it
+    data_end = pd.DataFrame()
+
+    return data_end, mf_r
 
 
-def select_lgs(data=None, lg_model=None, lgf=False):
+def select_lgs(data=None, lg_model=None, lgf=False, dist=6.0e+3):
     '''
     Pass a local group model and select lgs in a dataframe accordingly
     Returns a new dataframe with the selected halos 
@@ -1106,7 +972,6 @@ def select_lgs(data=None, lg_model=None, lgf=False):
     r_max = lg_model.r_max
     m_ratio = lg_model.mratio_max
     vrad_max = lg_model.vrad_max
-    dist = 6.0e+3
 
     data['ratio'] = data['M_M31'] / data['M_MW']
 
@@ -1125,36 +990,5 @@ def select_lgs(data=None, lg_model=None, lgf=False):
         select = select[select['D'] < dist]
 
     return select
-
-
-if __name__ == "__main__":
-    ''' Wrapper for LG operations '''
-
-    simu = 'fullbox'
-    #set_variables()
-    x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
-    x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
-    n_fb = lg_density_fb()
-    n_lgf = lg_density_lgf()
-    n_simu_fb = 5
-    n_simu_lgf = 715
-    r = 6.0
-    box = 100.0
-
-    vol_fb = (box ** 3.0) * n_simu_fb
-    vol_lgf = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf
-
-    print(f'FB: {vol_fb}, LGF: {vol_lgf}')
-
-    for i in range(0, 6):
-        print(f'{i} {n_fb[i]/vol_fb} {n_lgf[i]/vol_lgf}')
-
-    halo_density_lgf()
-
-    '''
-    density_plots()
-    fb_find()
-    lgf_find()
-    '''
 
 
