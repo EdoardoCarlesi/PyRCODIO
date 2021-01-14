@@ -516,10 +516,11 @@ def halo_ids_around_center(halos, center, radius):
 
 
 def find_halos(data=None, center=None, radius=None, search='Sphere'):
-    '''
+    """
     Given a center, find all the halo within a given radius
-    Input: data is a DataFrame
-    '''
+    Input: data is a DataFrame, center is an array, radius is a float
+    Output: DataFrame of halos within those boundaries
+    """
 
     new_key = 'Distance'
     cols = ['Xc(6)', 'Yc(7)', 'Zc(8)']
@@ -543,22 +544,19 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
         data[new_key] = data[cols].T.apply(lambda x: t.distance(x, center)).T
         return data[data[new_key] < radius]    
 
+    # Box search should be much faster
     elif search == 'Box': 
         condition = (data[cols[0]] > (center[0] - radius)) & (data[cols[0]] < (center[0] + radius)) &\
                 (data[cols[1]] > (center[1] - radius)) & (data[cols[1]] < (center[1] + radius)) &\
                 (data[cols[2]] > (center[2] - radius)) & (data[cols[2]] < (center[2] + radius))
 
-        #print(condition)
         new_data = data[condition]
-        #print('box:', new_data.head())
 
         return new_data
 
 
 def refine_lg_selection(lg_df=None, lg_model=None):
-    '''
-    Refine the selection of LGs from a dataframe containing a large set of candidates
-    '''
+    """ Refine the selection of LGs from a dataframe containing a large set of candidates """
 
     m_min = lg_model.m_min
     m_max = lg_model.m_max
@@ -581,9 +579,7 @@ def refine_lg_selection(lg_df=None, lg_model=None):
 
 
 def find_lg(halos, center, radius, lgmod=None, center_cut=True, search='Sphere', verbose=True, mass_col='Mvir(4)'):
-    '''
-    Given a box and a model, return a list of possible local groups
-    '''
+    """ Given a box and a model, return a list of possible local groups """
     
     if lgmod == None:
         ' set a default basic LG model '

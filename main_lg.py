@@ -106,11 +106,11 @@ def fb_halos_around_lg():
     
     """
 
-    #lg_list_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_fb_new_'
-    lg_list_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_test_csv'
-    list_suffix = '.csv'
-    lg_halo_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_simu_periodic_'
-    base_suffix = '.csv'
+    lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_around_lg_'
+    halos_suffix = '.csv'
+    lg_suffix = '.pkl'
+
+    # TODO add the list of all halos and remove duplicates
 
     runs = cfg.gen_runs(0, 1)
 
@@ -122,17 +122,23 @@ def fb_halos_around_lg():
     df_list = []
     mf_list = []
 
+    radii = [1000.0 * j for j in range(2, 13)]
+
+    n_lg_max = 1000
+
     for run in runs:
         #lg_list_csv = lg_list_base + run + list_suffix
         lg_list_csv = lg_list_base + list_suffix
-        df = pd.read_csv(lg_list_csv)
 
-        for i, lg in df.iterrows():
+        # TODO fix and loop over non duplicates only
+        for i in range(0, n_lg_max):
             i_str = str(i)
             lg_halo_csv = lg_halo_base + run + '_lg_' + i_str + base_suffix
             this_x = lg[x_col].values
 
             if os.path.isfile(lg_halo_csv):
+
+                
                 df[d_col] = df[x_col].T.apply(lambda x: t.distance(x, this_x))
                 #df[d_col].hist()
                 #plt.show()
@@ -291,10 +297,10 @@ def find_lg_fb():
         box_size = 100000.0
         #base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
         base_path = '/home/edoardo/CLUES/PyRCODIO/output/full.'
-        #base_suffix = '.snapshot_054.z0.000.AHF_halos.periodic.csv'
-        base_suffix = '.snapshot_054.z0.000.AHF_halos.small.csv'
+        base_suffix = '.snapshot_054.z0.000.AHF_halos.periodic.csv'
+        #base_suffix = '.snapshot_054.z0.000.AHF_halos.small.csv'
         #base_path='/media/edoardo/Elements/CLUES/DATA/2048/00_06/'
-        sub_runs = cfg.gen_runs(0, 1)
+        sub_runs = cfg.gen_runs(1, 5)
 
     elif use_rs == True:
         box_size = 2500000.0
@@ -397,8 +403,11 @@ def find_lg_fb():
             this_halos_csv = base_file_halo_out + run + '_' + str(i) + '.csv'
             this_halos_pkl = base_file_halo_out + run + '_' + str(i) + '.pkl'
             lg_center = lg.geo_com()
-            this_halos = hu.find_halos(data=halo_df, center=lg_center, radius=this_radius)
+            this_halos = hu.find_halos(data=halo_df, center=lg_center, radius=this_radius, search='Box')
             pkl.dump(lg, open(this_halos_pkl, 'wb'))
+
+            this_halos = this_halos.drop(this_halos.columns[36:], axis=1)
+            this_halos = this_halos.drop(this_halos.columns[1:3], axis=1)
             this_halos.to_csv(this_halos_csv)
 
         this_csv = base_file_out + run + '.csv'

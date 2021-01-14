@@ -98,9 +98,7 @@ def gen_bins(nbins=None, binmax=None, binmin=None, binmode='log'):
 
 
 def density(data=None, size=None, col='Mvir(4)', shape='cube'):
-    '''
-    Given a halo df and a volume determine the matter density
-    '''
+    """ Given a halo df and a volume determine the matter density """
 
     mtot = np.sum(data[col])
 
@@ -116,17 +114,13 @@ def density(data=None, size=None, col='Mvir(4)', shape='cube'):
 
 
 def distance(x, c):
-    '''
-    Compute the Euclidean distance between two points in space
-    '''
+    """ Compute the Euclidean distance between two points in space """
 
     return np.sqrt(np.sum((x-c)**2.0))
 
 
 def shift(center, r):
-    '''
-    Given a set of coordinates, randomly shift them by a maximum of 'r' amount
-    '''
+    """ Given a set of coordinates, randomly shift them by a maximum of 'r' amount """
 
     new_c = []
 
@@ -139,9 +133,7 @@ def shift(center, r):
 
 
 def module(vec):
-    '''
-    Very basic operation, there is for sure some quicker way of implementing this but whatever
-    '''
+    """ Very basic operation, there is for sure some quicker way of implementing this but whatever """
 
     elem = 0.0
 
@@ -152,9 +144,7 @@ def module(vec):
 
 
 def find_nearest_node_index(x=None, grid=None, box=None):
-    '''
-    Given a point x in space, find the nearest grid point once a grid has been placed on the box
-    '''
+    """ Given a point x in space, find the nearest grid point once a grid has been placed on the box """
 
     cell = box / grid
 
@@ -168,9 +158,7 @@ def find_nearest_node_index(x=None, grid=None, box=None):
 
 
 def angle(v1, v2):
-    '''
-    Returns the angle between two vectors
-    '''
+    """ Returns the angle between two vectors """
 
     mv1 = [0.0] * 3
     mv2 = [0.0] * 3
@@ -187,9 +175,7 @@ def angle(v1, v2):
 
 
 def center_of_mass(m,x):
-    '''
-    Yet another simple function
-    '''
+    """ Yet another simple function """
 
     n = len(m)
     com = [0.0] * 3
@@ -207,9 +193,7 @@ def center_of_mass(m,x):
 
 
 def vel_radial(x1, x2, v1, v2):
-    '''
-    Radial velocity component of a two-object system
-    '''
+    """ Radial velocity component of a two-object system """
 
     x12 = x2 - x1
     n12 = np.sqrt(np.sum(x12 * x12))
@@ -220,9 +204,7 @@ def vel_radial(x1, x2, v1, v2):
 
 
 def mass_function(masses):
-    '''
-    Given a vector of masses, it returns a tuple of mass vs cumulative number of objects
-    '''
+    """ Given a vector of masses, it returns a tuple of mass vs cumulative number of objects """
 
     n_m = len(masses)
     y_n = [0 for im in range(0, n_m)]
@@ -235,9 +217,7 @@ def mass_function(masses):
 
 
 def particles_com(part_df, cols=['X', 'Y', 'Z'], mass_types=1):
-    '''
-    Compute the center of mass of a particle distribution
-    '''
+    """ Compute the center of mass of a particle distribution """
 
     com = [0.0] * 3
 
@@ -256,10 +236,10 @@ def particles_com(part_df, cols=['X', 'Y', 'Z'], mass_types=1):
 
 
 def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, reduction_factor=1.0, z_axis=2, units='kpc', cols=['X', 'Y', 'Z']):
-    '''
+    """
     Find the particles belonging to a slab around a given point in space.
     Slab size, thickness and so on need to be specified.
-    '''
+    """
 
     # Set some parameters
     kpcThresh = 1.e+4
@@ -321,9 +301,7 @@ def find_slab(part_df=None, center=None, side=None, thick=None, rand_seed=69, re
 
 
 def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
-    '''
-    vweb is a DataFrame containing all the web information
-    '''
+    """ vweb is a DataFrame containing all the web information """
 
     # TODO this needs to be completed
     x_col = ['x', 'y', 'z']
