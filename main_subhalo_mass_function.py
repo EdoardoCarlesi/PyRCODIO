@@ -207,7 +207,5 @@ if __name__ == "__main__":
     cat_radius = 10.0e+3
     cat_center = [50.e+3] * 3
 
-
-
     extract_sub_mass_function():
     sub_mass_function():

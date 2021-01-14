@@ -211,9 +211,9 @@ def vel_radial(x1, x2, v1, v2):
     Radial velocity component of a two-object system
     '''
 
-    x12 = vec_subt(x2, x1)
-    n12 = np.sqrt(dot_prod(x12, x12))
-    r12 = dot_prod(vec_subt(v2, v1), x12)
+    x12 = x2 - x1
+    n12 = np.sqrt(np.sum(x12 * x12))
+    r12 = np.sum((v2 - v1) * x12)
     nr12 = r12 / n12
 
     return nr12

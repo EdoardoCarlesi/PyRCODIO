@@ -13,10 +13,12 @@ import tools as t
 import pandas as pd
 import numpy as np
 
-'''
-    This is the main class that stores all the halo properties
-'''
+
 class Halo:
+    '''
+    This is the main class that stores all the halo properties
+    '''
+
     halo_df = pd.DataFrame()
     host_df = pd.DataFrame()
     subhalos = []
@@ -115,10 +117,11 @@ class Halo:
         self.subhalos = find_halos(halos, self.pos(), r_sub)
 
 
-'''
-    This class is a wrapper that contains (for a halo or a subhalo) the MAH, plus positions, velocities and more
-'''
 class HaloHistory:
+    '''
+    This class is a wrapper that contains (for a halo or a subhalo) the MAH, plus positions, velocities and more
+    '''
+
     n_steps = 0
 
     host = None
@@ -243,6 +246,8 @@ class LocalGroupModel:
     A Local Group model is a way of selecting LG like pairs based on a series of criteria.
     They are all listed here with some generic numerical values
     '''
+ 
+    d_iso=0.0; r_max=0.0; r_min=0.0; m_min=0.0; m_max=0.0; mratio_max=0.0; vrad_max=0.0
 
     def __init__(self, d_iso, r_max, r_min, m_max, m_min, mratio_max, vrad_max):
         self.d_iso = d_iso
@@ -334,7 +339,7 @@ class LocalGroup:
 
     def vel_tangential(self):
         vrad0 = self.vel_radial(hubble=False)
-        vtot = t.vec_module(t.vec_subt(self.LG1.vel(), self.LG2.vel()))
+        vtot = np.sqrt(np.sum((self.LG1.vel()-self.LG2.vel())**2.0))
         self.vtan = np.sqrt(vtot**2.0 - vrad0**2.0)
 
         return self.vtan
@@ -373,7 +378,6 @@ class LocalGroup:
         e = u.e_unit() * e
 
         return e
-
 
     def header(self, csv=True, dump=True):
         
@@ -446,11 +450,12 @@ class LocalGroup:
         return (self.LG1.m + self.LG2.m)
 
 
-'''
+def rate_lg_pair(lg1, lg2):
+    '''
     This functions allows to select among "best" and "worst" LG candidates using fiducial benchmark values.
     These numbers and parameters are - to a certain extent - arbitrary.
-'''
-def rate_lg_pair(lg1, lg2):
+    '''
+
     # Benchmark (obs.) quantities
     rhalo0 = 500.   # kpc/h
     vrad0 = -100.
@@ -493,11 +498,13 @@ def rate_lg_pair(lg1, lg2):
 
     return lg_rate
 
-'''
+
+def halo_ids_around_center(halos, center, radius):
+    '''
     Given a point in space return the halo IDS around it.
     Input: halos is a list of halo objects
-'''
-def halo_ids_around_center(halos, center, radius):
+    '''
+
     ids = []
 
     for h in halos:
@@ -533,7 +540,7 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
         n_sum = np.sum(data[cols].iloc[n_col])
 
     if search == 'Sphere':
-        data[new_key] = data[cols].T.apply(dist, c=center).T
+        data[new_key] = data[cols].T.apply(lambda x: t.distance(x, center)).T
         return data[data[new_key] < radius]    
 
     elif search == 'Box': 
@@ -573,11 +580,14 @@ def refine_lg_selection(lg_df=None, lg_model=None):
     return lg_select_df
 
 
-def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verbose=True, mass_col='Mvir(4)'):
+def find_lg(halos, center, radius, lgmod=None, center_cut=True, search='Sphere', verbose=True, mass_col='Mvir(4)'):
     '''
     Given a box and a model, return a list of possible local groups
     '''
     
+    if lgmod == None:
+        ' set a default basic LG model '
+
     m_min = lgmod.m_min
     m_max = lgmod.m_max
     r_min = lgmod.r_min
@@ -587,10 +597,7 @@ def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verb
     vrad_max = lgmod.vrad_max
     m_ratio = lgmod.mratio_max
 
-    #lgmod.info()
-    #print(halos[mass_col])
     halos = halos[halos[mass_col] > m_min]
-    #print('%e' % m_min)
 
     if center_cut == True:
         # First select only halos within a given radius from the center
@@ -642,17 +649,12 @@ def find_lg(halos, lgmod, center, radius, center_cut=True, search='Sphere', verb
                     nh_iso = len(halos_iso)
 
                     # Ths m_min is the minimum mass of the two LG member halos
-                    #m_min_lg = min([this_lg.LG1.m(), this_lg.LG2.m()]) * 0.999
                     m_min_lg = this_lg.LG2.m() * 0.999
                     n_iso_radius = halos_iso[halos_iso['Mvir(4)'] > m_min_lg]['Mvir(4)'].count()
 	
                     # Make sure there are only two halos as massive as the smallest one within this radius
-                    if n_iso_radius == 2 and vrad < vrad_max and this_lg.m_ratio() < m_ratio: 
+                    if (n_iso_radius == 2) and (vrad < vrad_max) and (this_lg.m_ratio() < m_ratio): 
                         lgs.append(this_lg)
-                    #else:
-                        #print('nh: %d, n iso radius: %d, vrad: %.3f, ratio: %.3f' % 
-                        #        (nh_iso, n_iso_radius, vrad, this_lg.m_ratio()))
-                        #this_lg.info()
 
     if verbose == True:
         print('Found ', len(lgs), ' LGs ')

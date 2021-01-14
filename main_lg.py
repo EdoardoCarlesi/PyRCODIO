@@ -6,6 +6,8 @@
     main_lg: find LGs, extract and analyze their properties 
 '''
 
+import time
+import matplotlib.pyplot as plt
 import read_files as rf
 import halo_utils as hu
 import numpy as np
@@ -21,11 +23,42 @@ global simu, ahf_base, ahf_file, ahf_file_csv, lgs_base
 global i_ini_tot, i_end_tot, x_col, x_col_ahf, m_col, d_col
 global m_min, v_max, masscut_pca
 
+# Define them here and use them through all the program
+x_col = ['Xc(6)', 'Yc(7)', 'Zc(8)']
+d_col = 'Distance'
+m31_col = 'M_M31'
+mw_col = 'M_MW'
 
-def analyze_mass_max():
-    '''
-    Once all the necessary data has been extracted and exported to csv, run some global analysis routine
-    '''
+
+def frac_from_virgo(m_virgo=0.7e+14):
+    """ """
+
+    fb_runs = cfg.gen_runs(0, 5)
+    file_base = 'output/lg_fb_new_'
+    suffix = '_radii.csv'
+
+    radii = [i * 1000.0 for i in range(3, 13)]
+
+    densities = np.zeros((5, 10))
+
+    for i, run in enumerate(fb_runs):
+        file_fb = file_base + run + suffix
+        data_fb = pd.read_csv(file_fb)
+        data_fb = data_fb.drop_duplicates()
+        print(data_fb.head())
+        
+        n_tot = len(data_fb)
+
+        for j, radius in enumerate(radii):
+            col_rad = 'R_' + str(radius)
+            
+            data_r = data_fb[data_fb[col_rad] > m_virgo]
+            n_r = len(data_r)
+            print(radius, n_r, n_r/n_tot, n_tot)
+
+
+def analyze_mass_max(simu='fullbox'):
+    """ Once all the necessary data has been extracted and exported to csv, run some global analysis routine """
 
     print('Running analysis only...')
     m_rad = np.zeros((n_lgs_pre, len(radii)))
@@ -60,19 +93,60 @@ def analyze_mass_max():
     df_lgs_orig.to_csv(this_lgs_rad)
 
 
-def fb_mass_functions(lg_model=None):
-    """ Extract the mass functions around LG candidates in FB simulations """
+def fb_halos_around_lg():
+    """ 
+    Extract the mass functions around LG candidates in FB simulations, the most massive member at a given radius and also the density
 
-    # FIXME
-    lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_fb_new_'
-    #lgs_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_simu_periodic_'
+    Output:
+    
+    - one list of dataframes with properties as a function of radius:
+        RADIUS, MaxMass, MatterDensity, PCA params (1, 2, 3), Triaxiality (1, 2, 3)
+    - one list of dataframes including the distance from the LG center:
+        AHF HALO DATA, distance from the center
+    
+    """
 
-    all_pca = []
+    #lg_list_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_fb_new_'
+    lg_list_base = '/home/edoardo/CLUES/PyRCODIO/output/lg_test_csv'
+    list_suffix = '.csv'
+    lg_halo_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_simu_periodic_'
+    base_suffix = '.csv'
 
+    runs = cfg.gen_runs(0, 1)
+
+    # Output file prefixes
+    df_list_out = 'output/lg_fb_data_'
+    mf_list_out = 'output/lg_fb_mf_'
+            
+    # We will append all dataframes to this list
+    df_list = []
+    mf_list = []
+
+    for run in runs:
+        #lg_list_csv = lg_list_base + run + list_suffix
+        lg_list_csv = lg_list_base + list_suffix
+        df = pd.read_csv(lg_list_csv)
+
+        for i, lg in df.iterrows():
+            i_str = str(i)
+            lg_halo_csv = lg_halo_base + run + '_lg_' + i_str + base_suffix
+            this_x = lg[x_col].values
+
+            if os.path.isfile(lg_halo_csv):
+                df[d_col] = df[x_col].T.apply(lambda x: t.distance(x, this_x))
+                #df[d_col].hist()
+                #plt.show()
+                print(this_x)
+                print(np.median(df[d_col]))
+
+            else:
+                pass
+
+
+    '''
     # Loop over halo catalogs and lg lists
     for i_cat in range(i_ini, i_end):
 
-        i_str = '%02d' % i_cat
         print('Analyzing fullbox LG candidates mass functions ...')
         this_lgs = lgs_base + i_str + '.csv'  
  
@@ -88,7 +162,6 @@ def fb_mass_functions(lg_model=None):
         # Loop over the mass functions already extracted 
         for i_lg, row in df_lgs.iterrows():
             lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
-            this_x = row[x_col].values
 
             if os.path.isfile(lg_csv):
                 df_tmp = pd.read_csv(lg_csv)
@@ -96,7 +169,6 @@ def fb_mass_functions(lg_model=None):
                 # Find the halo list
                 df_tmp = df_tmp[df_tmp[d_col] < r_max]
 
-                df_tmp[d_col] = df_tmp[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
                 df_tmp = df_tmp[df_tmp[d_col] < r_max]
 
                 pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
@@ -127,7 +199,7 @@ def fb_mass_functions(lg_model=None):
     f_out = 'output/all_mass_functions_x_bin_fullbox.pkl'
     pkl.dump(x_bin, open(f_out, 'wb'))
     print('Saving output MF x_bin to: ', f_out)
-
+    '''
 
 def lgf_mass_functions(resolution='1024', lg_model=None, d_max=5000.0, mbins=20):
     """ Read the individual mass functions and then dump them to a pkl file """
@@ -202,10 +274,8 @@ def lgf_mass_functions(resolution='1024', lg_model=None, d_max=5000.0, mbins=20)
     return x_bin, all_bins
 
 
-def fb_find():
-    """
-    Find all the local groups in a full box simulation
-    """
+def find_lg_fb():
+    """ Find all the local groups in a full box simulation """
 
     # Choose catalog type
     use_ahf = True; use_rs = False
@@ -215,12 +285,16 @@ def fb_find():
     if use_ahf == True:
         file_single='snapshot_054.z0.000.AHF_halos'
         #file_single='snapshot_full_054.z0.000.AHF_halos'
-        base_file_out = 'output/lg_fb_new_'    
+        #base_file_out = 'output/lg_fb_new_'    
+        base_file_out = 'output/lg_fb_list_'    
+        base_file_halo_out = 'output/LG_HALOS/halos_around_lg_'    
         box_size = 100000.0
         #base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
-        base_path = '/home/edoardo/CLUES/DATA/FullBox/'
+        base_path = '/home/edoardo/CLUES/PyRCODIO/output/full.'
+        #base_suffix = '.snapshot_054.z0.000.AHF_halos.periodic.csv'
+        base_suffix = '.snapshot_054.z0.000.AHF_halos.small.csv'
         #base_path='/media/edoardo/Elements/CLUES/DATA/2048/00_06/'
-        sub_runs = cfg.gen_runs(0, 5)
+        sub_runs = cfg.gen_runs(0, 1)
 
     elif use_rs == True:
         box_size = 2500000.0
@@ -235,15 +309,12 @@ def fb_find():
         for i in range(n_start, n_parts):
             sub = '%04d' % i
             sub_runs.append(sub)
-        '''
-        sub_runs = ['0011']
-        '''
 
     lg_models, index = cfg.lg_models()
     this_model = lg_models[index['GENERIC']]
 
     kpcFac = 1.0e+3
-    radius = 7.0 * kpcFac
+    radius = 12.0 * kpcFac
     side_buffer = 1.0 * kpcFac
 
     n_sub_x = int(np.ceil(box_size / radius))
@@ -257,10 +328,12 @@ def fb_find():
 
         all_lgs = []
         if use_ahf:
-            this_ahf = base_path + run + '/' + file_single
+            #this_ahf = base_path + run + '/' + file_single
+            this_ahf = base_path + run + base_suffix 
             print('Reading file: ', this_ahf)
             #halo_df = rf.read_ahf_halo(this_ahf, file_mpi=False)
-            halo_df = rf.read_ahf_halo(this_ahf, file_mpi=True)
+            #halo_df = rf.read_ahf_halo(this_ahf, file_mpi=True)
+            halo_df = pd.read_csv(this_ahf)
             print('Found: ', len(halo_df), ' objects.')
 
             x_min = 0.0;         y_min = 0.0;         z_min = 0.0
@@ -282,9 +355,6 @@ def fb_find():
             y_min = halo_df['Yc(7)'].min() * kpcFac
             z_min = halo_df['Zc(8)'].min() * kpcFac
 
-            print(x_min, y_min, z_min)
-            print(x_max, y_max, z_max)
-
             n_sub_x = int(np.ceil((x_max - x_min) / radius))
             n_sub_y = int(np.ceil((y_max - y_min) / radius))
             n_sub_z = int(np.ceil((z_max - z_min) / radius))
@@ -295,6 +365,7 @@ def fb_find():
         #print(halo_df.head())
         n_count = 0
         old_time = time.time()
+
         for ix in range(0, int(n_sub_x)):
             for iy in range(0, n_sub_y):
                 new_time = time.time()
@@ -308,7 +379,7 @@ def fb_find():
                     this_center = np.array([radius * (0.5 + ix)+x_min, radius * (0.5 + iy)+y_min, radius * (0.5 + iz)+z_min])
                     this_radius = radius * 0.5 + side_buffer
                     #print('Subbox around center: ', this_center, ' rad: ', this_radius, flush=True)
-                    these_lgs = hu.find_lg(halo_df, this_model, this_center, this_radius, center_cut=True, search='Box', verbose=False)
+                    these_lgs = hu.find_lg(halo_df, this_center, this_radius, lgmod=this_model, center_cut=True, search='Box', verbose=False)
                     #print('FindLG: ', len(these_lgs))
 
                     for this_lg in these_lgs:
@@ -317,30 +388,26 @@ def fb_find():
 
                         all_lgs.append(this_lg)
 
-            #for ii in range(0, 10):
-            #    print(ii, all_lgs[len(all_lgs) - ii - 1].info())
-
         this_lg_df = pd.DataFrame(columns = this_lg.header(dump=False))
 
-        for lg in all_lgs:
+        for i, lg in enumerate(all_lgs):
             this_row = lg.info(dump=False)
             this_series = pd.Series(this_row, index = this_lg_df.columns)
             this_lg_df = this_lg_df.append(this_series, ignore_index=True)
+            this_halos_csv = base_file_halo_out + run + '_' + str(i) + '.csv'
+            this_halos_pkl = base_file_halo_out + run + '_' + str(i) + '.pkl'
+            lg_center = lg.geo_com()
+            this_halos = hu.find_halos(data=halo_df, center=lg_center, radius=this_radius)
+            pkl.dump(lg, open(this_halos_pkl, 'wb'))
+            this_halos.to_csv(this_halos_csv)
 
-        print(this_lg_df.head())
         this_csv = base_file_out + run + '.csv'
         this_lg_df.drop_duplicates(inplace = True)
         this_lg_df.to_csv(this_csv, float_format='%.3f')
 
-        this_pkl = base_file_out + run + '.pkl'
-        f_pkl = open(this_pkl, 'wb')
-        pkl.dump(all_lgs, f_pkl)
 
-
-def lgf_find():
-    """
-    Given a set of catalogs find the LG-like objects and export the output
-    """
+def find_lg_lgf():
+    """ Given a set of catalogs find the LG-like objects and export the output """
 
     # Use AHF / csv catalogs
     csvAhf = True; hiResAhf = False
@@ -640,6 +707,8 @@ if __name__ == "__main__":
     simu = 'fullbox'
     x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
     x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
+
+    '''
     n_fb = lg_density_fb()
     n_lgf_I = lg_density_lgf(resolution='512')
     n_lgf_II = lg_density_lgf(resolution='1024')
@@ -648,17 +717,22 @@ if __name__ == "__main__":
     n_simu_lgf_I = 1000
     r = 6.0
     box = 100.0
+    '''
 
-    vol_fb = (box ** 3.0) * n_simu_fb
-    vol_lgf_I = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf_I
+    #vol_fb = (box ** 3.0) * n_simu_fb
+    #vol_lgf_I = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf_I
 
-    print(f'FB: {vol_fb}, LGF: {vol_lgf_I}')
+    #print(f'FB: {vol_fb}, LGF: {vol_lgf_I}')
 
-    for i in range(0, 6):
-        print(f'{i} {n_fb[i]} {n_lgf_I[i]/vol_lgf_I}')
+    #for i in range(0, 6):
+    #    print(f'{i} {n_fb[i]} {n_lgf_I[i]/vol_lgf_I}')
 
+    #def frac_from_virgo(m_virgo=0.7e+14):
+    #frac_from_virgo()
+    find_lg_fb()
+    #fb_halos_around_lg()
     #halo_density_lgf()
-    halo_density_fb()
+    #halo_density_fb()
 
     '''
     fb_find()
