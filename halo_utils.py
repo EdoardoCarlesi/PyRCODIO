@@ -450,6 +450,39 @@ class LocalGroup:
         return (self.LG1.m + self.LG2.m)
 
 
+def select_lgs(data=None, lg_model=None, lgf=False, dist=6.0e+3):
+    """
+    Pass a local group model and select lgs in a dataframe accordingly
+    Returns a new dataframe with the selected halos 
+    """
+    
+    m_min = lg_model.m_min
+    m_max = lg_model.m_max
+    r_min = lg_model.r_min
+    r_max = lg_model.r_max
+    m_ratio = lg_model.mratio_max
+    vrad_max = lg_model.vrad_max
+
+    data['ratio'] = data['M_M31'] / data['M_MW']
+
+    select = data[data['ratio'] < m_ratio]
+    select = select[select['Vrad'] < vrad_max]
+    select = select[select['R'] > r_min]
+    select = select[select['R'] < r_max]
+    select = select[select['M_M31'] < m_max]
+    select = select[select['M_MW'] > m_min]
+
+    if lgf:
+        c = [5.0e+4 for i in range(0, 3)]
+        c = np.array(c)
+
+        select['D'] = select[x_col].apply(lambda x: t.distance(x, c), axis=1)
+        select = select[select['D'] < dist]
+
+    return select
+
+
+
 def rate_lg_pair(lg1, lg2):
     '''
     This functions allows to select among "best" and "worst" LG candidates using fiducial benchmark values.
@@ -542,7 +575,8 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
 
     if search == 'Sphere':
         data[new_key] = data[cols].T.apply(lambda x: t.distance(x, center)).T
-        return data[data[new_key] < radius]    
+
+        new_data = data[data[new_key] < radius]    
 
     # Box search should be much faster
     elif search == 'Box': 
@@ -552,7 +586,7 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
 
         new_data = data[condition]
 
-        return new_data
+    return new_data
 
 
 def refine_lg_selection(lg_df=None, lg_model=None):

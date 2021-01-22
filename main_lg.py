@@ -16,22 +16,26 @@ import pickle as pkl
 import pandas as pd
 import tools as t
 import os
-
+from tqdm import tqdm
 
 # Set some important global variables
 global simu, ahf_base, ahf_file, ahf_file_csv, lgs_base
 global i_ini_tot, i_end_tot, x_col, x_col_ahf, m_col, d_col
-global m_min, v_max, masscut_pca
+global m_min, v_max, masscut_pca, mw_col, m31_col
+global radii_cols
 
 # Define them here and use them through all the program
-x_col = ['Xc(6)', 'Yc(7)', 'Zc(8)']
+x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
+x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
 d_col = 'Distance'
 m31_col = 'M_M31'
 mw_col = 'M_MW'
+m_col = 'Mvir(4)'
+radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
 
 
 def frac_from_virgo(m_virgo=0.7e+14):
-    """ """
+    """ Compute the total number of LG pairs within a given radius from Virgo-like clusters """
 
     fb_runs = cfg.gen_runs(0, 5)
     file_base = 'output/lg_fb_new_'
@@ -93,7 +97,7 @@ def analyze_mass_max(simu='fullbox'):
     df_lgs_orig.to_csv(this_lgs_rad)
 
 
-def fb_halos_around_lg():
+def halos_around_lg(verbose=False, simu='fullbox'):
     """ 
     Extract the mass functions around LG candidates in FB simulations, the most massive member at a given radius and also the density
 
@@ -106,178 +110,173 @@ def fb_halos_around_lg():
     
     """
 
-    lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_around_lg_'
-    halos_suffix = '.csv'
-    lg_suffix = '.pkl'
+    if simu == 'fullbox':
 
-    # TODO add the list of all halos and remove duplicates
+        lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_around_lg_'
+        halos_suffix = '.csv'
+        lg_suffix = '.pkl'
 
-    runs = cfg.gen_runs(0, 1)
+        runs = cfg.gen_runs(0, 5)
 
-    # Output file prefixes
-    df_list_out = 'output/lg_fb_data_'
-    mf_list_out = 'output/lg_fb_mf_'
-            
+        # Output file prefixes
+        df_list_out = 'output/lg_fb_df.pkl'
+        mf_list_out = 'output/lg_fb_mf.pkl'
+    
+    elif simu == 'lgf':
+
+        lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_around_lg_'
+        halos_suffix = '.csv'
+        lg_suffix = '.pkl'
+
+        runs = cfg.gen_runs(0, 5)
+
+        # Output file prefixes
+        df_list_out = 'output/lg_fb_df.pkl'
+        mf_list_out = 'output/lg_fb_mf.pkl'
+
     # We will append all dataframes to this list
     df_list = []
     mf_list = []
+    lg_list = []
 
-    radii = [1000.0 * j for j in range(2, 13)]
+    # This variable is used to keep track of all the indexes and rescale them
+    all_n_tot = []
+
+    # These are the radii at which we want to take different shells and check for the most massive halos therein
+    r_min = 2
+    r_max = 13
+    
+    radii = [1000.0 * j for j in range(r_min, r_max)]
 
     n_lg_max = 1000
+    this_lg_df = pd.DataFrame(columns = hu.LocalGroup(None, None).header(dump=False))
 
+    # We first read in all LGs and remove duplicates 
     for run in runs:
-        #lg_list_csv = lg_list_base + run + list_suffix
-        lg_list_csv = lg_list_base + list_suffix
+        all_n_tot.append(len(lg_list))
 
-        # TODO fix and loop over non duplicates only
-        for i in range(0, n_lg_max):
-            i_str = str(i)
-            lg_halo_csv = lg_halo_base + run + '_lg_' + i_str + base_suffix
-            this_x = lg[x_col].values
+        # Use tqdm to produce a nice progress bar
+        for i in tqdm(range(0, n_lg_max)):
 
-            if os.path.isfile(lg_halo_csv):
+            lg_file_pkl = lg_file_base + run + '_' + str(i) + lg_suffix
 
-                
-                df[d_col] = df[x_col].T.apply(lambda x: t.distance(x, this_x))
-                #df[d_col].hist()
-                #plt.show()
-                print(this_x)
-                print(np.median(df[d_col]))
+            # Check that the file exists
+            if os.path.isfile(lg_file_pkl):
+                this_lg = pkl.load(open(lg_file_pkl,'rb'))
+                lg_list.append(this_lg)
+                this_row = this_lg.info(dump=False)
+                this_series = pd.Series(this_row, index = this_lg_df.columns)
+                this_lg_df = this_lg_df.append(this_series, ignore_index=True)
 
-            else:
-                pass
-
-
-    '''
-    # Loop over halo catalogs and lg lists
-    for i_cat in range(i_ini, i_end):
-
-        print('Analyzing fullbox LG candidates mass functions ...')
-        this_lgs = lgs_base + i_str + '.csv'  
- 
-        print('LGS FILE: ', this_lgs)
-        df_lgs_orig = pd.read_csv(this_lgs)
-        n_lgs_pre = len(df_lgs_orig)
-
-        print('N pre: ', n_lgs_pre)
-        df_lgs = df_lgs_orig.drop_duplicates(subset=['M_M31'])
-        df_lgs = select_lgs(data=df_lgs, lg_model=lg_model)
-        print('N post: ', len(df_lgs))
-
-        # Loop over the mass functions already extracted 
-        for i_lg, row in df_lgs.iterrows():
-            lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
-
-            if os.path.isfile(lg_csv):
-                df_tmp = pd.read_csv(lg_csv)
-
-                # Find the halo list
-                df_tmp = df_tmp[df_tmp[d_col] < r_max]
-
-                df_tmp = df_tmp[df_tmp[d_col] < r_max]
-
-                pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
-                print('PCA result: ', pca)
-            
-                df_tmp = df_tmp[df_tmp['Mvir(4)'] > masscut_pca] 
-                pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
-                print('PCA result mass: ', pca)
-        
-                all_pca.append(pca)
-                x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
-
-                for ib in range(0, n_bin-1):
-
-                    v = y_bin[ib]
-
-                    if v > 0:
-                        all_bins[ib].append(v)
-
-    f_pca = 'output/pca_fullbox.pkl'
-    pickle.dump(all_pca, open(f_pca, 'wb'))
-    print('Output PCA written to: ', f_pca)
-
-    f_out = 'output/all_mass_functions_fullbox.pkl'
-    pkl.dump(all_bins, open(f_out, 'wb'))
-    print('Saving output MF to: ', f_out)
-
-    f_out = 'output/all_mass_functions_x_bin_fullbox.pkl'
-    pkl.dump(x_bin, open(f_out, 'wb'))
-    print('Saving output MF x_bin to: ', f_out)
-    '''
-
-def lgf_mass_functions(resolution='1024', lg_model=None, d_max=5000.0, mbins=20):
-    """ Read the individual mass functions and then dump them to a pkl file """
-
-    lgs_lgf_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_' + resolution + '/lg_center_'
-
-    # Read the full list of halos
-    df_lgs = pd.read_csv('output/lg_pairs_' + resolution + '.csv')
-    print('TotLen Original File: ', len(df_lgs))
-
-    # Select a halo subsample
-    df_lgs = select_lgs(data=df_lgs, lg_model=lg_model, lgf=True)
-    print('TotLen After selection: ', len(df_lgs))
-
-    box_center = [5.0e+4]*3
+    # Compute the raw number of LG candidates
+    n_lg = len(lg_list)
+    print(f'LG Total found: {n_lg}')
     
-    df_lgs[d_col] = df_lgs[x_col].T.apply(lambda x: t.distance(x, box_center))
-    df_lgs = df_lgs[df_lgs[d_col] < d_max]
-    print(f'TotLen within R={d_max}, n={len(df_lgs)}')
+    # Clean the list
+    this_lg_df = this_lg_df.drop_duplicates()
+    n_lg_new = len(this_lg_df)
+    print(f'LG Total found after cleaning: {n_lg_new}')
 
-    n_lgs = len(df_lgs)
-    print('Analyzing fullbox LG candidates mass functions ...')
+    # Sanity check
+    if verbose:
+        print(this_lg_df.columns)
+        print(this_lg_df.index)
+        print(this_lg_df.info())
+        print(this_lg_df.head())
+
+    # How to bin the mass function - settings
+    n_bins = 25
+    bin_min = 1.5e+9
+    bin_max = 5.0e+13
+    rad_mf = 5000.0
+
+    # These mass bins will be used for all LGs
+    x_bins = t.gen_bins(nbins=n_bins, binmax=bin_max, binmin=bin_min, binmode='log')
     
-    # Set some binning-related variables
-    all_bins = [[] for i in range(0, mbins)]
-    all_pca = []
-
-    # Loop over halo catalogs and lg lists
-    for ilg, row in df_lgs.iterrows():
-        num = str('%02d' % int(row['simu_code']))
-        sub = str('%02d' % int(row['sub_code']))
-        this_x = row[x_col].values
+    # Loop on all the rows of the dataframe
+    for i, row in tqdm(this_lg_df.iterrows()):
         
-        this_lg = lgs_lgf_base + num + '_' + sub + '.' + str(ilg) + '.csv'
+        run = row['sub_code']
+        masses_r = []
 
-        if os.path.isfile(this_lg):
-            df_tmp = pd.read_csv(this_lg)
+        # We need to rescale the index of the dataframe
+        i = i - all_n_tot[int(run)]
+        lg_list_csv = lg_file_base + run + '_' + str(i) + halos_suffix
 
-            print('Reading ', this_lg)
-            df_tmp[d_col] = df_tmp[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
-            df_tmp = df_tmp[df_tmp[d_col] < r_max]
+        this_halos = pd.read_csv(lg_list_csv)
+        this_x = np.reshape(row[x_col].values, (3, 1))
+
+        # WARNING: this solution is extremely slow
+        #this_halos[d_col] = this_halos[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
     
-            # Bin the mass function
-            x_bin, y_bin = t.check_df_bins(data=df_tmp, bins=mbins, binmode='log')
-            
-            for ib in range(0, n_bin-1):
-                v = y_bin[ib]
+        # Using NP arrays in this way we speed up the code by a factor of 30!!!!!!
+        all_x = this_halos[x_col_ahf].T.values
+        all_x_d = np.sum((all_x - this_x) ** 2.0, axis=0)
+        this_halos[d_col] = all_x_d
+        this_halos[d_col] = this_halos[d_col].apply(lambda x: np.sqrt(x))
+        this_df = pd.DataFrame(columns = radii_cols)
 
-                if v > 0:
-                    all_bins[ib].append(v)
-        
-            #pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
-            df_tmp = df_tmp[df_tmp['Mvir(4)'] > masscut_pca]
-            pca = t.spatial_pca(data=df_tmp, cols=x_col_ahf)
-            all_pca.append(pca)
+        # Now for each halo pair we look for the properties around it, at different radii
+        for rad in radii[::-1]:
+            new_row = []
+            this_halos = this_halos[this_halos[d_col] < rad]
+    
+            # Keep track of mass bins only at a given radius
+            if rad == rad_mf:
+                mass = this_halos[m_col].values
+                y_bins = t.bin_df(data=this_halos, x_bins=x_bins, binmode='log')
+                masses_r.append(y_bins)
 
-    # Save the PCA values
-    f_pca = 'output/pca_lgf.pkl'
-    pickle.dump(all_pca, open(f_pca, 'wb'))
-    print('Output PCA written to: ', f_pca)
+            # Once the halos within the radius have been selected, compute some quantities
+            vol = (rad ** 3.0) * 4.0 / 3.0
+            mmax = this_halos[m_col].max()
+            mtot = np.sum(this_halos[m_col].values)
+            dens = mtot / vol
 
-    # Save the full mass function
-    f_out = 'output/all_mass_functions_lgf_' + resolution + '.' + str(n_lgs) + '.pkl'
-    pkl.dump(all_bins, open(f_out, 'wb'))
-    print('Saving LGF MF output to: ', f_out)
+            # Re-center all the halos around the LG center, to compute inertia tensors and PCA
+            x = np.subtract(this_halos[x_col_ahf].T.values, this_x)
+            m = this_halos[m_col].values  
 
-    # Save the x bin values 
-    f_out = 'output/all_mass_functions_x_bin_lgf_' + resolution + ' .pkl'
-    pkl.dump(x_bin, open(f_out, 'wb'))
-    print('Saving LGF MF x_bin output to: ', f_out)
+            # The eigenvalues here are not ordered! 
+            inertia_t = t.inertia_tensor(x=x)
+            inertia_tw = t.inertia_tensor(x=x, w=m)
+            pca_t = t.spatial_pca(data=this_halos, cols=x_col_ahf)
 
-    return x_bin, all_bins
+            # Add all the values to a list
+            new_row.append(rad)
+            new_row.append(dens)
+            new_row.append(mtot)
+            new_row.append(mmax)
+
+            # Loop over the newly computed eigenvalues
+            for tt in inertia_t:
+                new_row.append(tt)
+            for tw in inertia_tw: 
+                new_row.append(tw)
+            for pt in pca_t:
+                new_row.append(pt)
+
+            # Keep track of the lg pair number and simulation
+            new_row.append(i)
+            new_row.append(run)
+    
+            # Make this a row of a pandas dataframe
+            this_series = pd.Series(new_row, index = this_df.columns)
+            this_df = this_df.append(this_series, ignore_index = True)
+
+        if verbose:
+            print(this_df.head(10))
+
+        # Save all the lists
+        df_list.append(this_df)
+        mf_list.append(masses_r)
+
+    # Now dump all the lists to appropriate pkl files
+    print(f'Saving files to {df_list_out} and {mf_list_out}')
+    pkl.dump(df_list, open(df_list_out, 'wb'))
+    pkl.dump(mf_list, open(mf_list_out, 'wb'))
+
+    return df_list, mf_list
 
 
 def find_lg_fb():
@@ -300,7 +299,7 @@ def find_lg_fb():
         base_suffix = '.snapshot_054.z0.000.AHF_halos.periodic.csv'
         #base_suffix = '.snapshot_054.z0.000.AHF_halos.small.csv'
         #base_path='/media/edoardo/Elements/CLUES/DATA/2048/00_06/'
-        sub_runs = cfg.gen_runs(1, 5)
+        sub_runs = cfg.gen_runs(0, 5)
 
     elif use_rs == True:
         box_size = 2500000.0
@@ -406,13 +405,16 @@ def find_lg_fb():
             this_halos = hu.find_halos(data=halo_df, center=lg_center, radius=this_radius, search='Box')
             pkl.dump(lg, open(this_halos_pkl, 'wb'))
 
-            this_halos = this_halos.drop(this_halos.columns[36:], axis=1)
-            this_halos = this_halos.drop(this_halos.columns[1:3], axis=1)
+            # Discard some useless columns to save up space on the disk
+            this_halos = this_halos.drop(this_halos.columns[18:], axis=1)
+            this_halos = this_halos.drop(this_halos.columns[0:2], axis=1)
             this_halos.to_csv(this_halos_csv)
 
         this_csv = base_file_out + run + '.csv'
         this_lg_df.drop_duplicates(inplace = True)
         this_lg_df.to_csv(this_csv, float_format='%.3f')
+
+        return this_halos
 
 
 def find_lg_lgf():
@@ -424,13 +426,12 @@ def find_lg_lgf():
 
     # Configure the LG model and subpaths
     if csvAhf == True:
-        code_run = cfg.gen_runs(0, 100)
-        sub_run = cfg.gen_runs(0, 100)
+        code_runs = cfg.gen_all_runs(0, 100, 0, 40)
         [model_run, dict_model] = cfg.lg_models()
+
     elif hiResAhf == True:
         [model_run, dict_model] = cfg.lg_models()
-        code_run = cfg.simu_runs()
-        sub_run = cfg.sub_runs()
+        code_runs = cfg.gen_all_runs(0, 100, 0, 40)
 
     # Local data path, file names and file format
     data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
@@ -443,6 +444,8 @@ def find_lg_lgf():
     if csvAhf == True:
         #base_path = '/home/edoardo/Elements/CLUES/DATA/CSV/' + resolution + '/'
         base_path = '/home/edoardo/CLUES/DATA/LGF/' + resolution + '/CSV/'
+        base_path_out = 'output/LG_' + resolution + '/halos_around_lg_' 
+
     elif hiResAhf == True:
         base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
 
@@ -460,7 +463,8 @@ def find_lg_lgf():
     if csvAhf == True:
         out_base_pkl = base_path + 'lg_'
         out_all_lgs_csv = 'output/lg_pairs_' + resolution + '.csv'
-    if hiResAhf == True:
+
+    elif hiResAhf == True:
         out_base_pkl = 'saved/lg_pair_'
         out_all_lgs_csv = 'output/lg_pairs_2048.csv'
 
@@ -471,69 +475,56 @@ def find_lg_lgf():
     all_lgs_df = pd.DataFrame(columns=cols)
 
     # Now loop on all the simulations and gather data
-    for code in code_run:
+    for code in code_runs:
 
-        for sub in sub_run:
+        # Append all found LGs to this structure
+        these_lgs = []
 
-            out_file_pkl = 'output/lg_' + resolution + '_' + code + '_' + sub + '.pkl'
-            these_lgs = []
+        if csvAhf == True:
+            this_ahf = base_path + 'ahf_' + code + '.csv'
+            print(this_ahf)
+
+        elif hiResAhf == True:
+            this_path = base_path + code + '/' + sub + '/'
+            this_ahf = this_path + file_ahf
+
+        # Check that file exists
+        if os.path.isfile(this_ahf):
+            print('Reading AHF file: ', this_ahf)
 
             if csvAhf == True:
-                this_ahf = base_path + 'ahf_' + code + '_' + sub + '.csv'
+                halo_df = pd.read_csv(this_ahf)
+                this_model = model_run[dict_model['GENERIC']]
+
             elif hiResAhf == True:
-                this_path = base_path + code + '/' + sub + '/'
-                this_ahf = this_path + file_ahf
+                halo_df = rf.read_ahf_halo(this_ahf)
+                this_model = model_run[dict_model[code]]
 
-            # Check that file exists
-            if os.path.isfile(this_ahf):
-                print('Reading AHF file: ', this_ahf)
+            print('Looking for Local Group candidates...')
 
-                if os.path.isfile(out_file_pkl):
-                    with open(out_file_pkl, 'rb') as f_pkl:
-                        these_lgs = pkl.load(f_pkl)
-                else:
-                    if csvAhf == True:
-                        halo_df = pd.read_csv(this_ahf)
-                        this_model = model_run[dict_model['GENERIC']]
+            if len(halo_df) > 0:
+                these_lgs = hu.find_lg(halo_df, center, radius, lgmod=this_model, center_cut=True, search='Box')
+            else:
+                print('Problems with file: ', this_ahf, '. Reading the file results in zero length.')
 
-                    elif hiResAhf == True:
-                        halos, halo_df = rf.read_ahf_halo(this_ahf)
-                        this_model = model_run[dict_model[code]]
+            # Check if there is at least one LG in the selection
+            if len(these_lgs) > 0:
 
-                    print('Looking for Local Group candidates...')
+                # Save simu info in LG object
+                for i in range(0, len(these_lgs)):
+                    these_lgs[i].code_simu = code
 
-                    if len(halo_df) > 0:
-                        these_lgs = hu.find_lg(halo_df, this_model, center, radius, center_cut=True, search='Box')
-                    else:
-                        print('Problems with file: ', this_ahf, '. Reading the file results in zero length.')
+                    these_halos = hu.find_halos(data=halo_df, center=these_lgs[i].geo_com(), radius=radius, search='Box')
+                    these_halos = these_halos.drop(these_halos.columns[18:], axis=1)
 
-                # Check if there is at least one LG in the selection
-                if len(these_lgs) > 0:
+                    out_file_pkl = base_path_out + code + '_' + str(i) + '.pkl'
+                    out_file_csv = base_path_out + code + '_' + str(i) + '.csv'
 
-                    # Save simu info in LG object
-                    for i in range(0, len(these_lgs)):
-                        these_lgs[i].code_simu = code
-                        these_lgs[i].code_sub = sub
+                    print(f'Saving LG output to files {out_file_pkl} and {out_file_csv}')
+                    pkl.dump(these_lgs, open(out_file_pkl, 'wb'))
+                    these_halos.to_csv(out_file_csv)
 
-                    print('Saving LG output to file: ', out_file_pkl)
-                    out_f_pkl = open(out_file_pkl, 'wb')
-                    pkl.dump(these_lgs, out_f_pkl)
-                    out_f_pkl.close()
-
-                    for lg in these_lgs:
-                        try:
-                            print(code, '_', sub, ' --> found a LG candidate with properties: ')
-                            lg.info()
-        
-                            # Append the LG to the dataframe
-                            this_row = lg.info(dump=False)
-                            this_series = pd.Series(this_row, index=cols)
-                            all_lgs_df = all_lgs_df.append(this_series, ignore_index=True)
-                        except:
-                            print('Error on simu ', code, '_', sub, ', skipping LG')
-
-    # Save CSV output file
-    all_lgs_df.to_csv(out_all_lgs_csv)
+    return these_lgs
 
 
 def lg_density_fb():
@@ -556,7 +547,7 @@ def lg_density_fb():
         for i, model in enumerate(lg_model_names):
             this_model = lg_models[lgmd[model]]
 
-            lgs = select_lgs(data=data, lg_model=this_model)
+            lgs = hu.select_lgs(data=data, lg_model=this_model)
             n_lgs = len(lgs)
 
             tot_lgs[i] += n_lgs
@@ -608,7 +599,7 @@ def lg_density_lgf(resolution='1024'):
     for i, model in enumerate(lg_model_names):
         this_model = lg_models[lgmd[model]]
 
-        lgs = select_lgs(data=data, lg_model=this_model, lgf=True)
+        lgs = hu.select_lgs(data=data, lg_model=this_model, lgf=True)
         n_lgs = len(lgs)
 
         tot_lgs[i] += n_lgs
@@ -677,45 +668,11 @@ def halo_density_lgf(resolution='512', r=6000.0):
     return tot_lgs
 
 
-def select_lgs(data=None, lg_model=None, lgf=False, dist=6.0e+3):
-    '''
-    Pass a local group model and select lgs in a dataframe accordingly
-    Returns a new dataframe with the selected halos 
-    '''
-    
-    m_min = lg_model.m_min
-    m_max = lg_model.m_max
-    r_min = lg_model.r_min
-    r_max = lg_model.r_max
-    m_ratio = lg_model.mratio_max
-    vrad_max = lg_model.vrad_max
-
-    data['ratio'] = data['M_M31'] / data['M_MW']
-
-    select = data[data['ratio'] < m_ratio]
-    select = select[select['Vrad'] < vrad_max]
-    select = select[select['R'] > r_min]
-    select = select[select['R'] < r_max]
-    select = select[select['M_M31'] < m_max]
-    select = select[select['M_MW'] > m_min]
-
-    if lgf:
-        c = [5.0e+4 for i in range(0, 3)]
-        c = np.array(c)
-
-        select['D'] = select[x_col].apply(lambda x: t.distance(x, c), axis=1)
-        select = select[select['D'] < dist]
-
-    return select
-
-
 if __name__ == "__main__":
-    ''' Wrapper for LG operations '''
+    """ Wrapper for LG operations """
 
     # Define the global variables here
     simu = 'fullbox'
-    x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
-    x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
 
     '''
     n_fb = lg_density_fb()
@@ -728,17 +685,23 @@ if __name__ == "__main__":
     box = 100.0
     '''
 
+    #find_lg_fb()
+    #find_lg_lgf()
+    find_lg_lgf()
+    #halos_around_lg(simu='fullbox')
     #vol_fb = (box ** 3.0) * n_simu_fb
     #vol_lgf_I = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf_I
 
     #print(f'FB: {vol_fb}, LGF: {vol_lgf_I}')
 
     #for i in range(0, 6):
-    #    print(f'{i} {n_fb[i]} {n_lgf_I[i]/vol_lgf_I}')
+    #print(f'{i} {n_fb[i]} {n_lgf_I[i]/vol_lgf_I}')
+
+    
 
     #def frac_from_virgo(m_virgo=0.7e+14):
     #frac_from_virgo()
-    find_lg_fb()
+    #find_lg_fb()
     #fb_halos_around_lg()
     #halo_density_lgf()
     #halo_density_fb()

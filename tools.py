@@ -16,9 +16,7 @@ from sklearn.decomposition import PCA
 
 
 def spatial_pca(data=None, cols=None):
-    '''
-    Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution
-    '''
+    """ Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution """
 
     scaler = StandardScaler()
     x = data[cols].values
@@ -33,51 +31,53 @@ def spatial_pca(data=None, cols=None):
     return axx
 
 
-def inertia_tensor(data=None, cols=None, weighted=False):
-    '''
-    Compute the moment of inertia of a mass distribution of halos and get the eigenvalues
-    '''
+def inertia_tensor(x=None, w=[], weighted=False):
+    """ Compute the moment of inertia of a mass distribution of halos and get the eigenvalues """
 
-    # TODO ... maybe use some external precomputed function
-    #for ih, row in data.iterrows():
+    I = np.zeros((3, 3))
 
-    pass
+    # This is the unweighted Inertia Tensor, just set w to one
+    if len(w) < 1:
+        w = np.ones(len(x[0, :]))
+
+    I[0][0] = np.sum(w * (x[1, :] **2 +  x[2, :] **2))
+    I[1][1] = np.sum(w * (x[0, :] **2 +  x[2, :] **2))
+    I[2][2] = np.sum(w * (x[1, :] **2 +  x[0, :] **2))
+
+    I[1][0] = -np.sum(w * (x[1, :] * x[0, :]))
+    I[1][2] = -np.sum(w * (x[1, :] * x[2, :]))
+    I[0][2] = -np.sum(w * (x[0, :] * x[2, :]))
+
+    I[0][1] = I[1][0]
+    I[2][1] = I[1][2]
+    I[2][0] = I[0][2]
+
+    evs = np.linalg.eigvals(I)
+
+    evs /= max(evs)
+
+    return evs
 
 
-def check_df_bins(data=None, bins=None, col='Mvir(4)', binmode='log'):
-    '''
-    Count the number of entries of a data structure given an array of bins
-    '''
+def bin_df(data=None, x_bins=None, col='Mvir(4)', binmode='log'):
+    """ Count the number of entries of a data structure given an array of bins """
 
-    nbins = len(bins)
-    nperbin = np.zeros((nbins-1))
-    binvals = np.zeros((nbins-1))
+    nbins = len(x_bins)
+    binned = np.zeros((nbins-1))
     col_bin = 'binned'
 
-    for i in range(0, nbins-1):
-        if binmode == 'log':
-            nperbin[i] = len(data[np.log10(data[col]) > bins[i]])
-
-    # TODO why is this commented?
-    '''
-
-        else:
-            nperbin[i] = len(data[(data[col] > bins[i]) & (data[col] < bins[i+1])])
-    '''
+    if binmode == 'log':
+        data['Mlog'] = np.log10(data[col])
+        col = 'Mlog'
 
     for i in range(0, nbins-1):
-        binvals[i] = 0.5 * (bins[i] + bins[i+1])
+        binned[i] = len(data[(data[col] > x_bins[i])]) 
 
-    #data[col_bin] = pd.cut(np.log10(data[col]), bins=bins)
-    #nperbin = data.groupby(col_bin).count().values
-
-    return (binvals, nperbin)
+    return binned
 
 
 def gen_bins(nbins=None, binmax=None, binmin=None, binmode='log'):
-    '''
-    Simple tool to generate bin intervals
-    '''
+    """ Simple tool to generate bin intervals """
 
     if binmode == 'log':
         bmax = np.log10(binmax)
@@ -90,7 +90,7 @@ def gen_bins(nbins=None, binmax=None, binmin=None, binmode='log'):
     bins = np.zeros((nbins))
     step = (bmax - bmin) / float(nbins)
     bins[0] = bmin
-    print(bmax, bmin, nbins, step)
+
     for i in range(1, nbins):
         bins[i] = bins[i-1] + step
 
@@ -135,12 +135,7 @@ def shift(center, r):
 def module(vec):
     """ Very basic operation, there is for sure some quicker way of implementing this but whatever """
 
-    elem = 0.0
-
-    for v in vec:
-        elem += pow(v, 2)
-
-    return np.sqrt(elem)
+    return np.sqrt(np.sum(v **2.0))
 
 
 def find_nearest_node_index(x=None, grid=None, box=None):
@@ -319,9 +314,7 @@ def smooth_web(vweb, x_point=None, smooth_length=1.5, smooth_type='avg'):
 
 
 def check_units(data=None, cols=None):
-    '''
-    Check if the units used are consistent
-    '''
+    """ Check if the units used are consistent """
 
     n_pts = int(len(data) * 0.5)
 
@@ -340,9 +333,7 @@ def check_units(data=None, cols=None):
 
 
 def ahf_header():
-    '''
-    Just in case you were wondering how the header of an AHF file looks like...
-    '''
+    """ Just in case you were wondering how the header of an AHF file looks like... """
 
     ahf_header = ['numSubStruct(3)', 'Mvir(4)', 'npart(5)', 'Xc(6)', 'Yc(7)', 'Zc(8)',
        'VXc(9)', 'VYc(10)', 'VZc(11)', 'Rvir(12)', 'Rmax(13)', 'r2(14)',
@@ -367,9 +358,7 @@ def ahf_header():
 
 
 def rs_header():
-    '''
-    RockStar file header
-    '''
+    """ RockStar file header """
 
     rs_header = ['#ID', 'DescID', 'Mvir', 'Vmax', 'Vrms', 'Rvir', 'Rs', 'Np',
             'X', 'Y', 'Z', 'VX', 'VY', 'VZ', 'JX', 'JY', 'JZ', 'Spin', 'rs_klypin',
@@ -381,9 +370,7 @@ def rs_header():
 
 
 def header_rs2ahf(rs_head):
-    '''
-    Convert header from ahf to rockstar
-    '''
+    """ Convert header from ahf to rockstar """
 
     ahf_head = ahf_header()
     #rs_head = rs_header()

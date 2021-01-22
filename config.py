@@ -12,7 +12,6 @@ import os
 
 
 def gen_runs(ini, end):
-    ''' Very easy '''
 
     runs = []
     for i in range(ini, end):
@@ -23,8 +22,8 @@ def gen_runs(ini, end):
 
 
 def gen_all_runs(i0, i1, g0, g1):
-    runs = []
 
+    runs = []
     main = gen_runs(i0, i1)
     subs = gen_runs(g0, g1)
 
@@ -37,8 +36,8 @@ def gen_all_runs(i0, i1, g0, g1):
 
 
 def sub_runs():
-    sub_runs = []
 
+    sub_runs = []
     sub_runs.append('00')
     sub_runs.append('01')
     sub_runs.append('02')
