@@ -117,6 +117,7 @@ def halos_around_lg(verbose=False, simu='fullbox'):
         lg_suffix = '.pkl'
 
         runs = cfg.gen_runs(0, 5)
+        n_lg_max = 1000
 
         # Output file prefixes
         df_list_out = 'output/lg_fb_df.pkl'
@@ -124,15 +125,17 @@ def halos_around_lg(verbose=False, simu='fullbox'):
     
     elif simu == 'lgf':
 
-        lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_HALOS/halos_around_lg_'
+        res = '1024'
+        lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_' +  res + '/halos_around_lg_'
         halos_suffix = '.csv'
         lg_suffix = '.pkl'
 
-        runs = cfg.gen_runs(0, 5)
+        runs = cfg.gen_all_runs(0, 100, 0, 40)
+        n_lg_max = 7
 
         # Output file prefixes
-        df_list_out = 'output/lg_fb_df.pkl'
-        mf_list_out = 'output/lg_fb_mf.pkl'
+        df_list_out = 'output/lg_lgf_df.pkl'
+        mf_list_out = 'output/lg_lgf_mf.pkl'
 
     # We will append all dataframes to this list
     df_list = []
@@ -148,25 +151,30 @@ def halos_around_lg(verbose=False, simu='fullbox'):
     
     radii = [1000.0 * j for j in range(r_min, r_max)]
 
-    n_lg_max = 1000
     this_lg_df = pd.DataFrame(columns = hu.LocalGroup(None, None).header(dump=False))
+
+    #print(this_lg_df.columns)
 
     # We first read in all LGs and remove duplicates 
     for run in runs:
         all_n_tot.append(len(lg_list))
 
         # Use tqdm to produce a nice progress bar
-        for i in tqdm(range(0, n_lg_max)):
+        for i in range(0, n_lg_max):
 
             lg_file_pkl = lg_file_base + run + '_' + str(i) + lg_suffix
 
             # Check that the file exists
             if os.path.isfile(lg_file_pkl):
                 this_lg = pkl.load(open(lg_file_pkl,'rb'))
+                this_lg.code_simu = run
                 lg_list.append(this_lg)
                 this_row = this_lg.info(dump=False)
                 this_series = pd.Series(this_row, index = this_lg_df.columns)
                 this_lg_df = this_lg_df.append(this_series, ignore_index=True)
+
+    all_n_tot = np.sort(np.array(list(set(all_n_tot)), dtype=int))
+    #print(all_n_tot)
 
     # Compute the raw number of LG candidates
     n_lg = len(lg_list)
@@ -193,14 +201,19 @@ def halos_around_lg(verbose=False, simu='fullbox'):
     # These mass bins will be used for all LGs
     x_bins = t.gen_bins(nbins=n_bins, binmax=bin_max, binmin=bin_min, binmode='log')
     
+    codes = this_lg_df['simu_code'].unique()
+
     # Loop on all the rows of the dataframe
     for i, row in tqdm(this_lg_df.iterrows()):
         
-        run = row['sub_code']
+        run = row['simu_code']
         masses_r = []
+        
+        ind_run = np.where(codes == run)
 
         # We need to rescale the index of the dataframe
-        i = i - all_n_tot[int(run)]
+        i = i - all_n_tot[ind_run[0][0]]
+        #print(ind_run, ind_run[0][0], run, i)
         lg_list_csv = lg_file_base + run + '_' + str(i) + halos_suffix
 
         this_halos = pd.read_csv(lg_list_csv)
@@ -521,7 +534,7 @@ def find_lg_lgf():
                     out_file_csv = base_path_out + code + '_' + str(i) + '.csv'
 
                     print(f'Saving LG output to files {out_file_pkl} and {out_file_csv}')
-                    pkl.dump(these_lgs, open(out_file_pkl, 'wb'))
+                    pkl.dump(these_lgs[i], open(out_file_pkl, 'wb'))
                     these_halos.to_csv(out_file_csv)
 
     return these_lgs
@@ -687,8 +700,7 @@ if __name__ == "__main__":
 
     #find_lg_fb()
     #find_lg_lgf()
-    find_lg_lgf()
-    #halos_around_lg(simu='fullbox')
+    halos_around_lg(simu='lgf')
     #vol_fb = (box ** 3.0) * n_simu_fb
     #vol_lgf_I = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf_I
 

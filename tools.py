@@ -135,7 +135,7 @@ def shift(center, r):
 def module(vec):
     """ Very basic operation, there is for sure some quicker way of implementing this but whatever """
 
-    return np.sqrt(np.sum(v **2.0))
+    return np.sqrt(np.sum(vec **2.0))
 
 
 def find_nearest_node_index(x=None, grid=None, box=None):
