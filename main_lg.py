@@ -533,6 +533,8 @@ def plot_halos_around_lg():
                 pca_t[i].append(pca_t_ord)
                 triax[i].append([triax_i, triax_iw, triax_pca])
 
+        print(triax[0])
+
         # Set some useful variables
         percentiles = [20, 50, 80, 0, 100]
         rho0 = 41.0
@@ -550,28 +552,18 @@ def plot_halos_around_lg():
         # Triax is three triax values with three percentile intervals
         triax_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
 
-        print(dens[0])
-        print(dens[10])
-
         # Loop on each row (i.e. radius)
         for i in range(0, n_rows):
-            
-            #print(i, np.array(mmax[i])/1.0e+12)
             dens_perc[:, i] = np.percentile(dens[i], q=percentiles) / rho0
             mmax_perc[:, i] = np.percentile(mmax[i], q=percentiles) / rho0
             
             # Loop on a, b, c axes and three triaxialities
             for j in range(0, 3):
-                
                 i_t_perc[:, j, i] = np.percentile(i_t[i][j], q=percentiles)
                 iw_t_perc[:, j, i] = np.percentile(iw_t[i][j], q=percentiles)
                 pca_t_perc[:, j, i] = np.percentile(pca_t[i][j], q=percentiles)
                 triax_perc[:, j, i] = np.percentile(triax[i][j], q=percentiles)
     
-                #print(i, j, iw_t[i][j])
-                #print(triax[i][j])
-                #print(triax_perc[:, j, i])
-
         return dens_perc, mmax_perc, i_t_perc, iw_t_perc, pca_t_perc, triax_perc, virgo
 
 
@@ -611,12 +603,16 @@ def plot_halos_around_lg():
         
         sorted_fb = (d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb)
         pkl.dump(sorted_fb, open(file_sorted_fb, 'wb'))
-        print(d_lg)
-        print(d_lg[:, 0])
+
+        #print(d_lg)
+        print(i_lg[3, 0, :])
+
+        ''''
         print(d_lg[:, 1])
         print(d_lg[:, 2])
         print(d_lg[:, 3])
         print(d_lg[:, 4])
+        '''
 
     # Otherwise read the plot-ready files from the output
     else:
@@ -627,6 +623,7 @@ def plot_halos_around_lg():
 
         sorted_fb = pkl.load(open(file_sorted_fb, 'rb'))
         d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb = sorted_fb
+
     # Median density as a function of radius
     f_out = 'output/lg_fb_dens.png'
     y_label = r'$\Delta$'
