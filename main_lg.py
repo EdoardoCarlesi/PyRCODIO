@@ -8,6 +8,7 @@
 
 import time
 import matplotlib.pyplot as plt
+import seaborn as sns
 import read_files as rf
 import halo_utils as hu
 import numpy as np
@@ -32,69 +33,6 @@ m31_col = 'M_M31'
 mw_col = 'M_MW'
 m_col = 'Mvir(4)'
 radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
-
-
-def frac_from_virgo(m_virgo=0.7e+14):
-    """ Compute the total number of LG pairs within a given radius from Virgo-like clusters """
-
-    fb_runs = cfg.gen_runs(0, 5)
-    file_base = 'output/lg_fb_new_'
-    suffix = '_radii.csv'
-
-    radii = [i * 1000.0 for i in range(3, 13)]
-
-    densities = np.zeros((5, 10))
-
-    for i, run in enumerate(fb_runs):
-        file_fb = file_base + run + suffix
-        data_fb = pd.read_csv(file_fb)
-        data_fb = data_fb.drop_duplicates()
-        print(data_fb.head())
-        
-        n_tot = len(data_fb)
-
-        for j, radius in enumerate(radii):
-            col_rad = 'R_' + str(radius)
-            
-            data_r = data_fb[data_fb[col_rad] > m_virgo]
-            n_r = len(data_r)
-            print(radius, n_r, n_r/n_tot, n_tot)
-
-
-def analyze_mass_max(simu='fullbox'):
-    """ Once all the necessary data has been extracted and exported to csv, run some global analysis routine """
-
-    print('Running analysis only...')
-    m_rad = np.zeros((n_lgs_pre, len(radii)))
-    
-    # Loop over the mass functions already extracted 
-    for i_lg, row in df_lgs.iterrows():
-
-        if simu == 'fullbox':
-            lg_csv = lg_csv_file + i_str + '_lg_' + str(i_lg) + '.csv'  
-            this_lgs_rad = lgs_base + i_str + '_radii.csv'  
-            
-        elif simu == 'lgf':
-            num = str('%02d' % int(row['simu_code']))
-            sub = str('%02d' % int(row['sub_code']))
-            lg_x = row[x_col].values
-            lg_csv = lg_csv_file + num + '_' + sub + '.' + str(i_lg) + '.csv'
-            this_lgs_rad = lgs_base + '_radii.csv'  
-
-        if os.path.isfile(lg_csv):
-            df_tmp = pd.read_csv(lg_csv)
-            print('Reading: ', lg_csv)
-                
-            for i_r, rad in enumerate(radii):
-                df_tmp = df_tmp[df_tmp[d_col] > 2000.0]
-                m_max = df_tmp[df_tmp[d_col] < rad][m_col].max()
-                m_rad[i_lg, i_r] = m_max
-
-    for i_r, r_col in enumerate(r_str):
-        df_lgs_orig[r_col] = m_rad[:, i_r]
-
-    print('Saving to: ', this_lgs_rad)
-    df_lgs_orig.to_csv(this_lgs_rad)
 
 
 def halos_around_lg(verbose=False, simu='fullbox'):
@@ -206,9 +144,6 @@ def halos_around_lg(verbose=False, simu='fullbox'):
         this_halos = pd.read_csv(lg_list_csv)
         this_x = np.reshape(row[x_col].values, (3, 1))
 
-        # WARNING: this solution is extremely slow
-        #this_halos[d_col] = this_halos[x_col_ahf].T.apply(lambda x: t.distance(x, this_x))
-    
         # Using NP arrays in this way we speed up the code by a factor of 30!!!!!!
         all_x = this_halos[x_col_ahf].T.values
         all_x_d = np.sum((all_x - this_x) ** 2.0, axis=0)
@@ -527,145 +462,208 @@ def find_lg_lgf():
     return these_lgs
 
 
-def lg_density_fb():
-    """ Compute the density of LGs in a series of FB random simulations """
+def plot_halos_around_lg():
+    """ This function returns the properties of triaxiality/density around the LG for both simulations """
 
-    i_simu_start = 0
-    i_simu_end = 5
-    
-    lg_models, lgmd = cfg.lg_models()
-    lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
-    tot_lgs = np.zeros(6, dtype=int)
+    #radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
+    data_fb = pkl.load(open('output/lg_fb_df.pkl', 'rb'))
+    data_lg = pkl.load(open('output/lg_lgf_df.pkl', 'rb'))
 
-    for i_simu in range(i_simu_start, i_simu_end):
-        
-        lg_file_csv = 'output/lg_fb_new_0' + str(i_simu) + '.csv'  
-        fb_file_csv = '/home/edoardo/CLUES/DATA/FullBox/0' + str(i_simu) + '.csv'  
-        data = pd.read_csv(lg_file_csv)
-        data = data.drop_duplicates()
+    # Column names, group them
+    col_d = 'Dens'
+    col_mmax = 'Mmax'
+    col_mtot = 'Mtot'
+    col_I = ['I_a', 'I_b', 'I_c']
+    col_Iw = ['Iw_a', 'Iw_b', 'Iw_c']
+    col_pca = ['PCA_a', 'PCA_b', 'PCA_c']
 
-        for i, model in enumerate(lg_model_names):
-            this_model = lg_models[lgmd[model]]
+    # Do we want to read all the data and sort it or load from .pkl
+    sort_data = False
 
-            lgs = hu.select_lgs(data=data, lg_model=this_model)
-            n_lgs = len(lgs)
+    # Initialize some variables
+    radii = data_lg[0]['R'].values
 
-            tot_lgs[i] += n_lgs
-
-    return tot_lgs
+    file_sorted_lg = 'output/sorted_lg.pkl'
+    file_sorted_fb = 'output/sorted_fb.pkl'
 
 
-def halo_density_fb(lg_models=None, r=6000.0):
-    """ Density of halos within a given mass range in FB random simulations """
+    def sort_data(data=None, mvirgo=0.7e+14):
+        """ This procedure will be repeated for LGF and FB halos """
+        n_rows = len(data[0])
 
-    i_simu_start = 1
-    i_simu_end = 5
-    tot_lgs = np.zeros(6, dtype=int)
+        # Initialize the lists that will contain all the data
+        dens = [[] for i in range(0, n_rows)]
+        mmax = [[] for i in range(0, n_rows)]
+        mtot = [[] for i in range(0, n_rows)]
+        i_t = [[] for i in range(0, n_rows)]
+        iw_t = [[] for i in range(0, n_rows)]
+        pca_t = [[] for i in range(0, n_rows)]
+        triax = [[] for i in range(0, n_rows)]
+        virgo = np.zeros(n_rows)
 
-    lg_models, lgmd = cfg.lg_models()
-    lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
-    tot_lgs = np.zeros(6, dtype=int) 
- 
-    mass_col = 'numSubStruct(3)'
+        # Initialize a counter
+        ind = 0
 
-    for i_simu in range(i_simu_start, i_simu_end):
-        
-        fb_file_csv = '/home/edoardo/CLUES/DATA/FullBox/0' + str(i_simu) + '/snapshot_054.z0.000.AHF_halos.csv'  
-        data = pd.read_csv(fb_file_csv)
+        # Loop over the list of dataframes, collect all data
+        for df in data[0:5]:
 
-        for i, lg_model_name in enumerate(lg_model_names):
-            lg_model = lg_models[lgmd[lg_model_name]]
-            select = data[(data[mass_col] > lg_model.m_min) & (data[mass_col] < lg_model.m_max)]
-            tot_lgs[i] += len(select)
-            print(f'{i} {len(select)}')
+            for i, row in df.iterrows():
 
-    for i in range(0, 6):
-        print(f'M{i} {tot_lgs[i]}')
+                # Gather mass and maximum mass at a given radius
+                dens[i].append(row[col_d])
+                mmax[i].append(row[col_mmax])
+                mtot[i].append(row[col_mtot])
 
-    return tot_lgs
+                if float(mmax[i][len(mmax[i])-1]) > mvirgo:
+                    virgo[i] += 1.0
 
+                # Gather the inertia tensors and triaxialities
+                i_t_ord = np.sort(row[col_I].values)[::-1]
+                iw_t_ord = np.sort(row[col_Iw].values)[::-1]
+                pca_t_ord = np.sort(row[col_pca].values)[::-1]
 
-def lg_density_lgf(resolution='1024'):
-    """ Density of LGs in LGF simulations """
+                # Compute the triaxialities using three eigenvalues
+                triax_i = t.triaxiality(*i_t_ord)
+                triax_iw = t.triaxiality(*iw_t_ord)
+                triax_pca = t.triaxiality(*pca_t_ord)
 
-    lg_models, lgmd = cfg.lg_models()
-    lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
-    tot_lgs = np.zeros(6, dtype=int) 
-    
-    lg_file_csv = 'output/lg_pairs_' + resolution + '.csv'  
-    data = pd.read_csv(lg_file_csv)
-    data = data.drop_duplicates()
+                # Append it all
+                i_t[i].append(i_t_ord)
+                iw_t[i].append(iw_t_ord)
+                pca_t[i].append(pca_t_ord)
+                triax[i].append([triax_i, triax_iw, triax_pca])
 
-    for i, model in enumerate(lg_model_names):
-        this_model = lg_models[lgmd[model]]
+        # Set some useful variables
+        percentiles = [20, 50, 80, 0, 100]
+        rho0 = 41.0
+        n_perc = len(percentiles)
 
-        lgs = hu.select_lgs(data=data, lg_model=this_model, lgf=True)
-        n_lgs = len(lgs)
+        # These contain median, lower percentile and higher percentile
+        dens_perc = np.zeros((n_perc, n_rows), dtype=float)
+        mmax_perc = np.zeros((n_perc, n_rows), dtype=float)
 
-        tot_lgs[i] += n_lgs
+        # Eigenvalue sets
+        i_t_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
+        iw_t_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
+        pca_t_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
 
-    for i in range(0, 6):
-        print(f'res={resolution}, M{i}: {tot_lgs[i]}')
+        # Triax is three triax values with three percentile intervals
+        triax_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
 
-    return tot_lgs
+        print(dens[0])
+        print(dens[10])
 
-
-def halo_density_lgf(resolution='512', r=6000.0):
-    """ Density of haloes within a given mass range in LGF runs """
-
-    # FIXME halo density is A PRIORI so that we DO NOT have to read LG pairs.
-    # We only look for haloes within 5/6 Mpcs of the box center!
-
-    print(f'Running halo_density_lgf() for resolution={resolution}')
-
-    vol = (r ** 3.0) * 4.0 / 3.0 * np.pi
-    center = [5.0e+4]
-
-    loc_center_path = '/media/edoardo/Elements/CLUES/DATA/CSV/' + resolution + '/ahf_'
-
-    ntot = 0
-    ncat = 0
-    runs = cfg.gen_runs(0, 80)
-    subs = cfg.gen_runs(0, 40)
-
-    lg_models, lgmd = cfg.lg_models()
-    lg_model_names = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
-    tot_lgs = np.zeros(6, dtype=int) 
-
-    # Loop over ALL simulation runs
-    for run in runs:
-
-        for sub in subs: 
-            this_run = run + '_' + sub
-            this_file = loc_center_path + this_run + '.csv'
-
-            # Check if file exists
-            if os.path.isfile(this_file):
-                ncat += 1
-                data = pd.read_csv(this_file)
-                data['D'] = data[x_col_ahf].T.apply(lambda x: t.distance(x, center))
-
-                # Select the halos within the chosen radius only
-                select = data[data['D'] < r]
-
-                if len(select) == 0:
-                    new_center = [c/1.e+3 for c in center]
-                    new_r = r / 1.e+3
-                    data['D'] = data[x_col_ahf].T.apply(lambda x: t.distance(x, new_center))
-                    select = data[data['D'] < new_r]
+        # Loop on each row (i.e. radius)
+        for i in range(0, n_rows):
             
-                for i, lg_model_name in enumerate(lg_model_names):
-                    lg_model = lg_models[lgmd[lg_model_name]]
+            #print(i, np.array(mmax[i])/1.0e+12)
+            dens_perc[:, i] = np.percentile(dens[i], q=percentiles) / rho0
+            mmax_perc[:, i] = np.percentile(mmax[i], q=percentiles) / rho0
+            
+            # Loop on a, b, c axes and three triaxialities
+            for j in range(0, 3):
+                
+                i_t_perc[:, j, i] = np.percentile(i_t[i][j], q=percentiles)
+                iw_t_perc[:, j, i] = np.percentile(iw_t[i][j], q=percentiles)
+                pca_t_perc[:, j, i] = np.percentile(pca_t[i][j], q=percentiles)
+                triax_perc[:, j, i] = np.percentile(triax[i][j], q=percentiles)
+    
+                #print(i, j, iw_t[i][j])
+                #print(triax[i][j])
+                #print(triax_perc[:, j, i])
 
-                    select = select[(select['Mvir(4)'] < lg_model.m_max) & (select['Mvir(4)'] > lg_model.m_min)]
-                    tot_lgs[i] += len(select)
+        return dens_perc, mmax_perc, i_t_perc, iw_t_perc, pca_t_perc, triax_perc, virgo
 
-                    #print(f'M{i} -> Run: {this_run}, n:{tot_lgs[i]}')
 
-    for i in range(0, 6):
-        print(f'M{i+1}: {tot_lgs[i]}, Ncat: {ncat}')
+    def plot_f_r(x=radii, y0=None, y0_err=[None, None], y1=None, y1_err=[None, None], y_label=None, fout=None):
+        """ Plot a radius-dependent quantity, with or without error """
 
-    return tot_lgs
+        # General plot values
+        color0 = 'red'
+        color1 = 'blue'
+    
+        # Line labels
+        line0 = 'LGF'
+        line1 = 'FB'
+
+        # First plot densities
+        plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
+        plt.ylabel(y_label) 
+
+        plt.plot(x, y0, color=color0, label=line0)
+        plt.plot(x, y1, color=color1, label=line1)
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(fout)
+        plt.close()
+        plt.cla()
+        plt.clf()
+
+    # If we want to load and sort the data from scratch
+    if sort_data:
+
+        # Get the values using the above defined function
+        d_lg, m_lg, i_lg, iw_lg, pca_lg, t_lg, virgo_lg = sort_data(data=data_lg)
+        d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb = sort_data(data=data_fb)
+
+        sorted_lg = (d_lg, m_lg, i_lg, iw_lg, pca_lg, t_lg, virgo_lg)
+        pkl.dump(sorted_lg, open(file_sorted_lg, 'wb'))
+        
+        sorted_fb = (d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb)
+        pkl.dump(sorted_fb, open(file_sorted_fb, 'wb'))
+        print(d_lg)
+        print(d_lg[:, 0])
+        print(d_lg[:, 1])
+        print(d_lg[:, 2])
+        print(d_lg[:, 3])
+        print(d_lg[:, 4])
+
+    # Otherwise read the plot-ready files from the output
+    else:
+
+        # Load the pkl sorted values
+        sorted_lg = pkl.load(open(file_sorted_lg, 'rb'))
+        d_lg, m_lg, i_lg, iw_lg, pca_lg, t_lg, virgo_lg = sorted_lg
+
+        sorted_fb = pkl.load(open(file_sorted_fb, 'rb'))
+        d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb = sorted_fb
+    # Median density as a function of radius
+    f_out = 'output/lg_fb_dens.png'
+    y_label = r'$\Delta$'
+    plot_f_r(y0=d_lg[1, :], y1=d_fb[1, :], y_label=y_label, fout=f_out)
+
+    # Max mass as a function of radius
+    f_out = 'output/lg_fb_mmax.png'
+    y_label = r'$M_{max}$'
+    plot_f_r(y0=np.log10(m_lg[4, :]), y1=np.log10(m_fb[4, :]), y_label=y_label, fout=f_out)
+
+    # Triaxialities
+    f_out_base = 'output/lg_fb_triax_'
+    y_labels = ['T_I', 'T_Iw', 'T_PCA']
+
+    for i, y_label in enumerate(y_labels):
+        f_out = f_out_base + y_label + '.png'
+        plot_f_r(y0=t_lg[1, i], y1=t_fb[1, i], y_label=y_label, fout=f_out)
+
+    # PCA evs
+    f_out_pca = 'output/lg_fb_pca.png'
+
+    # Inertia tensor
+    f_out_iw = 'output/lg_fb_inertia.png'
+
+    # Weighter inertia tensor
+    f_out_i = 'output/lg_fb_inertiaw.png'
+
+    return None
+
+
+def plot_mf_around_lg():
+    """ Read and compare the mass function bins for """
+
+    data_fb = pkl.load(open('output/lg_fb_mf.pkl', 'rb'))
+    data_lg = pkl.load(open('output/lg_lgf_mf.pkl', 'rb'))
+
+    return None
 
 
 if __name__ == "__main__":
@@ -675,10 +673,10 @@ if __name__ == "__main__":
     simu = 'fullbox'
 
     '''
-    n_fb = lg_density_fb()
+    n = lg_density()
     n_lgf_I = lg_density_lgf(resolution='512')
     n_lgf_II = lg_density_lgf(resolution='1024')
-    n_simu_fb = 5
+    n_simu = 5
     n_simu_lgf_II = 314
     n_simu_lgf_I = 1000
     r = 6.0
@@ -687,7 +685,10 @@ if __name__ == "__main__":
 
     #find_lg_fb()
     #find_lg_lgf()
-    find_lg_lgf()
+    #find_lg_lgf()
+    
+    plot_halos_around_lg()
+
     #halos_around_lg(simu='fullbox')
     #vol_fb = (box ** 3.0) * n_simu_fb
     #vol_lgf_I = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf_I

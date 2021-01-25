@@ -31,6 +31,12 @@ def spatial_pca(data=None, cols=None):
     return axx
 
 
+def triaxiality(a, b, c):
+    """ Franx et al. 1991 defintion """
+
+    return (c ** 2.0 - b **2.0) / (c ** 2.0 - a ** 2.0)
+
+
 def inertia_tensor(x=None, w=[], weighted=False):
     """ Compute the moment of inertia of a mass distribution of halos and get the eigenvalues """
 
