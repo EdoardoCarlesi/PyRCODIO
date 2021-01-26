@@ -505,7 +505,7 @@ def plot_halos_around_lg():
         ind = 0
 
         # Loop over the list of dataframes, collect all data
-        for df in data[0:200]:
+        for df in data[0:]:
 
             for i, row in df.iterrows():
 
