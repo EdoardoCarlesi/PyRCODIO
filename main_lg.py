@@ -505,13 +505,13 @@ def plot_halos_around_lg():
         ind = 0
 
         # Loop over the list of dataframes, collect all data
-        for df in data[0:5]:
+        for df in data[0:200]:
 
             for i, row in df.iterrows():
 
                 # Gather mass and maximum mass at a given radius
                 dens[i].append(row[col_d])
-                mmax[i].append(row[col_mmax])
+                mmax[i].append(row[col_mmax]/1.0e+12)
                 mtot[i].append(row[col_mtot])
 
                 if float(mmax[i][len(mmax[i])-1]) > mvirgo:
@@ -528,15 +528,14 @@ def plot_halos_around_lg():
                 triax_pca = t.triaxiality(*pca_t_ord)
 
                 # Append it all
-                i_t[i].append(i_t_ord)
+                i_t[i].append(list(i_t_ord))
                 iw_t[i].append(iw_t_ord)
                 pca_t[i].append(pca_t_ord)
                 triax[i].append([triax_i, triax_iw, triax_pca])
 
-        print(triax[0])
-
         # Set some useful variables
-        percentiles = [20, 50, 80, 0, 100]
+        #percentiles = [0, 20, 50, 80, 100]
+        percentiles = [20, 50, 80]
         rho0 = 41.0
         n_perc = len(percentiles)
 
@@ -545,25 +544,32 @@ def plot_halos_around_lg():
         mmax_perc = np.zeros((n_perc, n_rows), dtype=float)
 
         # Eigenvalue sets
-        i_t_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
-        iw_t_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
-        pca_t_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
+        i_t_perc = np.zeros((3, n_perc, n_rows), dtype=float)
+        iw_t_perc = np.zeros((3, n_perc, n_rows), dtype=float)
+        pca_t_perc = np.zeros((3, n_perc, n_rows), dtype=float)
 
         # Triax is three triax values with three percentile intervals
         triax_perc = np.zeros((n_perc, 3, n_rows), dtype=float)
 
+        # Make this stuff some humanly-manageable matrix
+        i_t = np.array(i_t).T
+        iw_t = np.array(iw_t).T
+        pca_t = np.array(pca_t).T
+        triax = np.array(triax).T
+
         # Loop on each row (i.e. radius)
         for i in range(0, n_rows):
             dens_perc[:, i] = np.percentile(dens[i], q=percentiles) / rho0
-            mmax_perc[:, i] = np.percentile(mmax[i], q=percentiles) / rho0
+            mmax_perc[:, i] = np.percentile(mmax[i], q=percentiles)
             
             # Loop on a, b, c axes and three triaxialities
             for j in range(0, 3):
-                i_t_perc[:, j, i] = np.percentile(i_t[i][j], q=percentiles)
-                iw_t_perc[:, j, i] = np.percentile(iw_t[i][j], q=percentiles)
-                pca_t_perc[:, j, i] = np.percentile(pca_t[i][j], q=percentiles)
-                triax_perc[:, j, i] = np.percentile(triax[i][j], q=percentiles)
-    
+                i_t_perc[j, :, i] = np.percentile(i_t[j, :, i], q=percentiles)
+                iw_t_perc[j, :, i] = np.percentile(iw_t[j, :, i], q=percentiles)
+                pca_t_perc[j, :, i] = np.percentile(pca_t[j, :, i], q=percentiles)
+                triax_perc[j, :, i] = np.percentile(triax[j, :, i], q=percentiles)
+
+        #print(i_t_perc[:, :, 0:4])
         return dens_perc, mmax_perc, i_t_perc, iw_t_perc, pca_t_perc, triax_perc, virgo
 
 
@@ -604,10 +610,9 @@ def plot_halos_around_lg():
         sorted_fb = (d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb)
         pkl.dump(sorted_fb, open(file_sorted_fb, 'wb'))
 
-        #print(d_lg)
-        print(i_lg[3, 0, :])
-
         ''''
+        print(d_lg)
+        print(i_lg[3, 0, :])
         print(d_lg[:, 1])
         print(d_lg[:, 2])
         print(d_lg[:, 3])
@@ -632,7 +637,7 @@ def plot_halos_around_lg():
     # Max mass as a function of radius
     f_out = 'output/lg_fb_mmax.png'
     y_label = r'$M_{max}$'
-    plot_f_r(y0=np.log10(m_lg[4, :]), y1=np.log10(m_fb[4, :]), y_label=y_label, fout=f_out)
+    plot_f_r(y0=np.log10(m_lg[1, :]), y1=np.log10(m_fb[1, :]), y_label=y_label, fout=f_out)
 
     # Triaxialities
     f_out_base = 'output/lg_fb_triax_'
@@ -640,13 +645,19 @@ def plot_halos_around_lg():
 
     for i, y_label in enumerate(y_labels):
         f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=t_lg[1, i], y1=t_fb[1, i], y_label=y_label, fout=f_out)
+        plot_f_r(y0=t_lg[i, 1, :], y1=t_fb[i, 1, :], y_label=y_label, fout=f_out)
 
     # PCA evs
-    f_out_pca = 'output/lg_fb_pca.png'
+    f_out_pca = 'output/lg_fb_pca_'
 
     # Inertia tensor
-    f_out_iw = 'output/lg_fb_inertia.png'
+    f_out_base = 'output/lg_fb_inertia_'
+    y_labels = ['T_I_a', 'T_I_b', 'T_I_c']
+
+    for i, y_label in enumerate(y_labels):
+        f_out = f_out_base + y_label + '.png'
+        plot_f_r(y0=i_lg[i, 1, :], y1=i_fb[i, 1, :], y_label=y_label, fout=f_out)
+
 
     # Weighter inertia tensor
     f_out_i = 'output/lg_fb_inertiaw.png'
