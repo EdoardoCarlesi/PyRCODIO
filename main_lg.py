@@ -3,7 +3,7 @@
     Edoardo Carlesi (2020)
     ecarlesi83@gmail.com
 
-    main_lg: find LGs, extract and analyze their properties 
+    main_lg: find LGs, extract and analyze their properties
 '''
 
 import time
@@ -23,11 +23,12 @@ from tqdm import tqdm
 global simu, ahf_base, ahf_file, ahf_file_csv, lgs_base
 global i_ini_tot, i_end_tot, x_col, x_col_ahf, m_col, d_col
 global m_min, v_max, masscut_pca, mw_col, m31_col
-global radii_cols
+global radii_cols, lg_models
 
 # Define them here and use them through all the program
 x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
 x_col_ahf = ['Xc(6)', 'Yc(7)', 'Zc(8)']
+lg_models = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
 d_col = 'Distance'
 m31_col = 'M_M31'
 mw_col = 'M_MW'
@@ -35,17 +36,61 @@ m_col = 'Mvir(4)'
 radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
 
 
+def lg_density(simu='512'):
+    """ Compute the density of the LGs """
+
+    if simu == '512':
+        f_lg_csv = 'output/lg_pairs_512.csv'
+        lgf=True
+        dist=5.e+3
+    elif simu == 'FB':
+        f_lg_csv = 'output/lg_pairs_FB.csv'
+        lgf=True
+        dist=12.e+3
+    elif simu == '1024':
+        f_lg_csv = 'output/lg_pairs_1024.csv'
+        lgf=False
+        dist=0.0
+    else:
+        print(f'Simulation type {simu} does not exist.')
+        exit()
+
+    all_lg_models, all_lg_index = cfg.lg_models()
+    data = pd.read_csv(f_lg_csv)
+    simu_codes = data['simu_code'].values
+    sub_codes = data['sub_code'].values
+    all_codes = []
+
+    for sim, sub in zip(simu_codes, sub_codes):
+        str_sim = '%02d' % sim
+        str_sub = '%02d' % sub
+        all_codes.append(str_sim + '_' + str_sub)
+
+    all_codes_set = set(all_codes)
+    n_sims = len(all_codes_set)
+    #print(len(all_codes), len(all_codes_set))
+
+    for model in lg_models:
+        this_index = all_lg_index[model]
+        this_model = all_lg_models[this_index]
+
+        these_lgs = hu.select_lgs(data=data, lg_model=this_model, lgf=lgf, dist=dist)
+        n_lgs = len(these_lgs)
+
+        print(f'{model} {n_lgs/n_sims} {n_lgs}')
+
+
 def halos_around_lg(verbose=False, simu='fullbox'):
-    """ 
+    """
     Extract the mass functions around LG candidates in FB simulations, the most massive member at a given radius and also the density
 
     Output:
-    
+
     - one list of dataframes with properties as a function of radius:
         RADIUS, MaxMass, MatterDensity, PCA params (1, 2, 3), Triaxiality (1, 2, 3)
     - one list of dataframes including the distance from the LG center:
         AHF HALO DATA, distance from the center
-    
+
     """
 
     if simu == 'fullbox':
@@ -60,10 +105,11 @@ def halos_around_lg(verbose=False, simu='fullbox'):
         # Output file prefixes
         df_list_out = 'output/lg_fb_df.pkl'
         mf_list_out = 'output/lg_fb_mf.pkl'
-    
+
     elif simu == 'lgf':
 
-        res = '1024'
+        #res = '1024'
+        res = '512'
         lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/LG_' +  res + '/halos_around_lg_'
         halos_suffix = '.csv'
         lg_suffix = '.pkl'
@@ -72,8 +118,8 @@ def halos_around_lg(verbose=False, simu='fullbox'):
         n_lg_max = 7
 
         # Output file prefixes
-        df_list_out = 'output/lg_lgf_df.pkl'
-        mf_list_out = 'output/lg_lgf_mf.pkl'
+        df_list_out = 'output/lg_lgf_df' + res + '.pkl'
+        mf_list_out = 'output/lg_lgf_mf' + res + '.pkl'
 
     # We will append all dataframes to this list
     df_list = []
@@ -86,14 +132,14 @@ def halos_around_lg(verbose=False, simu='fullbox'):
     # These are the radii at which we want to take different shells and check for the most massive halos therein
     r_min = 2
     r_max = 13
-    
+
     radii = [1000.0 * j for j in range(r_min, r_max)]
 
     this_lg_df = pd.DataFrame(columns = hu.LocalGroup(None, None).header(dump=False))
 
     #print(this_lg_df.columns)
 
-    # We first read in all LGs and remove duplicates 
+    # We first read in all LGs and remove duplicates
     for run in runs:
         all_n_tot.append(len(lg_list))
 
@@ -117,7 +163,7 @@ def halos_around_lg(verbose=False, simu='fullbox'):
     # Compute the raw number of LG candidates
     n_lg = len(lg_list)
     print(f'LG Total found: {n_lg}')
-    
+
     # Clean the list
     this_lg_df = this_lg_df.drop_duplicates()
     n_lg_new = len(this_lg_df)
@@ -138,15 +184,15 @@ def halos_around_lg(verbose=False, simu='fullbox'):
 
     # These mass bins will be used for all LGs
     x_bins = t.gen_bins(nbins=n_bins, binmax=bin_max, binmin=bin_min, binmode='log')
-    
+
     codes = this_lg_df['simu_code'].unique()
 
     # Loop on all the rows of the dataframe
     for i, row in tqdm(this_lg_df.iterrows()):
-        
+
         run = row['simu_code']
         masses_r = []
-        
+
         ind_run = np.where(codes == run)
 
         # We need to rescale the index of the dataframe
@@ -168,7 +214,7 @@ def halos_around_lg(verbose=False, simu='fullbox'):
         for rad in radii[::-1]:
             new_row = []
             this_halos = this_halos[this_halos[d_col] < rad]
-    
+
             # Keep track of mass bins only at a given radius
             if rad == rad_mf:
                 mass = this_halos[m_col].values
@@ -176,16 +222,16 @@ def halos_around_lg(verbose=False, simu='fullbox'):
                 masses_r.append(y_bins)
 
             # Once the halos within the radius have been selected, compute some quantities
-            vol = (rad ** 3.0) * 4.0 / 3.0
+            vol = (np.pi * (rad ** 3.0)) * 4.0 / 3.0
             mmax = this_halos[m_col].max()
             mtot = np.sum(this_halos[m_col].values)
             dens = mtot / vol
 
             # Re-center all the halos around the LG center, to compute inertia tensors and PCA
             x = np.subtract(this_halos[x_col_ahf].T.values, this_x)
-            m = this_halos[m_col].values  
+            m = this_halos[m_col].values
 
-            # The eigenvalues here are not ordered! 
+            # The eigenvalues here are not ordered!
             inertia_t = t.inertia_tensor(x=x)
             inertia_tw = t.inertia_tensor(x=x, w=m)
             pca_t = t.spatial_pca(data=this_halos, cols=x_col_ahf)
@@ -199,7 +245,7 @@ def halos_around_lg(verbose=False, simu='fullbox'):
             # Loop over the newly computed eigenvalues
             for tt in inertia_t:
                 new_row.append(tt)
-            for tw in inertia_tw: 
+            for tw in inertia_tw:
                 new_row.append(tw)
             for pt in pca_t:
                 new_row.append(pt)
@@ -207,7 +253,7 @@ def halos_around_lg(verbose=False, simu='fullbox'):
             # Keep track of the lg pair number and simulation
             new_row.append(i)
             new_row.append(run)
-    
+
             # Make this a row of a pandas dataframe
             this_series = pd.Series(new_row, index = this_df.columns)
             this_df = this_df.append(this_series, ignore_index = True)
@@ -238,9 +284,9 @@ def find_lg_fb():
     if use_ahf == True:
         file_single='snapshot_054.z0.000.AHF_halos'
         #file_single='snapshot_full_054.z0.000.AHF_halos'
-        #base_file_out = 'output/lg_fb_new_'    
-        base_file_out = 'output/lg_fb_list_'    
-        base_file_halo_out = 'output/LG_HALOS/halos_around_lg_'    
+        #base_file_out = 'output/lg_fb_new_'
+        base_file_out = 'output/lg_fb_list_'
+        base_file_halo_out = 'output/LG_HALOS/halos_around_lg_'
         box_size = 100000.0
         #base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
         base_path = '/home/edoardo/CLUES/PyRCODIO/output/full.'
@@ -252,7 +298,7 @@ def find_lg_fb():
     elif use_rs == True:
         box_size = 2500000.0
         file_single = '.part'
-        base_file_out = 'output/lg_fullbox_rs_'    
+        base_file_out = 'output/lg_fullbox_rs_'
         base_path = '/home/edoardo/CLUES/DATA/RS/out_79_csv/'
         #base_path = '/z/carlesi/STORE/MultiDark/RockStarCSV/BigMD_3840_Planck1/out_79_csv/'
         sub_runs = []
@@ -282,7 +328,7 @@ def find_lg_fb():
         all_lgs = []
         if use_ahf:
             #this_ahf = base_path + run + '/' + file_single
-            this_ahf = base_path + run + base_suffix 
+            this_ahf = base_path + run + base_suffix
             print('Reading file: ', this_ahf)
             #halo_df = rf.read_ahf_halo(this_ahf, file_mpi=False)
             #halo_df = rf.read_ahf_halo(this_ahf, file_mpi=True)
@@ -293,7 +339,7 @@ def find_lg_fb():
 
         elif use_rs:
             this_rs = base_path + run + file_single
-            
+
             print('Reading file: ', this_rs)
             halo_df = pd.read_csv(this_rs)
             #halo_df = rf.read_rs_halo(read_file=this_rs, with_dask=True)
@@ -323,7 +369,7 @@ def find_lg_fb():
             for iy in range(0, n_sub_y):
                 new_time = time.time()
                 dif_time = '%.3f' % (new_time - old_time)
-                percent = '%.3f' % (100.0 * n_count/n_tot) 
+                percent = '%.3f' % (100.0 * n_count/n_tot)
                 print('Done: ', percent, '% in ', dif_time, ' seconds. Tot LGs: ', len(all_lgs), flush = True)
                 #old_time = time.time()
 
@@ -385,14 +431,14 @@ def find_lg_lgf():
     data_path = '/home/edoardo/CLUES/PyRCODIO/data/'
     file_ahf = 'snapshot_054.0000.z0.000.AHF_halos'
 
-    #resolution = '512'
-    resolution = '1024'
+    resolution = '512'
+    #resolution = '1024'
 
     # Full dataset base path
     if csvAhf == True:
-        #base_path = '/home/edoardo/Elements/CLUES/DATA/CSV/' + resolution + '/'
-        base_path = '/home/edoardo/CLUES/DATA/LGF/' + resolution + '/CSV/'
-        base_path_out = 'output/LG_' + resolution + '/halos_around_lg_' 
+        base_path = '/home/edoardo/Elements/CLUES/DATA/CSV/' + resolution + '/'
+        #base_path = '/home/edoardo/CLUES/DATA/LGF/' + resolution + '/CSV/'
+        base_path_out = 'output/LG_' + resolution + '/halos_around_lg_'
 
     elif hiResAhf == True:
         base_path = '/media/edoardo/Elements/CLUES/DATA/2048/'
@@ -407,7 +453,7 @@ def find_lg_lgf():
 
     all_halo_mah = []
 
-    # Output files 
+    # Output files
     if csvAhf == True:
         out_base_pkl = base_path + 'lg_'
         out_all_lgs_csv = 'output/lg_pairs_' + resolution + '.csv'
@@ -478,9 +524,11 @@ def find_lg_lgf():
 def plot_halos_around_lg():
     """ This function returns the properties of triaxiality/density around the LG for both simulations """
 
+    res = '512'
+
     #radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
     data_fb = pkl.load(open('output/lg_fb_df.pkl', 'rb'))
-    data_lg = pkl.load(open('output/lg_lgf_df.pkl', 'rb'))
+    data_lg = pkl.load(open('output/lg_lgf_df' + res + '.pkl', 'rb'))
 
     # Column names, group them
     col_d = 'Dens'
@@ -496,8 +544,9 @@ def plot_halos_around_lg():
     # Initialize some variables
     radii = data_lg[0]['R'].values
 
-    file_sorted_lg = 'output/sorted_lg.pkl'
+    #file_sorted_lg = 'output/sorted_lg.pkl'
     file_sorted_fb = 'output/sorted_fb.pkl'
+    file_sorted_lg = 'output/sorted_lg' + res + '.pkl'
 
 
     def sort_data(data=None, mvirgo=0.7e+14):
@@ -518,7 +567,7 @@ def plot_halos_around_lg():
         ind = 0
 
         # Loop over the list of dataframes, collect all data
-        for df in data[0:200]:
+        for df in data[0:]:
 
             for i, row in df.iterrows():
 
@@ -574,7 +623,7 @@ def plot_halos_around_lg():
         for i in range(0, n_rows):
             dens_perc[:, i] = np.percentile(dens[i], q=percentiles) / rho0
             mmax_perc[:, i] = np.percentile(mmax[i], q=percentiles)
-            
+
             # Loop on a, b, c axes and three triaxialities
             for j in range(0, 3):
                 i_t_perc[j, :, i] = np.percentile(i_t[j, :, i], q=percentiles)
@@ -592,14 +641,14 @@ def plot_halos_around_lg():
         # General plot values
         color0 = 'red'
         color1 = 'blue'
-    
+
         # Line labels
         line0 = 'LGF'
         line1 = 'FB'
 
         # First plot densities
         plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
-        plt.ylabel(y_label) 
+        plt.ylabel(y_label)
 
         plt.plot(x, y0, color=color0, label=line0)
         plt.plot(x, y1, color=color1, label=line1)
@@ -619,7 +668,7 @@ def plot_halos_around_lg():
 
         sorted_lg = (d_lg, m_lg, i_lg, iw_lg, pca_lg, t_lg, virgo_lg)
         pkl.dump(sorted_lg, open(file_sorted_lg, 'wb'))
-        
+
         sorted_fb = (d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb)
         pkl.dump(sorted_fb, open(file_sorted_fb, 'wb'))
 
@@ -673,16 +722,21 @@ def plot_halos_around_lg():
 
 
     # Weighter inertia tensor
-    f_out_i = 'output/lg_fb_inertiaw.png'
+    f_out_base = 'output/lg_fb_inertia_'
+    y_labels = ['T_Iw_a', 'T_Iw_b', 'T_Iw_c']
+
+    for i, y_label in enumerate(y_labels):
+        f_out = f_out_base + y_label + '.png'
+        plot_f_r(y0=iw_lg[i, 1, :], y1=iw_fb[i, 1, :], y_label=y_label, fout=f_out)
 
     return None
 
 
 def plot_mf_around_lg():
     """ Read and compare the mass function bins for """
-
+    res = '512'
     data_fb = pkl.load(open('output/lg_fb_mf.pkl', 'rb'))
-    data_lg = pkl.load(open('output/lg_lgf_mf.pkl', 'rb'))
+    data_lg = pkl.load(open('output/lg_lgf_mf' + res + '.pkl', 'rb'))
 
     return None
 
@@ -691,9 +745,9 @@ if __name__ == "__main__":
     """ Wrapper for LG operations """
 
     # Define the global variables here
-    simu = 'fullbox'
 
     '''
+    simu = 'fullbox'
     n = lg_density()
     n_lgf_I = lg_density_lgf(resolution='512')
     n_lgf_II = lg_density_lgf(resolution='1024')
@@ -707,9 +761,11 @@ if __name__ == "__main__":
     #find_lg_fb()
     #find_lg_lgf()
     #find_lg_lgf()
-    
-    plot_halos_around_lg()
-    #halos_around_lg(simu='fullbox')
+
+    lg_density(simu='512')
+
+    #plot_halos_around_lg()
+    #halos_around_lg(simu='lgf')
     #vol_fb = (box ** 3.0) * n_simu_fb
     #vol_lgf_I = 4.0 / 3.0 * np.pi * (r ** 3.0) * n_simu_lgf_I
 
@@ -718,7 +774,7 @@ if __name__ == "__main__":
     #for i in range(0, 6):
     #print(f'{i} {n_fb[i]} {n_lgf_I[i]/vol_lgf_I}')
 
-    
+
 
     #def frac_from_virgo(m_virgo=0.7e+14):
     #frac_from_virgo()

@@ -26,6 +26,21 @@ def spatial_pca(data=None, cols=None):
     principal = pca.fit_transform(x)
     axs = pca.explained_variance_ratio_
 
+    axx = axs #/ axs[0]
+
+    return axx
+
+
+def std_pca(x=None) : 
+    """ Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution """
+
+    #scaler = StandardScaler()
+    #x = scaler.fit_transform(x)
+    n_comp = len(x)
+    pca = PCA(n_components=n_comp)
+    principal = pca.fit_transform(x)
+    axs = pca.explained_variance_ratio_
+
     axx = axs / axs[0]
 
     return axx
@@ -37,7 +52,7 @@ def triaxiality(a, b, c):
     return (a ** 2.0 - b **2.0) / (a ** 2.0 - c ** 2.0)
 
 
-def inertia_tensor(x=None, w=[], weighted=False):
+def inertia_tensor(x=None, w=[]): 
     """ Compute the moment of inertia of a mass distribution of halos and get the eigenvalues """
 
     I = np.zeros((3, 3))

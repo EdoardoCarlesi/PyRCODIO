@@ -429,7 +429,8 @@ class LocalGroup:
             file_lg_line = [self.LG1.m(), self.LG2.m(), self.r_halos(),
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(),
                         self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),
-                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),
+                        0.0, 0.0, self.LG1.c_NFW(), self.LG2.c_NFW(),
+                        #self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),
                         self.geo_com()[0], self.geo_com()[1], self.geo_com()[2],
                         self.ang_mom(), self.energy(), self.code_simu, self.code_sub]
 
@@ -456,6 +457,7 @@ def select_lgs(data=None, lg_model=None, lgf=False, dist=6.0e+3):
     Returns a new dataframe with the selected halos 
     """
     
+    x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
     m_min = lg_model.m_min
     m_max = lg_model.m_max
     r_min = lg_model.r_min
