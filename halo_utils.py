@@ -114,7 +114,7 @@ class Halo:
         if r_sub == None:
             r_sub = self.r()
 
-        self.subhalos = find_halos(halos, self.pos(), r_sub)
+        self.subhalos = find_halos(data=halos, center=self.pos(), radius=r_sub)
 
 
 class HaloHistory:
@@ -550,7 +550,7 @@ def halo_ids_around_center(halos, center, radius):
     return ids
 
 
-def find_halos(data=None, center=None, radius=None, search='Sphere'):
+def find_halos(data=None, center=None, radius=None, d_col=None, search='Sphere'):
     """
     Given a center, find all the halo within a given radius
     Input: data is a DataFrame, center is an array, radius is a float
@@ -576,17 +576,11 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
         n_sum = np.sum(data[cols].iloc[n_col])
 
     if search == 'Sphere':
-        data[new_key] = data[cols].T.apply(lambda x: t.distance(x, center)).T
-
-        new_data = data[data[new_key] < radius]    
+        new_data = t.select_sphere(data=data, radius=radius, col=d_col, center=center, x_col=cols)
 
     # Box search should be much faster
     elif search == 'Box': 
-        condition = (data[cols[0]] > (center[0] - radius)) & (data[cols[0]] < (center[0] + radius)) &\
-                (data[cols[1]] > (center[1] - radius)) & (data[cols[1]] < (center[1] + radius)) &\
-                (data[cols[2]] > (center[2] - radius)) & (data[cols[2]] < (center[2] + radius))
-
-        new_data = data[condition]
+        new_data = t.select_box(data=data, radius=radius, col=d_col, center=center, x_col=cols)
 
     return new_data
 
@@ -633,7 +627,7 @@ def find_lg(halos, center, radius, lgmod=None, center_cut=True, search='Sphere',
 
     if center_cut == True:
         # First select only halos within a given radius from the center
-        halos_mass = find_halos(halos, center, radius, search)
+        halos_mass = find_halos(data=halos, center=center, radius=radius, search=search)
     else:
         halos_mass = halos
 
@@ -677,7 +671,7 @@ def find_lg(halos, center, radius, lgmod=None, center_cut=True, search='Sphere',
                     # Check also for third haloes within the isolation radius before adding the pair
                     this_lg = LocalGroup(halo_lg0, halo_lg2)
                     com = this_lg.geo_com()
-                    halos_iso = find_halos(halos_mass, com, iso_radius)
+                    halos_iso = find_halos(data=halos_mass, center=com, radius=iso_radius, search=search)
                     nh_iso = len(halos_iso)
 
                     # Ths m_min is the minimum mass of the two LG member halos

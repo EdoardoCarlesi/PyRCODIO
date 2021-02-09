@@ -15,18 +15,48 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 
+def select_box(data=None, radius=None, col=None, x_col=None, center=None):
+    """ Given a center and a radius, select halos in a dataframe """
+
+    condition = (data[x_col[0]] > (center[0] - radius)) & (data[x_col[0]] < (center[0] + radius)) &\
+            (data[x_col[1]] > (center[1] - radius)) & (data[x_col[1]] < (center[1] + radius)) &\
+            (data[x_col[2]] > (center[2] - radius)) & (data[x_col[2]] < (center[2] + radius))
+
+    selected = data[condition]
+    return selected
+
+
+def select_sphere(data=None, radius=None, col=None, x_col=None, center=None):
+    """ Given a center and a radius, select halos in a dataframe """
+
+    all_x = data[x_col].T.values
+    all_x_d = np.sum((all_x - center) ** 2.0, axis=0)
+    data[col] = all_x_d
+    data[col] = data[col].apply(lambda x: np.sqrt(x))
+    selected = data[data[col] < radius]
+
+    return selected
+
+
 def spatial_pca(data=None, cols=None):
     """ Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution """
 
     scaler = StandardScaler()
     x = data[cols].values
     x = scaler.fit_transform(x)
+    
+    n_x = len(x)
 
-    pca = PCA(n_components=3)
-    principal = pca.fit_transform(x)
-    axs = pca.explained_variance_ratio_
+    if n_x > 3:
 
-    axx = axs #/ axs[0]
+        pca = PCA(n_components=3)
+        principal = pca.fit_transform(x)
+        axs = pca.explained_variance_ratio_
+
+        axx = axs #/ axs[0]
+    
+    else:
+        axx = [0.32, 0.33, 0.34]
 
     return axx
 
