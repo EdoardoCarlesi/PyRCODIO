@@ -268,9 +268,10 @@ class LocalGroupModel:
 
 
 class LocalGroup:
-    '''
-    A local group object is a pair of halos, we use this class to be able to quickly compute some of their properties.
-    '''
+    """
+    A local group object is just a pair of halos, 
+    We use this class to be able to quickly compute some of their properties.
+    """
 
     # Initialize to some numerical value
     vrad = -100.

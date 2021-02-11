@@ -220,7 +220,7 @@ def angle(v1, v2):
     return v12
 
 
-def center_of_mass(m,x):
+def center_of_mass(m, x):
     """ Yet another simple function """
 
     n = len(m)
