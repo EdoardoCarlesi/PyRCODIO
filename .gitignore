@@ -3,6 +3,7 @@ activate
 *.out
 *.pyc
 *.swp
+*.swo
 *.tgz
 *.tmp
 *.dat

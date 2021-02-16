@@ -18,6 +18,7 @@ import pandas as pd
 import tools as t
 import os
 from tqdm import tqdm
+plt.rcParams.update({'font.size': 15})
 
 # Set some important global variables
 global simu, ahf_base, ahf_file, ahf_file_csv, lgs_base
@@ -102,11 +103,12 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
         lg_suffix = '.pkl'
 
         runs = cfg.gen_runs(run_min, run_max)
-        n_lg_max = 10
+        n_lg_max = 1000
 
         # Output file prefixes
         df_list_out = 'output/lg_fb_df.pkl'
         mf_list_out = 'output/lg_fb_mf.pkl'
+        mf_x_list_out = 'output/lg_fb_mf_x' + res + '.pkl'
 
     elif simu == 'lgf':
         print(f'halos_around_lg() running for costrained simulation {res}')
@@ -121,6 +123,7 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
         # Output file prefixes
         df_list_out = 'output/lg_lgf_df' + res + '.pkl'
         mf_list_out = 'output/lg_lgf_mf' + res + '.pkl'
+        mf_x_list_out = 'output/lg_lgf_mf_x' + res + '.pkl'
 
     # We will append all dataframes to this list
     df_list = []
@@ -185,6 +188,7 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
 
     # These mass bins will be used for all LGs
     x_bins = t.gen_bins(nbins=n_bins, binmax=bin_max, binmin=bin_min, binmode='log')
+    pkl.dump(x_bins, open(mf_x_list_out, 'wb'))
 
     codes = this_lg_df['simu_code'].unique()
 
@@ -201,7 +205,12 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
         lg_list_csv = lg_file_base + run + '_' + str(i) + halos_suffix
 
         this_halos = pd.read_csv(lg_list_csv)
-        dens0 = np.sum(this_halos[m_col].values) / (box_size ** 3.0)
+
+        if simu == 'lgf':
+            dens0 = np.sum(this_halos[m_col].values) / (box_size ** 3.0)
+        elif simu == 'fullbox':
+            dens0 = 41.0
+
         this_x = np.reshape(row[x_col].values, (3, 1))
 
         # First, select only a subset of halos
@@ -278,7 +287,7 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
     return df_list, mf_list
 
 
-def find_lg_fb(run_max=5, run_min=0):
+def find_lg_fb(run_min=0, run_max=5):
     """ Find all the local groups in a full box simulation """
 
     # Choose catalog type
@@ -295,10 +304,12 @@ def find_lg_fb(run_max=5, run_min=0):
         box_size = 100000.0
         #base_path = '/home/eduardo/CLUES/DATA/FullBox/catalogs/'
         base_path = '/home/edoardo/CLUES/PyRCODIO/output/full.'
-        #base_suffix = '.snapshot_054.z0.000.AHF_halos.periodic.csv'
-        base_suffix = '.snapshot_054.z0.000.AHF_halos.small.csv'
+        base_suffix = '.snapshot_054.z0.000.AHF_halos.periodic.csv'
+        #base_suffix = '.snapshot_054.z0.000.AHF_halos.csv'
+        #base_suffix = '.snapshot_054.z0.000.AHF_halos.small.csv'
         #base_path='/media/edoardo/Elements/CLUES/DATA/2048/00_06/'
         sub_runs = cfg.gen_runs(run_min, run_max)
+        print(sub_runs)
 
     elif use_rs == True:
         box_size = 2500000.0
@@ -331,6 +342,7 @@ def find_lg_fb(run_max=5, run_min=0):
     # Loop on all the different realizations
     for run in sub_runs:
         all_lgs = []
+        print(run, sub_runs)
 
         if use_ahf:
             #this_ahf = base_path + run + '/' + file_single
@@ -342,7 +354,7 @@ def find_lg_fb(run_max=5, run_min=0):
             n_halo = len(halo_df)
             print('Found: ', n_halo, ' objects.')
 
-            x_min = 0.0;         y_min = 0.0;         z_min = 0.0
+            x_min, y_min, z_min = 0.0, 0.0, 0.0;         
 
         elif use_rs:
             this_rs = base_path + run + file_single
@@ -369,12 +381,12 @@ def find_lg_fb(run_max=5, run_min=0):
         n_count = 0
         old_time = time.time()
         
-        for ix in range(0, int(n_sub_x)):
+        for ix in tqdm(range(0, int(n_sub_x))):
             for iy in range(0, n_sub_y):
                 new_time = time.time()
                 dif_time = '%.3f' % (new_time - old_time)
                 percent = '%.3f' % (100.0 * n_count/n_tot)
-                print('Done: ', percent, '% in ', dif_time, ' seconds. Tot LGs: ', len(all_lgs), flush = True)
+                #print('Done: ', percent, '% in ', dif_time, ' seconds. Tot LGs: ', len(all_lgs), flush = True)
 
                 for iz in range(0, n_sub_z):
                     n_count += 1
@@ -397,7 +409,7 @@ def find_lg_fb(run_max=5, run_min=0):
             this_halos_csv = base_file_halo_out + run + '_' + str(i) + '.csv'
             this_halos_pkl = base_file_halo_out + run + '_' + str(i) + '.pkl'
             lg_center = lg.geo_com()
-            this_halos = hu.find_halos(data=halo_df, center=lg_center, radius=this_radius, search='Box')
+            this_halos = hu.find_halos(data=halo_df, center=lg_center, radius=radius, search='Box')
             pkl.dump(lg, open(this_halos_pkl, 'wb'))
 
             # Discard some useless columns to save up space on the disk
@@ -445,7 +457,11 @@ def find_lg_lgf(res='512', run_min=0, run_max=80):
     facKpc = 1.0e+3
     radius = 10.0 * facKpc
     center = [50.0 * facKpc] * 3
-    n_cat_min = 20000
+
+    if res == '512':
+        n_cat_min = 20000
+    else:
+        n_cat_min = 200
 
     # Read the | Gyr / z / a | time conversion table
     time = rf.read_time(data_path)
@@ -566,7 +582,7 @@ def plot_halos_around_lg(res='512'):
     center = [50000.0] * 3
 
 
-    def sort_data(data=None, mvirgo=0.7e+14, select_lg=True):
+    def sort_data(data=None, mvirgo=1.0e+14, select_lg=True):
         """ This procedure will be repeated for LGF and FB halos """
 
         n_rows = len(data[0])
@@ -625,10 +641,10 @@ def plot_halos_around_lg(res='512'):
 
         # Set some useful variables
         #percentiles = [0, 20, 50, 80, 100]
-        percentiles = [20, 50, 80]
+        percentiles = [25, 50, 75]
         #rho0 = 41.0
         rho0 = 1.0
-        print(good_lgs, 100)
+        #print(good_lgs, 100)
         n_perc = len(percentiles)
 
         # These contain median, lower percentile and higher percentile
@@ -665,23 +681,39 @@ def plot_halos_around_lg(res='512'):
         return dens_perc, mmax_perc, i_t_perc, iw_t_perc, pca_t_perc, triax_perc, virgo
 
 
-    def plot_f_r(x=radii, y0=None, y0_err=[None, None], y1=None, y1_err=[None, None], y_label=None, fout=None):
+    def plot_f_r(x=radii, y0=None, err0=False, y1=None, err1=False, y_label=None, fout=None, log_r=False):
         """ Plot a radius-dependent quantity, with or without error """
 
         # General plot values
-        color0 = 'red'
+        color0 = 'black'
         color1 = 'blue'
 
         # Line labels
-        line0 = 'LGF'
-        line1 = 'FB'
+        line0 = 'LGF-L'
+        line1 = 'RAND'
+
+        n_xmax = 2
+
+        if log_r:
+            x = np.log10(np.array(x))
+            plt.xlabel(r'$\log_10 R $')
+        else:
+            x = np.array(x) / 1000.0
+            plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
 
         # First plot densities
-        plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
         plt.ylabel(y_label)
+    
+        if err0 and err1:
+            plt.plot(x[n_xmax:], y0[1, n_xmax:], color=color0, label=line0)
+            plt.plot(x[n_xmax:], y1[1, n_xmax:], color=color1, label=line1)
+            plt.fill_between(x[n_xmax:], y0[0, n_xmax:], y0[2, n_xmax:], color=color0, alpha=0.3)
+            plt.fill_between(x[n_xmax:], y1[0, n_xmax:], y1[2, n_xmax:], color=color1, alpha=0.3)
 
-        plt.plot(x, y0, color=color0, label=line0)
-        plt.plot(x, y1, color=color1, label=line1)
+        else:
+            plt.plot(x, y0, color=color0, label=line0)
+            plt.plot(x, y1, color=color1, label=line1)
+
         plt.legend()
         plt.tight_layout()
         plt.savefig(fout)
@@ -720,14 +752,16 @@ def plot_halos_around_lg(res='512'):
     # Median density as a function of radius
     print('Plotting density...')
     f_out = 'output/lg_fb_dens.png'
-    y_label = r'$\Delta$'
-    plot_f_r(y0=d_lg[1, :], y1=d_lg[2, :], y_label=y_label, fout=f_out)
+    y_label = r'$\log_{10}\Delta$'
+    d_lg = np.log10(d_lg)
+    d_fb = np.log10(d_fb)
+    plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True)
 
     # Max mass as a function of radius
     print('Plotting maximum mass...')
     f_out = 'output/lg_fb_mmax.png'
     y_label = r'$M_{max}$'
-    plot_f_r(y0=np.log10(m_lg[1, :]), y1=np.log10(m_fb[1, :]), y_label=y_label, fout=f_out)
+    plot_f_r(y0=np.log10(m_lg), y1=np.log10(m_fb), y_label=y_label, fout=f_out, err0=True, err1=True)
 
     # Triaxialities
     print('Plotting triaxialities...')
@@ -736,7 +770,7 @@ def plot_halos_around_lg(res='512'):
 
     for i, y_label in enumerate(y_labels):
         f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=t_lg[i, 1, :], y1=t_fb[i, 1, :], y_label=y_label, fout=f_out)
+        plot_f_r(y0=t_lg[i], y1=t_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
     # PCA evs
     f_out_pca = 'output/lg_fb_pca_'
@@ -748,7 +782,7 @@ def plot_halos_around_lg(res='512'):
 
     for i, y_label in enumerate(y_labels):
         f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=i_lg[i, 1, :], y1=i_fb[i, 1, :], y_label=y_label, fout=f_out)
+        plot_f_r(y0=i_lg[i], y1=i_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
 
     # Weighter inertia tensor
@@ -758,7 +792,12 @@ def plot_halos_around_lg(res='512'):
 
     for i, y_label in enumerate(y_labels):
         f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=iw_lg[i, 1, :], y1=iw_fb[i, 1, :], y_label=y_label, fout=f_out)
+        plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+
+    # Plot Virgo properties
+    print(virgo_fb)
+    print(virgo_lg)
+
 
     print('Done.')
 
@@ -766,12 +805,99 @@ def plot_halos_around_lg(res='512'):
 
 
 # FIXME TODO
-def plot_mf_around_lg():
+def plot_mf_around_lg(res='1024', do_bins=True):
     """ Read and compare the mass function bins """
-    
-    res = '512'
+
     data_fb = pkl.load(open('output/lg_fb_mf.pkl', 'rb'))
     data_lg = pkl.load(open('output/lg_lgf_mf' + res + '.pkl', 'rb'))
+
+    print('Loading mass functions')
+
+    # Check wether we re-bin the x from scratch or we have to do it 
+    if do_bins == True:
+
+        # How to bin the mass function - settings
+        n_bins = 25
+        bin_min = 1.5e+9
+        bin_max = 5.0e+13
+
+        # These mass bins will be used for all LGs
+        x_bins = t.gen_bins(nbins=n_bins, binmax=bin_max, binmin=bin_min, binmode='log')
+    else:
+        # TODO fix filename
+        x_bins = pkl.load(open('output/lg_fb_mf_x.pkl', 'rb'))
+
+    # This one contains the actual x axis points
+    x = np.zeros(n_bins-1)
+    
+    # Take the median point per mass bin
+    for i in range(0, n_bins-1):
+        x[i] = 0.5 * (x_bins[i+1] + x_bins[i])
+    
+
+    def sort_mf(data=None, vol=None):
+        """ Get all the mass functions and look for the percentiles at each mass bin """
+
+        if vol == 'Box':
+            #vol = 10 **3.0
+            vol = (5.5 **3.0) * np.pi * 4.0 / 3.0
+        elif vol == 'Sphere':
+            vol = 125.0 * np.pi * 4.0 / 3.0
+
+        percentiles = [25, 50, 75]
+        n_bins = data[0][0].size
+        n_data = len(data)
+
+        y_full = np.zeros((n_bins, n_data))
+        y = np.zeros((3, n_bins))
+
+        for i, mf in enumerate(data):
+            for j in range(0, n_bins):
+                #if mf[0][j] > 1:
+                y_full[j, i] = np.log10(mf[0][j] / vol)
+                #else:
+                #    y_full[j, i] = 1.e-10
+
+        for i in range(0, n_bins):
+            y[:, i] = np.percentile(y_full[i, :], q=percentiles)
+
+        return y
+
+    # 
+    y0 = sort_mf(data=data_lg, vol='Sphere')
+    y1 = sort_mf(data=data_fb, vol='Box')
+
+    # General plot values
+    color0 = 'black'
+    color1 = 'blue'
+
+    # Line labels
+    line0 = 'LGF-H'
+    line1 = 'RAND'
+
+    n_min = 1
+    n_max = 18
+
+    # Plot mass functions
+    plt.xlabel(r'$M \quad [h^{-1} M_{\odot}]$')
+    plt.ylabel(r'$ n h^3 Mpc^{-3}$')
+
+    plt.plot(x[n_min:n_max], y0[1, n_min:n_max], color=color0, label=line0)
+    plt.plot(x[n_min:n_max], y1[1, n_min:n_max], color=color1, label=line1)
+
+    plt.fill_between(x[n_min:n_max], y0[0, n_min:n_max], y0[2, n_min:n_max], color=color0, alpha=0.3)
+    plt.fill_between(x[n_min:n_max], y1[0, n_min:n_max], y1[2, n_min:n_max], color=color1, alpha=0.3)
+
+    fout = 'output/lg_fb_mf_5mpc.png'
+
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(fout)
+    plt.close()
+    plt.cla()
+    plt.clf()
+
+    print('Done.')
 
     return None
 
@@ -797,9 +923,12 @@ if __name__ == "__main__":
     #find_lg_fb(run_max=1)
 
     #def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max=5):
-    #find_lg_lgf(run_max=80)
-    #halos_around_lg(simu='lgf', run_max=80)
+    #find_lg_lgf(res='1024', run_max=80)
+    #halos_around_lg(simu='lgf', res='1024', run_max=80)
+    #find_lg_fb(run_min=3, run_max=5)
+    #halos_around_lg(simu='fullbox', run_min=0, run_max=5)
     plot_halos_around_lg()
+    plot_mf_around_lg()
 
 
     #halos_around_lg(run_max=1)

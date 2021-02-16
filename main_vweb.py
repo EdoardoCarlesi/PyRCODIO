@@ -1,11 +1,10 @@
-'''
-    Python Routines for COsmology and Data I/O
-    PyRCODIO Pandas Version
+"""
+    Python Routines for COsmology and Data I/O (PyRCODIO)
     Edoardo Carlesi 2020
     ecarlesi83@gmail.com
     
     main_extract_vweb.py: extract v-web data around a given point
-'''
+"""
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -16,13 +15,13 @@ import config as cfg
 import pickle as pkl
 import pandas as pd
 import tools as t
+from tqdm import tqdm
 import os
+plt.rcParams.update({'font.size': 15})
 
 
 def extract_vweb_cs():
-    '''
-    Extract the eigenvalues at the box center in constrained simulations
-    '''
+    """ Extract the eigenvalues at the box center in constrained simulations """
 
     # configure subpaths
     code_run = cfg.gen_runs(0, 1)
@@ -62,96 +61,113 @@ def extract_vweb_cs():
             else: 
                 print(this_vweb, ' not found')
 
-
-def extract_vweb_lg_cs():
-    '''
-    Extract the eigenvalues/vectors at LG positions in CS simulations
-    '''
-
-    # TODO
-    out_path = ''
-    sub_runs = cfg.gen_runs(0, 100)
-
     
-def extract_vweb_fb(grid_size=64):
-    '''
-    Extract the Vweb at given positions in random full box simulations
-    '''
+def extract_vweb(data=None, grid=128, simu='fullbox', load_file=False):
+    """ Extract the Vweb at given positions in random full box simulations """
 
-    # configure subpaths
-    sub_run = cfg.gen_runs(4, 5)
-
-    # local data path, file names and file format
-    base_vweb = 'vweb_'
-    grid = '%03d' % grid_size
-    format_vweb = '.000' + grid + '.Vweb-csv'
-    
     # Columns to be extracted from the vweb and lg dataframes
     x_cols = ['Xc_LG', 'Yc_LG', 'Zc_LG']
     l_cols = ['l1', 'l2', 'l3', 'dens']
     g_cols = ['x', 'y', 'z']
     df_cols = ['ID', 'x', 'y', 'z', 'l1', 'l2', 'l3', 'dens']
 
-    # full dataset
-    #base_path = '/home/edoardo/CLUES/DATA/Vweb/'
-    base_path = '/media/edoardo/Elements/CLUES/DATA/FullBox/VWeb/'
-    out_base = 'output/lg_fullbox_vweb_' + grid
-    lg_base = 'output/lg_fullbox_'
+    # Read in the cosmic web
+    if simu == 'fullbox':
+        grid_str = '.%06d' % grid
+        grid_str = str(grid_str)
+        format_vweb = '.Vweb-csv'
+        #base_path = '/media/edoardo/Elements/CLUES/DATA/FullBox/VWeb/vweb_'
+        base_path = '/home/edoardo/CLUES/DATA/Vweb/FullBox/vweb_'
+        out_base = 'output/vweb_fullbox_vweb.' + grid_str + '.pkl'
+        code_col = 'sub_code'
+        sub_run = [2,3,4]
+
+    elif simu == 'lgf':
+        grid_str = '%04d' % grid
+        grid_str = str(grid_str)
+        format_vweb = '.csv'
+        base_path = '/home/edoardo/CLUES/DATA/Vweb/512/CSV/vweb_center_' + grid_str + '_'
+        #base_path = '/home/edoardo/Elements/CLUES/DATA/VWeb/vweb_center_' + grid_str + '_'
+        out_base = 'output/vweb_lgf512.' + grid_str + '.pkl'
+        code_col = 'simu_code'
+        sub_run = data[code_col].unique()
+
+    n_lgs = len(data)
+    all_evs = [] #np.zeros((3, n_lgs))
 
     #kpcfac = 1.0
     kpcfac = 1.e+3
 
-    # now loop on all the simulations and gather data
-    for sub in sub_run:
+    if os.path.exists(out_base) and load_file:
+        print('Loading from file: ', out_base)
+        all_evs = pkl.load(open(out_base, 'rb'))
 
-        # output file base path
-        this_vweb = base_path + base_vweb + sub + format_vweb
-        this_lgs = lg_base + sub + '.csv'
-        out_file = out_base + '_' + sub + '.csv'
-        out_file_csv = out_base + '_' + sub + '.csv'
+    else:
 
-        vweb = pd.read_csv(this_vweb)
-        lgs = pd.read_csv(this_lgs)
-        lg_ev_df = pd.DataFrame(columns=df_cols)
+        # now loop on all the simulations and gather data
+        for sub in tqdm(sub_run):
+            if simu == 'fullbox':
+                sub = '%02d' % sub
+                this_vweb = base_path + sub + grid_str + format_vweb
 
-        for ind, row in lgs.iterrows():
-            this_x = row[x_cols]/kpcfac
-            this_ind = t.find_nearest_node_index(this_x, grid=grid_size, box=100.0)
-            this_l = vweb[l_cols].iloc[this_ind]
-            this_g = vweb[g_cols].iloc[this_ind]
-            this_row = (ind, this_g[0], this_g[1], this_g[2], this_l[0], this_l[1], this_l[2], this_l[3])
-            new_row = pd.Series(this_row, index=df_cols)
-            lg_ev_df = lg_ev_df.append(new_row, ignore_index=True)
+            elif simu == 'lgf':
+                this_vweb = base_path + sub + format_vweb
+                    
+            
+                    
+            # output file base path
+            if os.path.exists(this_vweb):
+                vweb = pd.read_csv(this_vweb)
+                print(vweb.head())
+                for i, row in data[data[code_col] == int(sub)][0:100].iterrows():
+                    center = np.reshape(row[x_cols].values, (3,1))
+                    
+                    if simu == 'lgf':
+                        vweb['D'] = t.apply_distance(data=vweb, x_col=g_cols, center=center, col='D')
+                        d_min = vweb['D'].min()
+                        ev_select = vweb[vweb['D'] == d_min][l_cols].values
+                        all_evs.append(ev_select)
+                    
+                    elif simu == 'fullbox':
 
-        print('Saving file to csv: ', out_file_csv)
-        lg_ev_df.to_csv(out_file_csv)
+                        index = t.find_nearest_node_index(x=center, grid=grid, box=100.0e+3)
+            
+                        # Some LGs might be in the buffer zone of the periodic boundaries
+                        if index < grid  * grid * grid:
+                            row = vweb.loc[index]
+                            #row = vweb[l_cols].iloc[index]
+                            ev_select = row[l_cols]
+                            all_evs.append(ev_select)
+
+        print('Saving to file: ', out_base)
+        pkl.dump(all_evs, open(out_base, 'wb'))
+
+    return np.array(all_evs)
 
 
-def plot_vweb_fb(grid=32):
-    '''
-    Simple eigenvalue distribution plot
-    '''
+def plot_vweb_fb(grid=128, evs_lg=None, evs_fb=None):
+    """ Simple eigenvalue distribution plot """
+
+    l_str = [r'$\lambda_1$', r'$\lambda_2$', r'$\lambda_3$']
+    l_cols = ['l1', 'l2', 'l3']
+    #plt.xlim(-1.0, 1.5)
+
+    color0 = 'black'
+    color1 = 'blue'
+    n_bins = 100
+
+    for i, l in enumerate(l_cols):
+        sns.histplot(evs_lg[i, :], bins=n_bins, color=color0)
+        sns.histplot(evs_fb[i, :], bins=n_bins, color=color1)
+        plt.ylabel(l_str[i])
     
-    l1 = 'l1_'
-    l2 = 'l2_'
-    l3 = 'l3_'
-
-    l_cols = ['l1', 'l2', 'l3', 'dens']
-    this_web = rf.read_lg_vweb(grid_size = grid)
-    plt.xlim(-1.0, 1.5)
-    sns.distplot(this_web[l_cols[0]], bins=100)
-    sns.distplot(this_web[l_cols[1]], bins=100)
-    sns.distplot(this_web[l_cols[2]], bins=100)
-    plt.ylabel('eigenvalues')
-    print(this_web.info())
-    
-    file_name = 'output/vweb_dist_l1l2l3_' + str(grid) + '.png'
-    plt.savefig(file_name)
-    print('Saving vweb eigenvalue distribution to: ', file_name)
-    plt.clf()
-    plt.clf()
-    plt.close()
-    #plt.show()
+        file_name = 'output/hist_ev_' + l_cols[i] + '_' + str(grid) + '.png'
+        plt.tight_layout()
+        print('Saving vweb eigenvalue distribution to: ', file_name)
+        plt.savefig(file_name)
+        plt.clf()
+        plt.clf()
+        plt.close()
 
 
 if __name__ == '__main__':
@@ -160,15 +176,29 @@ if __name__ == '__main__':
     #print('Extracting VWeb from CS.\n'); extract_vweb_cs()
     #print('Extracting VWeb at LG positions in CS.\n'); extract_vweb_lg_cs()
 
-    #grids = [11, 17, 20, 25, 50, 100, 200]
-    #grids = [11, 17, 20, 25, 32, 50, 64, 100, 128, 200]
-    grids = [256]
+    data_lg = pd.read_csv('output/lg_pairs_1024.csv')
+    data_fb = pd.read_csv('output/lg_pairs_FB.csv')
+    print(data_lg.head())
+    print(data_fb.head())
+
+    vrad = 0.0
+    R = 1300
+
+    data_lg = data_lg[data_lg['Vrad'] < vrad] 
+    data_lg = data_lg[data_lg['R'] < R] 
+    data_fb = data_fb[data_fb['Vrad'] < vrad] 
+    data_fb = data_fb[data_fb['R'] < R] 
+
+    print(len(data_lg))
+    print(len(data_fb))
+    #print(len(select_lg))
+    #print(len(select_fb))
 
     print('Extracting VWeb at LG positions from FullBox.\n'); 
     #print('Plotting VWeb at LG positions from FullBox.\n'); 
-
-    for grid in grids:
-    #    extract_vweb_fb(grid_size=grid)
-        plot_vweb_fb(grid=grid)
+    evs_lg = extract_vweb(data=data_lg, simu='lgf', load_file=True)
+    evs_fb = extract_vweb(data=data_fb, simu='fullbox', load_file=False)
+    grid = 128
+    plot_vweb_fb(grid=grid, evs_lg=evs_lg, evs_fb=evs_fb)
 
 

@@ -38,6 +38,15 @@ def select_sphere(data=None, radius=None, col=None, x_col=None, center=None):
     return selected
 
 
+def apply_distance(data=None, x_col=None, center=None, col=None):
+
+    all_x = data[x_col].T.values
+    all_x_d = np.sum((all_x - center) ** 2.0, axis=0)
+    data[col] = all_x_d
+    data[col] = data[col].apply(lambda x: np.sqrt(x))
+
+    return data[col]
+
 def spatial_pca(data=None, cols=None):
     """ Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution """
 
@@ -193,7 +202,6 @@ def find_nearest_node_index(x=None, grid=None, box=None):
     """ Given a point x in space, find the nearest grid point once a grid has been placed on the box """
 
     cell = box / grid
-
     ix = np.floor(x[0] / cell)
     iy = np.floor(x[1] / cell)
     iz = np.floor(x[2] / cell)
