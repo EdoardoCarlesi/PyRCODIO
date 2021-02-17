@@ -80,7 +80,7 @@ def extract_vweb(data=None, grid=128, simu='fullbox', load_file=False):
         base_path = '/home/edoardo/CLUES/DATA/Vweb/FullBox/vweb_'
         out_base = 'output/vweb_fullbox_vweb.' + grid_str + '.pkl'
         code_col = 'sub_code'
-        sub_run = [2,3,4]
+        sub_run = data[code_col].unique()
 
     elif simu == 'lgf':
         grid_str = '%04d' % grid
@@ -101,6 +101,7 @@ def extract_vweb(data=None, grid=128, simu='fullbox', load_file=False):
     if os.path.exists(out_base) and load_file:
         print('Loading from file: ', out_base)
         all_evs = pkl.load(open(out_base, 'rb'))
+        all_evs = np.array(all_evs)
 
     else:
 
@@ -113,13 +114,11 @@ def extract_vweb(data=None, grid=128, simu='fullbox', load_file=False):
             elif simu == 'lgf':
                 this_vweb = base_path + sub + format_vweb
                     
-            
-                    
             # output file base path
             if os.path.exists(this_vweb):
                 vweb = pd.read_csv(this_vweb)
-                print(vweb.head())
-                for i, row in data[data[code_col] == int(sub)][0:100].iterrows():
+
+                for i, row in data[data[code_col] == int(sub)].iterrows():
                     center = np.reshape(row[x_cols].values, (3,1))
                     
                     if simu == 'lgf':
@@ -133,16 +132,17 @@ def extract_vweb(data=None, grid=128, simu='fullbox', load_file=False):
                         index = t.find_nearest_node_index(x=center, grid=grid, box=100.0e+3)
             
                         # Some LGs might be in the buffer zone of the periodic boundaries
-                        if index < grid  * grid * grid:
+                        if index < grid  * grid * grid and index > 0:
                             row = vweb.loc[index]
                             #row = vweb[l_cols].iloc[index]
-                            ev_select = row[l_cols]
-                            all_evs.append(ev_select)
+                            ev_select = row[l_cols].values
+                            #print(ev_select)
+                            all_evs.append(list(ev_select))
 
         print('Saving to file: ', out_base)
         pkl.dump(all_evs, open(out_base, 'wb'))
 
-    return np.array(all_evs)
+    return all_evs
 
 
 def plot_vweb_fb(grid=128, evs_lg=None, evs_fb=None):
@@ -150,20 +150,43 @@ def plot_vweb_fb(grid=128, evs_lg=None, evs_fb=None):
 
     l_str = [r'$\lambda_1$', r'$\lambda_2$', r'$\lambda_3$']
     l_cols = ['l1', 'l2', 'l3']
-    #plt.xlim(-1.0, 1.5)
+
+    data_lg = pd.DataFrame(columns=l_cols)
+    data_fb = pd.DataFrame(columns=l_cols)
+    percentiles0 = [30, 50, 70]
+    percentiles = [25, 50, 75]
+
+    for i, col in enumerate(l_cols):
+        data_lg[col] = evs_lg[:, 0, i]
+        data_fb[col] = evs_fb[:, i] * 1.15
 
     color0 = 'black'
     color1 = 'blue'
-    n_bins = 100
+    label0 = 'LGF-L'
+    label1 = 'RAND'
+    n_bins = 50
+    size = 6
 
-    for i, l in enumerate(l_cols):
-        sns.histplot(evs_lg[i, :], bins=n_bins, color=color0)
-        sns.histplot(evs_fb[i, :], bins=n_bins, color=color1)
-        plt.ylabel(l_str[i])
+    for i, col in enumerate(l_cols):
+        plt.figure(figsize=(size, size))
+        x_lg = data_lg[(data_lg[col] != 0.0) & (data_lg[col] != 1.0e-3) & (data_lg[col] < 1.1) & (data_lg[col] > -1.0) & (data_lg[col] != 0.002)][col].values
+        x_fb = data_fb[data_fb[col] < 2.0][col].values
+        plt.hist(x_lg, bins=n_bins, color=color0, density=True, label=label0, alpha=0.7)
+        plt.hist(x_fb, bins=n_bins, color=color1, density=True, label=label1, alpha=0.7)
+        plt.xlabel(l_str[i])
     
-        file_name = 'output/hist_ev_' + l_cols[i] + '_' + str(grid) + '.png'
+        bin_lg = np.percentile(x_lg, q=percentiles)
+        bin_fb = np.percentile(x_fb, q=percentiles)
+
+        lg_str = '$%.3f ^{+%.3f} _{-%.3f}$' % (bin_lg[1], bin_lg[2]-bin_lg[1], bin_lg[1]-bin_lg[0])
+        fb_str = '& $%.3f ^{+%.3f} _{-%.3f}$ \\\ ' % (bin_fb[1], bin_fb[2]-bin_fb[1], bin_fb[1]-bin_fb[0])
+
+        print(l_str[i], lg_str, fb_str)
+
+        file_name = 'output/hist_ev_' + col + '_' + str(grid) + '.png'
+        plt.legend()
         plt.tight_layout()
-        print('Saving vweb eigenvalue distribution to: ', file_name)
+        #print('Saving vweb eigenvalue distribution to: ', file_name)
         plt.savefig(file_name)
         plt.clf()
         plt.clf()
@@ -171,15 +194,12 @@ def plot_vweb_fb(grid=128, evs_lg=None, evs_fb=None):
 
 
 if __name__ == '__main__':
-    ''' Wrapper to execute the functions in correct order '''
-
-    #print('Extracting VWeb from CS.\n'); extract_vweb_cs()
-    #print('Extracting VWeb at LG positions in CS.\n'); extract_vweb_lg_cs()
+    """ Wrapper to execute the functions in correct order """
 
     data_lg = pd.read_csv('output/lg_pairs_1024.csv')
     data_fb = pd.read_csv('output/lg_pairs_FB.csv')
-    print(data_lg.head())
-    print(data_fb.head())
+    #print(data_lg.head())
+    #print(data_fb.head())
 
     vrad = 0.0
     R = 1300
@@ -189,15 +209,17 @@ if __name__ == '__main__':
     data_fb = data_fb[data_fb['Vrad'] < vrad] 
     data_fb = data_fb[data_fb['R'] < R] 
 
-    print(len(data_lg))
-    print(len(data_fb))
+    #print(len(data_lg))
+    #print(len(data_fb))
     #print(len(select_lg))
     #print(len(select_fb))
 
     print('Extracting VWeb at LG positions from FullBox.\n'); 
     #print('Plotting VWeb at LG positions from FullBox.\n'); 
     evs_lg = extract_vweb(data=data_lg, simu='lgf', load_file=True)
-    evs_fb = extract_vweb(data=data_fb, simu='fullbox', load_file=False)
+    evs_fb = extract_vweb(data=data_fb, simu='fullbox', load_file=True)
+    print(evs_fb[:, 0])
+
     grid = 128
     plot_vweb_fb(grid=grid, evs_lg=evs_lg, evs_fb=evs_fb)
 

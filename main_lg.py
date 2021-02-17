@@ -8,6 +8,7 @@
 
 import time
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gs
 import seaborn as sns
 import read_files as rf
 import halo_utils as hu
@@ -695,8 +696,11 @@ def plot_halos_around_lg(res='512'):
         n_xmax = 2
 
         if log_r:
-            x = np.log10(np.array(x))
-            plt.xlabel(r'$\log_10 R $')
+            #x = np.log10(np.array(x))
+            #plt.xlabel(r'$\log_{10} R $')
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
         else:
             x = np.array(x) / 1000.0
             plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
@@ -752,10 +756,13 @@ def plot_halos_around_lg(res='512'):
     # Median density as a function of radius
     print('Plotting density...')
     f_out = 'output/lg_fb_dens.png'
-    y_label = r'$\log_{10}\Delta$'
-    d_lg = np.log10(d_lg)
-    d_fb = np.log10(d_fb)
-    plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True)
+    y_label = r'$\Delta$'
+    #y_label = r'$\log_{10}\Delta$'
+    #d_lg = np.log10(d_lg)
+    #d_fb = np.log10(d_fb)
+    d_lg = d_lg
+    d_fb = d_fb
+    plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True, log_r=True)
 
     # Max mass as a function of radius
     print('Plotting maximum mass...')
@@ -795,11 +802,79 @@ def plot_halos_around_lg(res='512'):
         plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
     # Plot Virgo properties
-    print(virgo_fb)
-    print(virgo_lg)
-
+    #print(virgo_fb)
+    #print(virgo_lg)
 
     print('Done.')
+
+    return None
+
+
+def plot_lg_densities():
+    """ Number of object per Mpc cube """
+
+    data = pd.read_csv('lg_halo_dens.txt')
+    
+    vol_lg = np.pi * 4.0 / 3.0 * 125.0 * 1000.0
+    vol_fb = 100.0 ** 3.0 * 5
+    delta = 0.44
+
+    models = [1, 2, 3, 4, 5, 6]
+    models_labels = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
+
+
+    def plot_lines_ratio(x=None, y=None, z=None, plottype=None, setrange=False):
+        """ """
+
+        ratio1 = np.ones(6)
+        ratio2 = x / y
+        ratio3 = x / z
+
+        color0 = 'black'
+        color1 = 'blue'
+        color2 = 'green'
+    
+        size = 8
+        (fig, axs) = plt.subplots(ncols=1, nrows=2, figsize=(size, size), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+    
+        if setrange:
+            axs[0].set_ylim([1.e-3, 1.5e-2])
+
+        axs[0].set_yscale('log')
+        axs[0].set_ylabel('$N \quad h^{3} Mpc^{-3}$')
+        axs[1].set_ylabel('ratio')
+        axs[1].set_xlabel('Model')
+        axs[0].plot(models, x, label='LGF-L', color=color0)
+        axs[0].plot(models, y, label='RAND', color=color1)
+        axs[0].plot(models, z, label=r'RAND$_{\Delta}$', color=color2)
+        axs[1].plot(models, ratio1, color=color0)
+        axs[1].plot(models, ratio2, color=color1)
+        axs[1].plot(models, ratio3, color=color2)
+        
+        fout = 'output/dens_' + plottype + '.png'
+        fig.legend(loc = 'center')
+        fig.tight_layout()
+        fig.savefig(fout)
+        plt.close()
+        plt.cla()
+        plt.clf()
+   
+        return None
+
+
+    fac_lgf1 = 1.0
+    y_lg = data['lgfI'].values * fac_lgf1 / vol_lg
+    y_fb = data['fb'].values / vol_fb
+    y_delta = data['fb_delta'].values / (vol_fb * delta)
+    plot_lines_ratio(x=y_lg, y=y_fb, z=y_delta, plottype='lgs')
+
+    fac_lgf1 = 0.4
+    fac_lgf2 = 4.0
+    delta = 0.6
+    y_lg = data['halos_lgf'].values * fac_lgf1 / vol_lg
+    y_fb = data['halos_fb'].values * fac_lgf2 / vol_fb
+    y_delta = data['halos_fb_delta'].values * fac_lgf2 / (vol_fb * delta)
+    plot_lines_ratio(x=y_lg, y=y_fb, z=y_delta, plottype='halos', setrange=True)
 
     return None
 
@@ -927,9 +1002,9 @@ if __name__ == "__main__":
     #halos_around_lg(simu='lgf', res='1024', run_max=80)
     #find_lg_fb(run_min=3, run_max=5)
     #halos_around_lg(simu='fullbox', run_min=0, run_max=5)
-    plot_halos_around_lg()
-    plot_mf_around_lg()
-
+    plot_halos_around_lg(res='1024')
+    #plot_mf_around_lg()
+    #plot_lg_densities()
 
     #halos_around_lg(run_max=1)
     #print(f'FB: {vol_fb}, LGF: {vol_lgf_I}')
