@@ -39,6 +39,62 @@ m_col = 'Mvir(4)'
 radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
 
 
+def random_halo_subset(m_min=0.5e+12, m_max=2.5e+12, n_subset=10000):
+    """ Return some properties (mass functions, eigenvalues, densities) around random MW-like halos """
+
+    print('Selecting a random subset of MW-mass halos...')
+
+    # Files
+    halos_file = '/home/edoardo/CLUES/DATA/FullBox/00/snapshot_054.z0.000.AHF_halos.csv'
+    #halos_file = 'output/full.00.snapshot_054.z0.000.AHF_halos.small.csv' 
+
+    print(f'Reading {halos_file}') 
+
+    # Read the full catalog into a dataframe
+    halos = pd.read_csv(halos_file)
+
+    radius = 40e+3
+    center = [50.e+3, 50.e+3, 50.e+3]
+ 
+    lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/RAND_MW/halos_around_mw_00_'
+    halos_suffix = '.csv'
+    lg_suffix = '.pkl'
+
+
+    print('Selecting halos...')
+
+    mw_halos = halos[(halos[m_col] > m_min) & (halos[m_col] < m_max)]
+    mw_halos = t.select_box(data=mw_halos, radius=radius, col='D', center=center, x_col=x_col_ahf)
+
+    mw_halos.to_csv('output/mw_halos.csv')
+
+    radii = [i * 1.e+3 for i in range(2, 11)]
+    r_max = 13.e+3
+
+    print('Selected: ', len(mw_halos))
+
+    i=0
+
+    # Now loop over each halo and compute 
+    for j, halo in mw_halos.iterrows():
+        x_halo = halo[x_col_ahf].values
+        x_halo = np.reshape(x_halo, (3, 1))
+        this_halos = t.select_sphere(data=halos, radius=r_max, col='D', center=x_halo, x_col=x_col_ahf)
+        h = hu.Halo(halo)
+        this_lg = hu.LocalGroup(h, h)
+        this_halos_pkl = lg_file_base + str(i) + '.pkl'
+        pkl.dump(this_lg, open(this_halos_pkl, 'wb'))
+
+        # Discard some useless columns to save up space on the disk
+        this_halos_csv = lg_file_base + str(i) + '.csv'
+        this_halos = this_halos.drop(this_halos.columns[18:], axis=1)
+        this_halos = this_halos.drop(this_halos.columns[0:2], axis=1)
+        this_halos.to_csv(this_halos_csv)
+        i += 1
+
+    print('Done.')
+
+
 def lg_density(simu='512', dist=5.0e+3):
     """ Compute the density of the LGs """
 
@@ -126,6 +182,16 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
         mf_list_out = 'output/lg_lgf_mf' + res + '.pkl'
         mf_x_list_out = 'output/lg_lgf_mf_x' + res + '.pkl'
 
+    elif simu == 'rand_mw':
+        lg_file_base = '/home/edoardo/CLUES/PyRCODIO/output/RAND_MW/halos_around_mw_'
+        halos_suffix = '.csv'
+        lg_suffix = '.pkl'
+        runs = ['00']
+        n_lg_max = 3000
+        df_list_out = 'output/mw_fb_df.pkl'
+        mf_list_out = 'output/mw_fb_mf.pkl'
+        mf_x_list_out = 'output/mw_fb_mf_x' + res + '.pkl'
+
     # We will append all dataframes to this list
     df_list = []
     mf_list = []
@@ -152,6 +218,7 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
 
             # Check that the file exists
             if os.path.isfile(lg_file_pkl):
+                print(lg_file_pkl)
                 this_lg = pkl.load(open(lg_file_pkl,'rb'))
                 this_lg.code_simu = run
                 lg_list.append(this_lg)
@@ -209,7 +276,7 @@ def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max
 
         if simu == 'lgf':
             dens0 = np.sum(this_halos[m_col].values) / (box_size ** 3.0)
-        elif simu == 'fullbox':
+        elif simu == 'fullbox' or simu == 'rand_mw':
             dens0 = 41.0
 
         this_x = np.reshape(row[x_col].values, (3, 1))
@@ -549,7 +616,7 @@ def find_lg_lgf(res='512', run_min=0, run_max=80):
     return these_lgs
 
 
-def plot_halos_around_lg(res='512'):
+def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
     """ This function returns the properties of triaxiality/density around the LG for both simulations """
 
     out_lg_csv = 'output/lg_pairs_' + res + '.csv'
@@ -565,15 +632,20 @@ def plot_halos_around_lg(res='512'):
     df_list_fb = pd.read_csv(out_fb_csv)
     df_list_lg = pd.read_csv(out_lg_csv)
 
+    if add_mw:
+        out_mw = 'output/mw_fb_df.pkl'
+        out_mw_csv = 'output/mw_halos.csv'
+        file_sorted_mw = 'output/sorted_mw.pkl'
+        data_mw = pkl.load(open(out_mw, 'rb'))
+        df_list_mw = pd.read_csv(out_mw_csv)
+
+
     # Column names, group them
     col_mmax = 'Mmax'
     col_mtot = 'Mtot'
     col_I = ['I_a', 'I_b', 'I_c']
     col_Iw = ['Iw_a', 'Iw_b', 'Iw_c']
     col_pca = ['PCA_a', 'PCA_b', 'PCA_c']
-
-    # Do we want to read all the data and sort it or load from .pkl
-    sort_data = False
 
     # Initialize some variables
     radii = data_lg[0]['R'].values
@@ -601,7 +673,7 @@ def plot_halos_around_lg(res='512'):
 
         # Loop over the list of dataframes, collect all data
         for ind, df in enumerate(tqdm(data[0:])):
-
+            #print(ind, len(data))
             dist = t.distance(df_list_lg[x_col].iloc[ind], center) 
             if select_lg:
                 if dist < 5000.0:
@@ -682,23 +754,26 @@ def plot_halos_around_lg(res='512'):
         return dens_perc, mmax_perc, i_t_perc, iw_t_perc, pca_t_perc, triax_perc, virgo
 
 
-    def plot_f_r(x=radii, y0=None, err0=False, y1=None, err1=False, y_label=None, fout=None, log_r=False):
+    def plot_f_r(x=radii, y0=None, err0=False, y1=None, err1=False, y2=None, err2=False, y_label=None, fout=None, log_r=False):
         """ Plot a radius-dependent quantity, with or without error """
 
         # General plot values
         color0 = 'black'
         color1 = 'blue'
+        color2 = 'green'
 
         # Line labels
         line0 = 'LGF-L'
         line1 = 'RAND'
+        line2 = 'MW'
 
-        n_xmax = 2
+        n_xmax = 1
 
         if log_r:
             #x = np.log10(np.array(x))
             #plt.xlabel(r'$\log_{10} R $')
-            plt.xscale('log')
+            #plt.xscale('log')
+            x = np.array(x) / 1000.0
             plt.yscale('log')
             plt.xlabel(r'$R \quad [h^{-1} Mpc]$')
         else:
@@ -713,6 +788,10 @@ def plot_halos_around_lg(res='512'):
             plt.plot(x[n_xmax:], y1[1, n_xmax:], color=color1, label=line1)
             plt.fill_between(x[n_xmax:], y0[0, n_xmax:], y0[2, n_xmax:], color=color0, alpha=0.3)
             plt.fill_between(x[n_xmax:], y1[0, n_xmax:], y1[2, n_xmax:], color=color1, alpha=0.3)
+
+            if err2:
+                plt.plot(x[n_xmax:], y2[1, n_xmax:], color=color2, label=line2)
+                plt.fill_between(x[n_xmax:], y2[0, n_xmax:], y2[2, n_xmax:], color=color2, alpha=0.3)
 
         else:
             plt.plot(x, y0, color=color0, label=line0)
@@ -729,7 +808,7 @@ def plot_halos_around_lg(res='512'):
 
 
     # If we want to load and sort the data from scratch
-    if sort_data:
+    if do_sort_data:
         print('Sorting data before plotting...')
 
         # Get the values using the above defined function
@@ -742,9 +821,14 @@ def plot_halos_around_lg(res='512'):
         sorted_fb = (d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb)
         pkl.dump(sorted_fb, open(file_sorted_fb, 'wb'))
 
+        if add_mw:
+            d_mw, m_mw, i_mw, iw_mw, pca_mw, t_mw, virgo_mw = sort_data(data=data_mw, select_lg=False)
+            sorted_mw = (d_mw, m_mw, i_mw, iw_mw, pca_mw, t_mw, virgo_mw)
+            pkl.dump(sorted_mw, open(file_sorted_mw, 'wb'))
+
     # Otherwise read the plot-ready files from the output
     else:
-        print('Loading sorted data for plotting: {file_sorted_lg} {file_sorted_fb}')
+        print(f'Loading sorted data for plotting: {file_sorted_lg} {file_sorted_fb}')
 
         # Load the pkl sorted values
         sorted_lg = pkl.load(open(file_sorted_lg, 'rb'))
@@ -752,6 +836,10 @@ def plot_halos_around_lg(res='512'):
 
         sorted_fb = pkl.load(open(file_sorted_fb, 'rb'))
         d_fb, m_fb, i_fb, iw_fb, pca_fb, t_fb, virgo_fb = sorted_fb
+
+        if add_mw:
+            sorted_mw = pkl.load(open(file_sorted_mw, 'rb'))
+            d_mw, m_mw, i_mw, iw_mw, pca_mw, t_mw, virgo_mw = sorted_mw
 
     # Median density as a function of radius
     print('Plotting density...')
@@ -762,22 +850,34 @@ def plot_halos_around_lg(res='512'):
     #d_fb = np.log10(d_fb)
     d_lg = d_lg
     d_fb = d_fb
-    plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True, log_r=True)
+    
+    if add_mw:
+        plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True, log_r=True, err2=True, y2=d_mw)
+    else:
+        plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True, log_r=False)
 
     # Max mass as a function of radius
     print('Plotting maximum mass...')
     f_out = 'output/lg_fb_mmax.png'
     y_label = r'$M_{max}$'
-    plot_f_r(y0=np.log10(m_lg), y1=np.log10(m_fb), y_label=y_label, fout=f_out, err0=True, err1=True)
+    if add_mw:
+        plot_f_r(y0=np.log10(m_lg), y1=np.log10(m_fb), y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=np.log10(m_mw))
+    else:
+        plot_f_r(y0=np.log10(m_lg), y1=np.log10(m_fb), y_label=y_label, fout=f_out, err0=True, err1=True)
 
     # Triaxialities
     print('Plotting triaxialities...')
     f_out_base = 'output/lg_fb_triax_'
-    y_labels = ['T_I', 'T_Iw', 'T_PCA']
+    y_labels = [r'I', r'$I_w$', 'PCA']
+    f_labels = ['I', 'I_w', 'PCA']
 
     for i, y_label in enumerate(y_labels):
-        f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=t_lg[i], y1=t_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+        f_out = f_out_base + f_labels[i] + '.png'
+
+        if add_mw:
+            plot_f_r(y0=t_lg[i], y1=t_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=t_mw[i])
+        else:
+            plot_f_r(y0=t_lg[i], y1=t_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
     # PCA evs
     f_out_pca = 'output/lg_fb_pca_'
@@ -785,21 +885,46 @@ def plot_halos_around_lg(res='512'):
     # Inertia tensor
     print('Plotting inertia tensor...')
     f_out_base = 'output/lg_fb_inertia_'
-    y_labels = ['T_I_a', 'T_I_b', 'T_I_c']
+    y_labels = [r'$I$, a', r'$I$, b', r'$I$, c']
+    f_labels = ['Ia', 'Ib', 'Ic']
 
-    for i, y_label in enumerate(y_labels):
-        f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=i_lg[i], y1=i_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+    for i, y_label in enumerate(y_labels[:]):
+        f_out = f_out_base + f_labels[i] + '.png'
+        
+        if add_mw:
+            plot_f_r(y0=i_lg[i], y1=i_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=i_mw[i])
+        else:
+            plot_f_r(y0=i_lg[i], y1=i_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
 
     # Weighter inertia tensor
     print('Plotting weighted inertia tensor...')
     f_out_base = 'output/lg_fb_inertia_'
-    y_labels = ['T_Iw_a', 'T_Iw_b', 'T_Iw_c']
+    y_labels = [r'$I_w$, a', r'$I_w$, b', r'$I_w$, c']
+    f_labels = ['Iwa', 'Iwb', 'Iwc']
+
+    for i, y_label in enumerate(y_labels[:]):
+        f_out = f_out_base + f_labels[i] + '.png'
+
+        if add_mw:
+            plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=iw_mw[i])
+        else:
+            plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+
+    # PCA
+    print('Plotting PCA components...')
+    f_out_base = 'output/lg_fb_pca_'
+    y_labels = [r'PCA, a', r'PCA, b', r'PCA, c']
+    f_labels = ['PCAa', 'PCAb', 'PCAc']
 
     for i, y_label in enumerate(y_labels):
-        f_out = f_out_base + y_label + '.png'
-        plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+        f_out = f_out_base + f_labels[i] + '.png'
+
+        if add_mw:
+            plot_f_r(y0=pca_lg[i], y1=pca_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=pca_mw[i])
+        else:
+            plot_f_r(y0=pca_lg[i], y1=pca_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+
 
     # Plot Virgo properties
     #print(virgo_fb)
@@ -880,11 +1005,14 @@ def plot_lg_densities():
 
 
 # FIXME TODO
-def plot_mf_around_lg(res='1024', do_bins=True):
+def plot_mf_around_lg(res='1024', do_bins=True, add_mw=False):
     """ Read and compare the mass function bins """
 
     data_fb = pkl.load(open('output/lg_fb_mf.pkl', 'rb'))
     data_lg = pkl.load(open('output/lg_lgf_mf' + res + '.pkl', 'rb'))
+
+    if add_mw:
+        data_mw = pkl.load(open('output/mw_fb_mf.pkl', 'rb'))
 
     print('Loading mass functions')
 
@@ -938,9 +1066,14 @@ def plot_mf_around_lg(res='1024', do_bins=True):
 
         return y
 
-    # 
+    # Sort the data
     y0 = sort_mf(data=data_lg, vol='Sphere')
     y1 = sort_mf(data=data_fb, vol='Box')
+
+    if add_mw: 
+        y2 = sort_mf(data=data_fb, vol='Box')
+        color2 = 'green'
+        line2 = 'MW'
 
     # General plot values
     color0 = 'black'
@@ -955,13 +1088,20 @@ def plot_mf_around_lg(res='1024', do_bins=True):
 
     # Plot mass functions
     plt.xlabel(r'$M \quad [h^{-1} M_{\odot}]$')
-    plt.ylabel(r'$ n h^3 Mpc^{-3}$')
+    plt.ylabel(r'$n \quad [h^3 Mpc^{-3}]$')
 
     plt.plot(x[n_min:n_max], y0[1, n_min:n_max], color=color0, label=line0)
     plt.plot(x[n_min:n_max], y1[1, n_min:n_max], color=color1, label=line1)
 
     plt.fill_between(x[n_min:n_max], y0[0, n_min:n_max], y0[2, n_min:n_max], color=color0, alpha=0.3)
     plt.fill_between(x[n_min:n_max], y1[0, n_min:n_max], y1[2, n_min:n_max], color=color1, alpha=0.3)
+
+    if add_mw: 
+        y2 = sort_mf(data=data_mw, vol='Box')
+        color2 = 'green'
+        line2 = 'MW'
+        plt.plot(x[n_min:n_max], y2[1, n_min:n_max], color=color2, label=line2)
+        plt.fill_between(x[n_min:n_max], y2[0, n_min:n_max], y2[2, n_min:n_max], color=color2, alpha=0.3)
 
     fout = 'output/lg_fb_mf_5mpc.png'
 
@@ -995,6 +1135,11 @@ if __name__ == "__main__":
         lg_density(dist=r)
     '''
 
+    #random_halo_subset()
+    #halos_around_lg(simu='rand_mw', res='1024', run_max=0)
+    plot_mf_around_lg(add_mw=True)
+    plot_halos_around_lg(res='512', add_mw=True, do_sort_data=False)
+
     #find_lg_fb(run_max=1)
 
     #def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max=5):
@@ -1002,7 +1147,6 @@ if __name__ == "__main__":
     #halos_around_lg(simu='lgf', res='1024', run_max=80)
     #find_lg_fb(run_min=3, run_max=5)
     #halos_around_lg(simu='fullbox', run_min=0, run_max=5)
-    plot_halos_around_lg(res='1024')
     #plot_mf_around_lg()
     #plot_lg_densities()
 
