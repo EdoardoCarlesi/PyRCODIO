@@ -39,6 +39,68 @@ m_col = 'Mvir(4)'
 radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
 
 
+def random_halo_density(select_halos=False, select_delta=False):
+    """ Select subset of halos within different mass intervals """	
+
+    halos_file_select = 'output/halos_00_M1.csv'
+    lg_list = 'outpiut/lg_fb_list_00.csv'
+
+    m_model = []
+    m_model.append([0.40e+12, 5.0e+12])
+    m_model.append([0.45e+12, 4.0e+12])
+    m_model.append([0.50e+12, 3.0e+12])
+    m_model.append([0.55e+12, 2.5e+12])
+    m_model.append([0.60e+12, 2.0e+12])
+    m_model.append([0.65e+12, 1.5e+12])
+
+    if select_halos:
+        halos_file = '/home/edoardo/CLUES/DATA/FullBox/00/snapshot_054.z0.000.AHF_halos.csv'
+        print(f'Reading halos file: {halos_file}')
+        halos = pd.read_csv(halos_file)
+        halos = halos[(halos[m_col] > m_model[0][0]) & (halos[m_col] < m_model[0][1])]
+        halos = halos.drop(halos.columns[10:], axis=1)
+        print(f'Saving to: {halos_file_select}')
+        halos.to_csv(halos_file_select)
+
+    print(f'Reading from: {halos_file_select}')
+    halos = pd.read_csv(halos_file_select)
+    deltas = [0.55, 1.9]
+
+    vweb_file = '/home/edoardo/CLUES/DATA/Vweb/FullBox/vweb_00.000128.Vweb-csv'
+    print(f'Reading vweb: {vweb_file}')
+    vweb = pd.read_csv(vweb_file)
+    vweb_d = vweb[(vweb['dens'] < deltas[1]) & (vweb['dens'] > deltas[0])]
+    v_frac = float(len(vweb_d))/float(len(vweb))
+
+    print('VolumeFraction: ', v_frac) 
+
+    if select_delta:
+        dens = np.zeros(len(halos))
+        i=0
+
+        for ind, h in halos.iterrows():
+            center = h[x_col_ahf]
+            index = t.find_nearest_node_index(x=center, grid=128, box=100.0e+3)
+            dens[i] = vweb['dens'].iloc[index]
+            i += 1
+
+        halos['dens'] = dens
+        halos.to_csv(halos_file_select)
+        
+    print(halos.head())
+
+    models = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
+    vol = (100.0) ** 3.0
+    vol_d = vol * v_frac
+    halos_d = halos[(halos['dens'] > deltas[0]) & (halos['dens'] < deltas[1])]
+
+    for i, model in enumerate(m_model):
+
+        halos_tmp = halos[(halos[m_col] > model[0]) & (halos[m_col] < model[1])]
+        halos_d_tmp = halos_d[(halos_d[m_col] > model[0]) & (halos_d[m_col] < model[1])]
+
+        print(f'{models[i]} & {len(halos_tmp)} & {len(halos_d_tmp)} & {len(halos_tmp)/vol} & {len(halos_d_tmp)/vol_d} \\\ ')
+
 def random_halo_subset(m_min=0.5e+12, m_max=2.5e+12, n_subset=10000):
     """ Return some properties (mass functions, eigenvalues, densities) around random MW-like halos """
 
@@ -754,7 +816,7 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
         return dens_perc, mmax_perc, i_t_perc, iw_t_perc, pca_t_perc, triax_perc, virgo
 
 
-    def plot_f_r(x=radii, y0=None, err0=False, y1=None, err1=False, y2=None, err2=False, y_label=None, fout=None, log_r=False):
+    def plot_f_r(x=radii, y0=None, err0=False, y1=None, err1=False, y2=None, err2=False, y_label=None, fout=None, log_r=False, dashed=True):
         """ Plot a radius-dependent quantity, with or without error """
 
         # General plot values
@@ -768,6 +830,10 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
         line2 = 'MW'
 
         n_xmax = 1
+        linewd = 3
+        dashwd = 2
+
+        dash0, dash1, dash2 = '-.', '--', '.'
 
         if log_r:
             #x = np.log10(np.array(x))
@@ -784,14 +850,26 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
         plt.ylabel(y_label)
     
         if err0 and err1:
-            plt.plot(x[n_xmax:], y0[1, n_xmax:], color=color0, label=line0)
-            plt.plot(x[n_xmax:], y1[1, n_xmax:], color=color1, label=line1)
-            plt.fill_between(x[n_xmax:], y0[0, n_xmax:], y0[2, n_xmax:], color=color0, alpha=0.3)
-            plt.fill_between(x[n_xmax:], y1[0, n_xmax:], y1[2, n_xmax:], color=color1, alpha=0.3)
+            plt.plot(x[n_xmax:], y0[1, n_xmax:], color=color0, label=line0, linewidth=linewd)
+            plt.plot(x[n_xmax:], y1[1, n_xmax:], color=color1, label=line1, linewidth=linewd)
+
+            if dashed:
+                plt.plot(x[n_xmax:], y0[0, n_xmax:], dash0, color=color0, linewidth=linewd)
+                plt.plot(x[n_xmax:], y0[2, n_xmax:], dash0, color=color0, linewidth=linewd)
+                plt.plot(x[n_xmax:], y1[0, n_xmax:], dash1, color=color1, linewidth=dashwd)
+                plt.plot(x[n_xmax:], y1[2, n_xmax:], dash1, color=color1, linewidth=dashwd)
+            else:
+                plt.fill_between(x[n_xmax:], y0[0, n_xmax:], y0[2, n_xmax:], color=color0, alpha=0.3)
+                plt.fill_between(x[n_xmax:], y1[0, n_xmax:], y1[2, n_xmax:], color=color1, alpha=0.3)
 
             if err2:
-                plt.plot(x[n_xmax:], y2[1, n_xmax:], color=color2, label=line2)
-                plt.fill_between(x[n_xmax:], y2[0, n_xmax:], y2[2, n_xmax:], color=color2, alpha=0.3)
+                plt.plot(x[n_xmax:], y2[1, n_xmax:], color=color2, label=line2, linewidth=linewd)
+
+                if dashed:
+                    plt.plot(x[n_xmax:], y2[0, n_xmax:], dash2, color=color2, linewidth=dashwd)
+                    plt.plot(x[n_xmax:], y2[2, n_xmax:], dash2, color=color2, linewidth=dashwd)
+                else:
+                    plt.fill_between(x[n_xmax:], y2[0, n_xmax:], y2[2, n_xmax:], color=color2, alpha=0.3)
 
         else:
             plt.plot(x, y0, color=color0, label=line0)
@@ -851,8 +929,14 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
     d_lg = d_lg
     d_fb = d_fb
     
+    radii = np.array(radii) / 1000.0
+    x_label = r'$R \quad [h^{-1} Mpc]$'
+    labels = ['LGF-L', 'RAND', 'MW'] 
+
     if add_mw:
         plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True, log_r=True, err2=True, y2=d_mw)
+        #f_out = 'output/lg_fb_dens_ratio.png'
+        plot_lines_ratio(x_axis=radii, x=d_lg[1,:], y=d_fb[1,:], z=d_mw[1, :], xlabel=x_label, ylabel=y_label, fout=f_out, label_set=labels, ploterr=True, logy=True, err0=d_lg, err1=d_fb, err2=d_mw, pos_legend='upper right')
     else:
         plot_f_r(y0=d_lg, y1=d_fb, y_label=y_label, fout=f_out, err0=True, err1=True, log_r=False)
 
@@ -862,9 +946,12 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
     y_label = r'$M_{max}$'
     if add_mw:
         plot_f_r(y0=np.log10(m_lg), y1=np.log10(m_fb), y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=np.log10(m_mw))
+        #f_out = 'output/lg_fb_mmax_ratio.png'
+        plot_lines_ratio(x_axis=radii, x=m_lg[1,:], y=m_fb[1,:], z=m_mw[1, :], xlabel=x_label, ylabel=y_label, fout=f_out, label_set=labels, ploterr=True, logy=True, err0=m_lg, err1=m_fb, err2=m_mw, pos_legend='upper left')
     else:
         plot_f_r(y0=np.log10(m_lg), y1=np.log10(m_fb), y_label=y_label, fout=f_out, err0=True, err1=True)
 
+    '''
     # Triaxialities
     print('Plotting triaxialities...')
     f_out_base = 'output/lg_fb_triax_'
@@ -876,8 +963,10 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
 
         if add_mw:
             plot_f_r(y0=t_lg[i], y1=t_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=t_mw[i])
+            plot_lines_ratio(x_axis=radii, x=t_lg[i, 1], y=t_fb[i, 1], z=t_mw[i, 1], xlabel=x_label, ylabel=y_label, fout=f_out, label_set=labels, ploterr=True, err0=t_lg[i], err1=t_fb[i], err2=t_mw[i])
         else:
             plot_f_r(y0=t_lg[i], y1=t_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
+    '''
 
     # PCA evs
     f_out_pca = 'output/lg_fb_pca_'
@@ -893,6 +982,7 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
         
         if add_mw:
             plot_f_r(y0=i_lg[i], y1=i_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=i_mw[i])
+            plot_lines_ratio(x_axis=radii, x=i_lg[i, 1], y=i_fb[i, 1], z=i_mw[i, 1], xlabel=x_label, ylabel=y_label, fout=f_out, label_set=labels, ploterr=True, err0=i_lg[i], err1=i_fb[i], err2=i_mw[i])
         else:
             plot_f_r(y0=i_lg[i], y1=i_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
@@ -908,6 +998,7 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
 
         if add_mw:
             plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=iw_mw[i])
+            plot_lines_ratio(x_axis=radii, x=iw_lg[i, 1], y=iw_fb[i, 1], z=iw_mw[i, 1], xlabel=x_label, ylabel=y_label, fout=f_out, label_set=labels, ploterr=True, err0=iw_lg[i], err1=iw_fb[i], err2=iw_mw[i])
         else:
             plot_f_r(y0=iw_lg[i], y1=iw_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
@@ -921,7 +1012,9 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
         f_out = f_out_base + f_labels[i] + '.png'
 
         if add_mw:
+            #plot_lines_ratio(x_axis=radii, x=pca_lg[i, 1], y=pca_lg[i, 1], z=pca_lg[i, 1], ylabel=y_label, xlabel=x_label, fout=f_out, label_set=labels, err0=pca_lg[i], err1=pca_fb[i], err2=pca_mw[i])
             plot_f_r(y0=pca_lg[i], y1=pca_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True, err2=True, y2=pca_mw[i])
+            plot_lines_ratio(x_axis=radii, x=pca_lg[i, 1], y=pca_fb[i, 1], z=pca_mw[i, 1], xlabel=x_label, ylabel=y_label, fout=f_out, label_set=labels, ploterr=True, err0=pca_lg[i], err1=pca_fb[i], err2=pca_mw[i])
         else:
             plot_f_r(y0=pca_lg[i], y1=pca_fb[i], y_label=y_label, fout=f_out, err0=True, err1=True)
 
@@ -931,6 +1024,70 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
     #print(virgo_lg)
 
     print('Done.')
+
+    return None
+
+
+def plot_lines_ratio(x_axis=None, x=None, y=None, z=None, setrange=False, ploterr=False, fout=None, err0=None, err1=None, err2=None, label_set=None, ylabel='', xlabel='', logy=False, logx=False, pos_legend=''):
+    """ Given three lines, plot """
+
+    n_pts = len(x)
+    ratio1 = np.ones(n_pts)
+    ratio2 = x / y
+    ratio3 = x / z
+
+    color0 = 'black'
+    color1 = 'blue'
+    color2 = 'green'
+    linewd = 3
+    dashwd = 2
+    dash0, dash1, dash2 = '-.', '--', '.'
+    label0, label1, label2 = label_set
+
+    size = 8
+    (fig, axs) = plt.subplots(ncols=1, nrows=2, figsize=(size, size), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+
+    if setrange:
+        axs[0].set_ylim([1.e-3, 1.5e-2])
+
+    if logy:
+        axs[0].set_yscale('log')
+
+    if logx:
+        axs[0].set_xscale('log')
+        axs[1].set_xscale('log')
+
+    axs[0].set_ylabel(ylabel) 
+    axs[1].set_ylabel('ratio')
+    axs[1].set_xlabel(xlabel) 
+
+    axs[0].plot(x_axis, x, label=label0, color=color0, linewidth=linewd)
+    axs[0].plot(x_axis, y, label=label1, color=color1, linewidth=linewd)
+    axs[0].plot(x_axis, z, label=label2, color=color2, linewidth=linewd)
+    axs[1].plot(x_axis, ratio1, color=color0, linewidth=linewd)
+    axs[1].plot(x_axis, ratio2, color=color1, linewidth=linewd)
+    axs[1].plot(x_axis, ratio3, color=color2, linewidth=linewd)
+
+    if ploterr:
+        axs[0].plot(x_axis, err0[0, :], dash0, color=color0, linewidth=dashwd)
+        axs[0].plot(x_axis, err0[2, :], dash0, color=color0, linewidth=dashwd)
+        axs[0].plot(x_axis, err1[0, :], dash1, color=color1, linewidth=dashwd)
+        axs[0].plot(x_axis, err1[2, :], dash1, color=color1, linewidth=dashwd)
+        axs[0].plot(x_axis, err2[0, :], dash2, color=color2, linewidth=dashwd)
+        axs[0].plot(x_axis, err2[2, :], dash2, color=color2, linewidth=dashwd)
+
+    if pos_legend == '':
+        axs[0].legend()
+    else:
+        axs[0].legend(loc = pos_legend)
+
+    fig.tight_layout()
+    fig.subplots_adjust(hspace = 0.001)
+
+    fig.savefig(fout)
+    plt.close()
+    plt.cla()
+    plt.clf()
 
     return None
 
@@ -946,52 +1103,15 @@ def plot_lg_densities():
 
     models = [1, 2, 3, 4, 5, 6]
     models_labels = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
-
-
-    def plot_lines_ratio(x=None, y=None, z=None, plottype=None, setrange=False):
-        """ """
-
-        ratio1 = np.ones(6)
-        ratio2 = x / y
-        ratio3 = x / z
-
-        color0 = 'black'
-        color1 = 'blue'
-        color2 = 'green'
-    
-        size = 8
-        (fig, axs) = plt.subplots(ncols=1, nrows=2, figsize=(size, size), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
-    
-        if setrange:
-            axs[0].set_ylim([1.e-3, 1.5e-2])
-
-        axs[0].set_yscale('log')
-        axs[0].set_ylabel('$N \quad h^{3} Mpc^{-3}$')
-        axs[1].set_ylabel('ratio')
-        axs[1].set_xlabel('Model')
-        axs[0].plot(models, x, label='LGF-L', color=color0)
-        axs[0].plot(models, y, label='RAND', color=color1)
-        axs[0].plot(models, z, label=r'RAND$_{\Delta}$', color=color2)
-        axs[1].plot(models, ratio1, color=color0)
-        axs[1].plot(models, ratio2, color=color1)
-        axs[1].plot(models, ratio3, color=color2)
-        
-        fout = 'output/dens_' + plottype + '.png'
-        fig.legend(loc = 'center')
-        fig.tight_layout()
-        fig.savefig(fout)
-        plt.close()
-        plt.cla()
-        plt.clf()
-   
-        return None
-
+    labels = ['LGF-L', 'RAND', r'RAND$_{\Delta}$']
+    xlabel = 'Model'
+    ylabel = '$N \quad h^{3} Mpc^{-3}$'
 
     fac_lgf1 = 1.0
     y_lg = data['lgfI'].values * fac_lgf1 / vol_lg
     y_fb = data['fb'].values / vol_fb
     y_delta = data['fb_delta'].values / (vol_fb * delta)
-    plot_lines_ratio(x=y_lg, y=y_fb, z=y_delta, plottype='lgs')
+    plot_lines_ratio(x_axis=models, x=y_lg, y=y_fb, z=y_delta, fout='output/dens_lgs.png', label_set=labels, xlabel=xlabel, ylabel=ylabel, logy=True)
 
     fac_lgf1 = 0.4
     fac_lgf2 = 4.0
@@ -999,13 +1119,13 @@ def plot_lg_densities():
     y_lg = data['halos_lgf'].values * fac_lgf1 / vol_lg
     y_fb = data['halos_fb'].values * fac_lgf2 / vol_fb
     y_delta = data['halos_fb_delta'].values * fac_lgf2 / (vol_fb * delta)
-    plot_lines_ratio(x=y_lg, y=y_fb, z=y_delta, plottype='halos', setrange=True)
+    plot_lines_ratio(x_axis=models, x=y_lg, y=y_fb, z=y_delta, fout='output/dens_halos.png', setrange=True, label_set=labels, xlabel=xlabel, ylabel=ylabel, logy=True)
 
     return None
 
 
 # FIXME TODO
-def plot_mf_around_lg(res='1024', do_bins=True, add_mw=False):
+def plot_mf_around_lg(res='1024', do_bins=True, add_mw=False, dashed=True):
     """ Read and compare the mass function bins """
 
     data_fb = pkl.load(open('output/lg_fb_mf.pkl', 'rb'))
@@ -1083,25 +1203,43 @@ def plot_mf_around_lg(res='1024', do_bins=True, add_mw=False):
     line0 = 'LGF-H'
     line1 = 'RAND'
 
-    n_min = 1
+    n_min = 2
     n_max = 18
 
+    linewd = 3
+    dashwd = 2
+    dash0, dash1, dash2 = '-.', '--', '.'
+    labels = ['LGF-L', 'RAND', 'MW']
+
     # Plot mass functions
-    plt.xlabel(r'$M \quad [h^{-1} M_{\odot}]$')
-    plt.ylabel(r'$n \quad [h^3 Mpc^{-3}]$')
+    x_label = r'$\log_{10} M \quad [h^{-1} M_{\odot}]$'
+    y_label = r'$\log_{10} n(>M) \quad [h^3 Mpc^{-3}]$'
+    plt.xlabel(x_label) 
+    plt.ylabel(y_label) 
 
-    plt.plot(x[n_min:n_max], y0[1, n_min:n_max], color=color0, label=line0)
-    plt.plot(x[n_min:n_max], y1[1, n_min:n_max], color=color1, label=line1)
+    plt.plot(x[n_min:n_max], y0[1, n_min:n_max], color=color0, label=line0, linewidth=linewd)
+    plt.plot(x[n_min:n_max], y1[1, n_min:n_max], color=color1, label=line1, linewidth=linewd)
 
-    plt.fill_between(x[n_min:n_max], y0[0, n_min:n_max], y0[2, n_min:n_max], color=color0, alpha=0.3)
-    plt.fill_between(x[n_min:n_max], y1[0, n_min:n_max], y1[2, n_min:n_max], color=color1, alpha=0.3)
+    if dashed:
+        plt.plot(x[n_min:n_max], y0[0, n_min:n_max], dash0, color=color0, linewidth=dashwd)
+        plt.plot(x[n_min:n_max], y0[2, n_min:n_max], dash0, color=color0, linewidth=dashwd)
+        plt.plot(x[n_min:n_max], y1[0, n_min:n_max], dash1, color=color1, linewidth=dashwd)
+        plt.plot(x[n_min:n_max], y1[2, n_min:n_max], dash1, color=color1, linewidth=dashwd)
+    else:
+        plt.fill_between(x[n_min:n_max], y0[0, n_min:n_max], y0[2, n_min:n_max], color=color0, alpha=0.3)
+        plt.fill_between(x[n_min:n_max], y1[0, n_min:n_max], y1[2, n_min:n_max], color=color1, alpha=0.3)
 
     if add_mw: 
         y2 = sort_mf(data=data_mw, vol='Box')
         color2 = 'green'
         line2 = 'MW'
         plt.plot(x[n_min:n_max], y2[1, n_min:n_max], color=color2, label=line2)
-        plt.fill_between(x[n_min:n_max], y2[0, n_min:n_max], y2[2, n_min:n_max], color=color2, alpha=0.3)
+
+        if dashed:
+            plt.plot(x[n_min:n_max], y2[0, n_min:n_max], dash2, color=color2, linewidth=dashwd)
+            plt.plot(x[n_min:n_max], y2[2, n_min:n_max], dash2, color=color2, linewidth=dashwd)
+        else:
+            plt.fill_between(x[n_min:n_max], y2[0, n_min:n_max], y2[2, n_min:n_max], color=color2, alpha=0.3)
 
     fout = 'output/lg_fb_mf_5mpc.png'
 
@@ -1111,7 +1249,9 @@ def plot_mf_around_lg(res='1024', do_bins=True, add_mw=False):
     plt.close()
     plt.cla()
     plt.clf()
-
+    #fout = 'output/lg_fb_mf_5mpc_ratios.png'
+    plot_lines_ratio(x_axis=x[n_min:n_max], x=y0[1, n_min:n_max], y=y1[1, n_min:n_max], z=y2[1, n_min:n_max], ploterr=True, fout=fout, err0=y0[:, n_min:n_max], err1=y1[:, n_min:n_max], 
+                err2=y2[:, n_min:n_max], xlabel=x_label, ylabel=y_label, logy=False, logx=False, label_set=labels, setrange=False)
     print('Done.')
 
     return None
@@ -1135,10 +1275,13 @@ if __name__ == "__main__":
         lg_density(dist=r)
     '''
 
+#def random_halo_density(select_halos=True):
+    random_halo_density()
     #random_halo_subset()
     #halos_around_lg(simu='rand_mw', res='1024', run_max=0)
-    plot_mf_around_lg(add_mw=True)
-    plot_halos_around_lg(res='512', add_mw=True, do_sort_data=False)
+    #plot_lg_densities()
+    #plot_mf_around_lg(add_mw=True)
+    #plot_halos_around_lg(res='512', add_mw=True, do_sort_data=False)
 
     #find_lg_fb(run_max=1)
 
