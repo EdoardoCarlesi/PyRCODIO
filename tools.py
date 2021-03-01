@@ -15,14 +15,68 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 
+def select_box(data=None, radius=None, col=None, x_col=None, center=None):
+    """ Given a center and a radius, select halos in a dataframe """
+
+    condition = (data[x_col[0]] > (center[0] - radius)) & (data[x_col[0]] < (center[0] + radius)) &\
+            (data[x_col[1]] > (center[1] - radius)) & (data[x_col[1]] < (center[1] + radius)) &\
+            (data[x_col[2]] > (center[2] - radius)) & (data[x_col[2]] < (center[2] + radius))
+
+    selected = data[condition]
+    return selected
+
+
+def select_sphere(data=None, radius=None, col=None, x_col=None, center=None):
+    """ Given a center and a radius, select halos in a dataframe """
+
+    all_x = data[x_col].T.values
+    all_x_d = np.sum((all_x - center) ** 2.0, axis=0)
+    data[col] = all_x_d
+    data[col] = data[col].apply(lambda x: np.sqrt(x))
+    selected = data[data[col] < radius]
+
+    return selected
+
+
+def apply_distance(data=None, x_col=None, center=None, col=None):
+
+    all_x = data[x_col].T.values
+    all_x_d = np.sum((all_x - center) ** 2.0, axis=0)
+    data[col] = all_x_d
+    data[col] = data[col].apply(lambda x: np.sqrt(x))
+
+    return data[col]
+
 def spatial_pca(data=None, cols=None):
     """ Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution """
 
     scaler = StandardScaler()
     x = data[cols].values
     x = scaler.fit_transform(x)
+    
+    n_x = len(x)
 
-    pca = PCA(n_components=3)
+    if n_x > 3:
+
+        pca = PCA(n_components=3)
+        principal = pca.fit_transform(x)
+        axs = pca.explained_variance_ratio_
+
+        axx = axs #/ axs[0]
+    
+    else:
+        axx = [0.32, 0.33, 0.34]
+
+    return axx
+
+
+def std_pca(x=None) : 
+    """ Do a PCA analysis of the coordinates to find out asymmetries in the halo distribution """
+
+    #scaler = StandardScaler()
+    #x = scaler.fit_transform(x)
+    n_comp = len(x)
+    pca = PCA(n_components=n_comp)
     principal = pca.fit_transform(x)
     axs = pca.explained_variance_ratio_
 
@@ -37,7 +91,7 @@ def triaxiality(a, b, c):
     return (a ** 2.0 - b **2.0) / (a ** 2.0 - c ** 2.0)
 
 
-def inertia_tensor(x=None, w=[], weighted=False):
+def inertia_tensor(x=None, w=[]): 
     """ Compute the moment of inertia of a mass distribution of halos and get the eigenvalues """
 
     I = np.zeros((3, 3))
@@ -141,14 +195,13 @@ def shift(center, r):
 def module(vec):
     """ Very basic operation, there is for sure some quicker way of implementing this but whatever """
 
-    return np.sqrt(np.sum(v **2.0))
+    return np.sqrt(np.sum(vec **2.0))
 
 
 def find_nearest_node_index(x=None, grid=None, box=None):
     """ Given a point x in space, find the nearest grid point once a grid has been placed on the box """
 
     cell = box / grid
-
     ix = np.floor(x[0] / cell)
     iy = np.floor(x[1] / cell)
     iz = np.floor(x[2] / cell)
@@ -175,7 +228,7 @@ def angle(v1, v2):
     return v12
 
 
-def center_of_mass(m,x):
+def center_of_mass(m, x):
     """ Yet another simple function """
 
     n = len(m)

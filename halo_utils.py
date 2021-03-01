@@ -114,7 +114,7 @@ class Halo:
         if r_sub == None:
             r_sub = self.r()
 
-        self.subhalos = find_halos(halos, self.pos(), r_sub)
+        self.subhalos = find_halos(data=halos, center=self.pos(), radius=r_sub)
 
 
 class HaloHistory:
@@ -268,9 +268,10 @@ class LocalGroupModel:
 
 
 class LocalGroup:
-    '''
-    A local group object is a pair of halos, we use this class to be able to quickly compute some of their properties.
-    '''
+    """
+    A local group object is just a pair of halos, 
+    We use this class to be able to quickly compute some of their properties.
+    """
 
     # Initialize to some numerical value
     vrad = -100.
@@ -429,7 +430,8 @@ class LocalGroup:
             file_lg_line = [self.LG1.m(), self.LG2.m(), self.r_halos(),
                         self.vel_radial(), self.vel_tangential(), self.LG1.nsub(), self.LG2.nsub(),
                         self.LG1.npart(), self.LG2.npart(), self.LG1.vmax(), self.LG2.vmax(),
-                        self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),
+                        0.0, 0.0, self.LG1.c_NFW(), self.LG2.c_NFW(),
+                        #self.LG1.lambdap(), self.LG2.lambdap(), self.LG1.c_NFW(), self.LG2.c_NFW(),
                         self.geo_com()[0], self.geo_com()[1], self.geo_com()[2],
                         self.ang_mom(), self.energy(), self.code_simu, self.code_sub]
 
@@ -456,6 +458,7 @@ def select_lgs(data=None, lg_model=None, lgf=False, dist=6.0e+3):
     Returns a new dataframe with the selected halos 
     """
     
+    x_col = ['Xc_LG', 'Yc_LG', 'Zc_LG']
     m_min = lg_model.m_min
     m_max = lg_model.m_max
     r_min = lg_model.r_min
@@ -548,7 +551,7 @@ def halo_ids_around_center(halos, center, radius):
     return ids
 
 
-def find_halos(data=None, center=None, radius=None, search='Sphere'):
+def find_halos(data=None, center=None, radius=None, d_col=None, search='Sphere'):
     """
     Given a center, find all the halo within a given radius
     Input: data is a DataFrame, center is an array, radius is a float
@@ -574,17 +577,11 @@ def find_halos(data=None, center=None, radius=None, search='Sphere'):
         n_sum = np.sum(data[cols].iloc[n_col])
 
     if search == 'Sphere':
-        data[new_key] = data[cols].T.apply(lambda x: t.distance(x, center)).T
-
-        new_data = data[data[new_key] < radius]    
+        new_data = t.select_sphere(data=data, radius=radius, col=d_col, center=center, x_col=cols)
 
     # Box search should be much faster
     elif search == 'Box': 
-        condition = (data[cols[0]] > (center[0] - radius)) & (data[cols[0]] < (center[0] + radius)) &\
-                (data[cols[1]] > (center[1] - radius)) & (data[cols[1]] < (center[1] + radius)) &\
-                (data[cols[2]] > (center[2] - radius)) & (data[cols[2]] < (center[2] + radius))
-
-        new_data = data[condition]
+        new_data = t.select_box(data=data, radius=radius, col=d_col, center=center, x_col=cols)
 
     return new_data
 
@@ -631,7 +628,7 @@ def find_lg(halos, center, radius, lgmod=None, center_cut=True, search='Sphere',
 
     if center_cut == True:
         # First select only halos within a given radius from the center
-        halos_mass = find_halos(halos, center, radius, search)
+        halos_mass = find_halos(data=halos, center=center, radius=radius, search=search)
     else:
         halos_mass = halos
 
@@ -675,7 +672,7 @@ def find_lg(halos, center, radius, lgmod=None, center_cut=True, search='Sphere',
                     # Check also for third haloes within the isolation radius before adding the pair
                     this_lg = LocalGroup(halo_lg0, halo_lg2)
                     com = this_lg.geo_com()
-                    halos_iso = find_halos(halos_mass, com, iso_radius)
+                    halos_iso = find_halos(data=halos_mass, center=com, radius=iso_radius, search=search)
                     nh_iso = len(halos_iso)
 
                     # Ths m_min is the minimum mass of the two LG member halos

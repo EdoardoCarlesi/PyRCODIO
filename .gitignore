@@ -3,6 +3,7 @@ activate
 *.out
 *.pyc
 *.swp
+*.swo
 *.tgz
 *.tmp
 *.dat
@@ -13,6 +14,7 @@ output/*
 COPY/
 \
 '\'
+*.txt
 output
 pygadgetreader
 ProjectsPlots
