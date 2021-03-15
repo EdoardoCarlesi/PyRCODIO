@@ -14,7 +14,7 @@ import numpy as np
 import dask.dataframe as dd
 import sys
 sys.path.append('pygadgetreader/')
-#from pygadgetreader import *
+from pygadgetreader import *
     
 
 def read_ahf_halo(file_name, file_mpi=True):
@@ -269,7 +269,7 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
             except:
                 # TODO
                 'This should be fixed'
-                #print('There are no particles of type: ', part_type, ' in file: ', this_file)
+                print('There are no particles of type: ', part_type, ' in file: ', this_file)
 
     try:
         n_part = len(full_data)

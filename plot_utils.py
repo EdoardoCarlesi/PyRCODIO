@@ -32,7 +32,8 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     # If the colorscale is undefined by the user then set a default one among those below
     if colorscale == None:        
         #colorscale = 'inferno'
-        colorscale = 'gray'
+        colorscale = 'Greys'
+        #colorscale = 'rainbow'
         #colorscale = 'hot'
         #colorscale = 'gist_gray'
         #colorscale = 'bwr'
@@ -45,16 +46,22 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     axis_label = ['SGX', 'SGY', 'SGZ']
 
     plt.figure(figsize=(fig_size, fig_size))
+    fontsize = 25
 
     # If we are going to use the images with CNNs then by default legend is set to False
     if legend == True:
-        axis_size = fig_size * 2
-        plt.rc({'text.usetex': True})
-        plt.rc('axes',  labelsize=axis_size)
-        plt.rc('xtick', labelsize=axis_size)
-        plt.rc('ytick', labelsize=axis_size)
-        plt.xlabel(r'$h^{-1}$Mpc')
-        plt.ylabel(r'$h^{-1}$Mpc')
+        #axis_size = fig_size * 2
+        #plt.rc({'text.usetex': True})
+        #plt.rc('axes',  labelsize=axis_size)
+        #plt.rc('xtick', labelsize=axis_size)
+        #plt.rc('ytick', labelsize=axis_size)
+        plt.xticks(fontsize=fontsize)
+        plt.yticks(fontsize=fontsize)
+        plt.rcParams["axes.edgecolor"] = "0.0"
+        plt.rcParams["axes.linewidth"]  = 1.0
+        plt.xlabel(r'SGX $\quad [h^{-1} Mpc]$', fontsize=fontsize)
+        plt.ylabel(r'SGY $\quad [h^{-1} Mpc]$', fontsize=fontsize)
+        plt.title(r'$\rho_{DM}$', fontsize=fontsize)
 
         file_out = file_name + 'density_' + axis_label[ax0] + axis_label[ax1]
     else:
@@ -76,8 +83,6 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
         plt.xticks([])
         plt.yticks([])
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    else:
-        plt.tight_layout()
 
     if hex_plot == True:
         # Do the plot using hexagonal bins
@@ -91,6 +96,8 @@ def plot_density(data=None, axes_plot=None, file_name=None, legend=False, show_p
     
     # Save the file
     if legend == True:
+        plt.rcParams["axes.edgecolor"] = "0.0"
+        plt.rcParams["axes.linewidth"]  = 1.0
         plt.tight_layout()
 
     plt.savefig(file_out + '.png')

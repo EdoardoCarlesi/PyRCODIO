@@ -39,11 +39,13 @@ m_col = 'Mvir(4)'
 radii_cols = ['R', 'Dens', 'Mtot', 'Mmax', 'I_a', 'I_b', 'I_c', 'Iw_a',  'Iw_b', 'Iw_c', 'PCA_a', 'PCA_b', 'PCA_c', 'ID', 'simu']
 
 
-def random_halo_density(select_halos=False, select_delta=False):
+def random_halo_density(select_halos=False, select_delta=False, select_lgs=False):
     """ Select subset of halos within different mass intervals """	
 
     halos_file_select = 'output/halos_00_M1.csv'
-    lg_list = 'outpiut/lg_fb_list_00.csv'
+    lg_list = 'output/lg_fb_list_00.csv'
+    lgs_file_select = 'output/lg_fb_list_00_dens.csv'
+    lgs_file_dens = 'output/lg_fb_list_00_dens_select.csv'
 
     m_model = []
     m_model.append([0.40e+12, 5.0e+12])
@@ -63,8 +65,13 @@ def random_halo_density(select_halos=False, select_delta=False):
         halos.to_csv(halos_file_select)
 
     print(f'Reading from: {halos_file_select}')
-    halos = pd.read_csv(halos_file_select)
-    deltas = [0.55, 1.9]
+
+    if select_lgs:
+        halos = pd.read_csv(lg_list)
+    else:
+        halos = pd.read_csv(halos_file_select)
+
+    deltas = [0.33, 2.7]
 
     vweb_file = '/home/edoardo/CLUES/DATA/Vweb/FullBox/vweb_00.000128.Vweb-csv'
     print(f'Reading vweb: {vweb_file}')
@@ -79,27 +86,55 @@ def random_halo_density(select_halos=False, select_delta=False):
         i=0
 
         for ind, h in halos.iterrows():
-            center = h[x_col_ahf]
+            if select_lgs:
+                center = h[x_col].values
+            else:
+                center = h[x_col_ahf]
+
             index = t.find_nearest_node_index(x=center, grid=128, box=100.0e+3)
-            dens[i] = vweb['dens'].iloc[index]
+
+            # Always check to exclude periodic boundary conditions
+            if index > 0 and index < 128*128*128:
+                dens[i] = vweb['dens'].iloc[index]
+
             i += 1
 
         halos['dens'] = dens
-        halos.to_csv(halos_file_select)
-        
-    print(halos.head())
+        halos = halos.drop_duplicates()
+        halos = halos.drop(halos[halos['dens'] == 0.0])
+
+        if select_lgs:
+            halos.to_csv(lgs_file_select)
+        else:
+            halos.to_csv(halos_file_select)
+
+    if select_lgs:
+        halos = pd.read_csv(lgs_file_select)
+    else:
+        halos = pd.read_csv(halos_file_select)
 
     models = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
     vol = (100.0) ** 3.0
     vol_d = vol * v_frac
     halos_d = halos[(halos['dens'] > deltas[0]) & (halos['dens'] < deltas[1])]
 
-    for i, model in enumerate(m_model):
+    print(f'Found {len(halos_d)} objects out of {len(halos)} in density environment.')
 
-        halos_tmp = halos[(halos[m_col] > model[0]) & (halos[m_col] < model[1])]
-        halos_d_tmp = halos_d[(halos_d[m_col] > model[0]) & (halos_d[m_col] < model[1])]
+    if select_lgs:
+        halos_d.to_csv(lgs_file_dens)
 
-        print(f'{models[i]} & {len(halos_tmp)} & {len(halos_d_tmp)} & {len(halos_tmp)/vol} & {len(halos_d_tmp)/vol_d} \\\ ')
+    else:
+
+        for i, model in enumerate(m_model):
+
+            halos_tmp = halos[(halos[m_col] > model[0]) & (halos[m_col] < model[1])]
+            halos_d_tmp = halos_d[(halos_d[m_col] > model[0]) & (halos_d[m_col] < model[1])]
+
+            print(f'{models[i]},{len(halos_tmp)},{len(halos_d_tmp)},{len(halos_tmp)/vol},{len(halos_d_tmp)/vol_d}')
+            #print(f'{models[i]} & {len(halos_tmp)} & {len(halos_d_tmp)} & {len(halos_tmp)/vol} & {len(halos_d_tmp)/vol_d} \\\ ')
+
+    return halos_d
+
 
 def random_halo_subset(m_min=0.5e+12, m_max=2.5e+12, n_subset=10000):
     """ Return some properties (mass functions, eigenvalues, densities) around random MW-like halos """
@@ -165,7 +200,8 @@ def lg_density(simu='512', dist=5.0e+3):
         lgf=True
 
     elif simu == 'FB':
-        f_lg_csv = 'output/lg_pairs_FB.csv'
+        #f_lg_csv = 'output/lg_pairs_FB.csv'
+        f_lg_csv = 'output/lg_fb_list_00_dens.csv'
         lgf=True
 
     elif simu == '1024':
@@ -178,27 +214,45 @@ def lg_density(simu='512', dist=5.0e+3):
 
     all_lg_models, all_lg_index = cfg.lg_models()
     data = pd.read_csv(f_lg_csv)
-    simu_codes = data['simu_code'].values
-    sub_codes = data['sub_code'].values
-    all_codes = []
 
-    for sim, sub in zip(simu_codes, sub_codes):
-        str_sim = '%02d' % sim
-        str_sub = '%02d' % sub
-        all_codes.append(str_sim + '_' + str_sub)
+    if simu == 'FB':
+        #print(data.head())
+        d_min, d_max = 0, 100.0
+        print(len(data))
+        data = data[(data['dens'] < d_max) & (data['dens'] > d_min)]
+        print(len(data))
+        vol = (100.0) ** 3.0 
+        #vol = 0.52 * (100.0) ** 3.0 
+        n_sims = 1
+    else:
+        simu_codes = data['simu_code'].values
+        sub_codes = data['sub_code'].values
+        all_codes = []
+        
+        vol = 843 * (125.0 * 4.0 * np.pi / 3.0)
 
-    all_codes_set = set(all_codes)
-    n_sims = len(all_codes_set)
-    #print(len(all_codes), len(all_codes_set))
+        for sim, sub in zip(simu_codes, sub_codes):
+            #print(sim, sub)
+            #str_sim = '%02d' % sim
+            #str_sub = '%02d' % sub
+            #all_codes.append(str_sim + '_' + str_sub)
+            all_codes.append(sim)
+
+        all_codes_set = set(all_codes)
+        n_sims = len(all_codes_set)
+        #print(len(all_codes), len(all_codes_set))
 
     for model in lg_models:
         this_index = all_lg_index[model]
         this_model = all_lg_models[this_index]
-
-        these_lgs = hu.select_lgs(data=data, lg_model=this_model, lgf=lgf, dist=dist)
+         
+        if simu == 'FB':
+            these_lgs = hu.select_lgs(data=data, lg_model=this_model) 
+        else:
+            these_lgs = hu.select_lgs(data=data, lg_model=this_model, lgf=lgf, dist=dist)
         n_lgs = len(these_lgs)
 
-        print(f'{model} {n_lgs/n_sims} {n_lgs}')
+        print(f'{model} {n_lgs} {n_lgs/vol}')
 
 
 def halos_around_lg(verbose=False, simu='fullbox', res='512', run_min=0, run_max=5):
@@ -1275,11 +1329,11 @@ if __name__ == "__main__":
         lg_density(dist=r)
     '''
 
-#def random_halo_density(select_halos=True):
-    random_halo_density()
+    #random_halo_density()
     #random_halo_subset()
     #halos_around_lg(simu='rand_mw', res='1024', run_max=0)
     #plot_lg_densities()
+    lg_density()
     #plot_mf_around_lg(add_mw=True)
     #plot_halos_around_lg(res='512', add_mw=True, do_sort_data=False)
 
