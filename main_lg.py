@@ -797,7 +797,6 @@ def plot_halos_around_lg(res='512', add_mw=False, do_sort_data=False):
                     good_lgs += 1
                 else:
                     check_model = False
-
             else:
                 check_model = True
 
