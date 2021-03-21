@@ -203,7 +203,7 @@ def read_time(data_path):
     return time
 
 
-def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
+def read_snap(file_name=None, velocity=False, ids=False, part_types=[1], n_files=1):
     '''
     Return the full particle content of a snapshot as a dataframe
     '''
@@ -224,29 +224,39 @@ def read_snap(file_name=None, velocity=False, part_types=[1], n_files=1):
 
         if velocity == True:
             cols = ['X', 'Y', 'Z', 'ID', 'Type', 'Vx', 'Vy', 'Vz']
-        else:
+        elif velocity == False and ids == True:
             cols = ['X', 'Y', 'Z', 'ID', 'Type']
-
+        elif velocity == False and ids == False:
+            cols = ['X', 'Y', 'Z', 'Type']
 
         for part_type in part_types:
 
             try:
                 # Read positions only
+                print('Reading positions from file: ', this_file)
                 particles = readsnap(this_file, 'pos', part_type)
-                pids = readsnap(this_file, 'pid', part_type)
-                print('Reading IDs and positions from file: ', this_file)
-
-                # Reshape the IDs for concatenation!
-                pids = pids.reshape((len(pids), 1))
 
                 # Add particle type info
                 ptype = np.zeros((len(particles), 1))
                 ptype.fill(part_type)
 
-                part_ids = np.concatenate((particles, pids), axis=1)
-                part_ids_type = np.concatenate((part_ids, ptype), axis=1)
+                parts_types = np.concatenate((particles, ptype), axis=1)
 
-                # Do we want to read in velocity data as well? Or positions only?
+                if ids:
+                    # Do we want to read the particle IDs?
+                    print('Reading IDs from file: ', this_file)
+
+                    pids = readsnap(this_file, 'pid', part_type)
+
+                    # Reshape the IDs for concatenation!
+                    pids = pids.reshape((len(pids), 1))
+                    part_ids_type = np.concatenate((part_ids, parts_types), axis=1)
+
+                else:
+                    # Use this other variable for consistency
+                    part_ids_type = parts_types 
+
+                # Do we want to read in velocity data as well
                 if velocity == True:
                     velocities = readsnap(this_file, 'vel', part_type)
                     print('Reading velocities from file: ', this_file, ' ptype = ', part_type)
